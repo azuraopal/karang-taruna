@@ -30,7 +30,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
             <div className="space-y-2">
               <Logo variant="white" className="h-9 sm:h-10 w-auto" />
               <p className="text-xs text-amber-400 font-semibold tracking-wide">
-                Aditya Karya Mahatva Yodha
+                
               </p>
             </div>
 

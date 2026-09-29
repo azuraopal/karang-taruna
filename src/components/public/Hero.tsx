@@ -51,11 +51,11 @@ export const Hero: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]"
             >
-              Bakti Pemuda Nyata,{' '}
+              Kumpulan Pemuda,{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500">
-                Membangun Warga
+                Berdiri Sebagai
               </span>{' '}
-              Berdaya.
+              Penggerak
             </motion.h1>
 
             <motion.p
@@ -64,7 +64,7 @@ export const Hero: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
             >
-              Karang Taruna Aditya Karya Mahatva Yodha menghimpun potensi generasi muda untuk menggerakkan kepedulian sosial, kebersihan lingkungan, turnamen olahraga, dan kemandirian usaha warga.
+              Menjadikan Karang Taruna sebagai wadah pemuda yang aktif, inovatif dan menjadi penggerak perubahan dilingkungan masyarakat.
             </motion.p>
 
             {/* CTAs */}
@@ -134,7 +134,7 @@ export const Hero: React.FC = () => {
             <div className="relative mx-auto max-w-md bg-slate-800/60 rounded-3xl p-3 border border-slate-700/80 shadow-2xl backdrop-blur-xs">
               <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden group">
                 <img
-                  src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=900&q=80"
+                  src=""
                   alt="Aksi gotong royong pemuda Karang Taruna"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
@@ -163,10 +163,10 @@ export const Hero: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-200">
-                      Rembug Pemuda Margabakti 07
+                      Pelaksanaan Pentas Seni & Budaya dibulan Agustus
                     </div>
                     <div className="text-[11px] text-slate-400">
-                      Setiap Sabtu malam pukul 19.30 WIB
+                      Pelaksanaan Pentas Seni & Budaya dibulan Agustus
                     </div>
                   </div>
                 </div>

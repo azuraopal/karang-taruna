@@ -102,7 +102,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Demo Credential Shortcut */}
-        <div className="bg-slate-100 rounded-xl p-3 text-xs flex items-center justify-between border border-slate-200">
+        {/* <div className="bg-slate-100 rounded-xl p-3 text-xs flex items-center justify-between border border-slate-200">
           <div className="text-slate-600">
             <span className="font-semibold text-slate-800">Akun Demo Pengurus:</span>
             <div className="font-mono text-[11px] text-slate-700">admin / katar2026</div>
@@ -114,7 +114,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
           >
             Gunakan Akun Ini
           </button>
-        </div>
+        </div> */}
 
         <div className="pt-2 flex items-center justify-end gap-3">
           <button

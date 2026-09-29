@@ -261,14 +261,14 @@ export const INITIAL_ASPIRASI: Aspirasi[] = [
 export const TENTANG_DATA = {
   namaOrganisasi: 'Karang Taruna Margabakti 07',
   subJudul: 'Wadah Pengembangan dan Pengabdian Generasi Muda Margabakti 07',
-  sejarah: 'Karang Taruna Margabakti 07 didirikan sebagai wadah partisipasi aktif generasi muda dalam penanganan persoalan sosial, pemberdayaan ekonomi kreatif, serta pelestarian kerukunan warga. Berangkat dari semangat kebersamaan pemuda kampung yang dirintis sejak tahun 1998, organisasi ini terus bertransformasi menjadi komunitas pemuda yang adaptif, berdaya saing, dan berjiwa gotong royong.',
+  sejarah: 'Karang Taruna Margabakti 07 didirikan sebagai wadah partisipasi aktif generasi muda dalam penanganan persoalan sosial, pemberdayaan ekonomi kreatif, serta pelestarian kerukunan warga. Berangkat dari semangat kebersamaan pemuda kampung yang dirintis sejak tahun 2024, organisasi ini terus bertransformasi menjadi komunitas pemuda yang adaptif, berdaya saing, dan berjiwa gotong royong.',
   visi: 'Terwujudnya pemuda Margabakti 07 yang berkarakter tangguh, religius, peduli sosial, kreatif, serta mampu menjadi pelopor kemajuan lingkungan dan kesejahteraan masyarakat.',
   misi: [
-    'Membangun karakter kepemimpinan dan integritas pemuda berlandaskan nilai ketuhanan dan gotong royong.',
-    'Meningkatkan kepedulian sosial terhadap anak yatim, lansia, dan warga prasejahtera di lingkungan Margabakti 07.',
-    'Menumbuhkan ekosistem kewirausahaan pemuda berbasis potensi lokal dan pemanfaatan teknologi digital.',
-    'Mendorong gaya hidup sehat melalui kegiatan olahraga berkala, pelestarian lingkungan, dan seni budaya lokal.',
-    'Menjadi mitra terpercaya pengurus RT, RW, dan kelurahan dalam menyalurkan aspirasi pemuda secara positif dan konstruktif.'
+    'Membangun jiwa kepemimpinan dan tanggung jawab pemuda.',
+    'Menciptakan ruang bagi pemuda untuk berkarya dan berinovasi.',
+    'Meningkatkan kepedulian sosial dan partisipasi pemuda.',
+    'Mengembangkan kegiatan yang sesuai dengan kebutuhan masyarakat.',
+    'Membangun kolaborasi untuk menciptakan kegiatan berkelanjutan.'
   ],
   nilai: [
     {
@@ -293,10 +293,9 @@ export const TENTANG_DATA = {
     }
   ],
   kontak: {
-    alamat: 'Balai Pertemuan Margabakti 07, Jl. Margabakti No. 07',
-    email: 'sekretariat@katar-margabakti07.id',
-    telepon: '(021) 8876-5432',
-    whatsapp: '+62 812-3456-7890',
-    jadwalKumpul: 'Setiap Sabtu Malam Pukul 19.30 WIB di Ruang Rapat Balai Margabakti 07',
+    alamat: 'Jl. Pintu Ledeng Gang Damai, Kampung Margabakti RW 007, Kecamatan Ciomas, Bogor Barat 16610',
+    email: 'katarrmargabaktii@gmail.com',
+    telepon: '+62 831-7807-4542',
+    whatsapp: '+62 831-7807-4542',
   }
 };

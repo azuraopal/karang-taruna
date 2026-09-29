@@ -58,7 +58,7 @@ export const Tentang: React.FC = () => {
           </h2>
 
           <p className="text-slate-600 text-base leading-relaxed">
-            Organisasi sosial kepemudaan yang berdiri mandiri di tingkat rukun warga, berfungsi sebagai laboratorium kepemimpinan, kepedulian sosial, dan pilar kebersamaan generasi penerus.
+            Organisasi sosial kepemudaan yang berdiri mandiri di tingkat rukun warga, berfungsi sebagai wadah untuk meningkatkan kepedulian sosial terhadap masyarakat dan lingkungan sekitar.
           </p>
         </div>
 
