@@ -77,7 +77,7 @@ export const AdminLayout: React.FC = () => {
                   PANEL PENGURUS
                 </span>
                 <p className="text-[10px] text-slate-400 font-medium">
-                  Aditya Karya Mahatva Yodha
+
                 </p>
               </div>
             </div>

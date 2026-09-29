@@ -92,7 +92,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
             <Logo variant="white" className="h-7 sm:h-8.5 w-auto" />
             <div className="hidden sm:block pl-2.5 border-l border-slate-700/80">
               <p className="text-[11px] text-slate-400 font-medium tracking-wide">
-                Aditya Karya Mahatva Yodha
               </p>
             </div>
           </a>

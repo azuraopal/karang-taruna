@@ -70,7 +70,6 @@ export const Tentang: React.FC = () => {
                 <Logo variant="white" size="md" className="h-7 sm:h-9 w-auto" />
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
-                Aditya Karya Mahatva Yodha
               </h3>
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-700">
                 Semboyan Resmi Karang Taruna Nasional

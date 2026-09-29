@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, RefreshCw, CheckCircle2, Smartphone } from 'lucide-react';
+import { X, RefreshCw, CheckCircle2, Upload } from 'lucide-react';
 
 interface ImagePickerProps {
   value: string;
@@ -229,8 +229,8 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
                 disabled={isProcessing}
                 className="px-3 py-1.5 bg-white hover:bg-stone-100 text-slate-800 border border-stone-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors focus:ring-2 focus:ring-slate-800"
               >
-                <Smartphone className="w-3.5 h-3.5 text-amber-600" />
-                <span>Ganti dari HP</span>
+                <Upload className="w-3.5 h-3.5 text-amber-600" />
+                <span>Upload Foto</span>
               </button>
               <button
                 type="button"
@@ -255,12 +255,12 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             {isProcessing ? (
               <RefreshCw className="w-6 h-6 animate-spin text-amber-600" />
             ) : (
-              <Smartphone className="w-6 h-6 text-amber-600" />
+              <Upload className="w-6 h-6 text-amber-600" />
             )}
           </div>
           <div className="text-center">
             <span className="text-xs font-bold text-slate-900 group-hover:text-amber-900 block">
-              Pilih Foto dari Galeri HP / Kamera
+              Upload Foto dari Galeri / Kamera
             </span>
             <span className="text-[11px] text-slate-500 block mt-0.5">
               Format JPG, PNG, atau WebP (Otomatis dikompres & disimpan rapi)
