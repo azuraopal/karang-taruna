@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <!-- Background Circle (WhatsApp Neutral Gray Style) -->
+  <circle cx="60" cy="60" r="60" fill="#E2E8F0"/>
+  
+  <!-- WhatsApp "PP Botak" Silhouette Head -->
+  <circle cx="60" cy="46" r="22" fill="#94A3B8"/>
+  
+  <!-- WhatsApp "PP Botak" Silhouette Shoulders & Torso -->
+  <path d="M22 108 C22 84, 38 74, 60 74 C82 74, 98 84, 98 108 Z" fill="#94A3B8"/>
+</svg>

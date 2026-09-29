@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: katar_margabakti_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgres://katar_user:katar_secure_pass_2026@db:5432/karang_taruna_margabakti
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - katar_net
+
+  db:
+    image: postgres:16-alpine
+    container_name: katar_margabakti_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=katar_user
+      - POSTGRES_PASSWORD=katar_secure_pass_2026
+      - POSTGRES_DB=karang_taruna_margabakti
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U katar_user -d karang_taruna_margabakti"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - katar_net
+
+volumes:
+  pgdata:
+    driver: local
+  uploads_data:
+    driver: local
+networks:
+  katar_net:
+    driver: bridge
