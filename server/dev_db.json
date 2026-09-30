@@ -1,30 +1,6 @@
 {
   "berita": [
     {
-      "id": "berita-1",
-      "judul": "Kerja Bakti Massal Margabakti 07 dan Gerakan Bersih Saluran Air",
-      "slug": "kerja-bakti-margabakti-07-2026",
-      "ringkasan": "Puluhan pemuda Karang Taruna Margabakti 07 bersama warga bergotong royong membersihkan saluran air dan merapikan taman lingkungan.",
-      "isi": "Kegiatan kerja bakti gabungan pemuda Karang Taruna Margabakti 07 dan segenap warga berjalan dengan penuh keakraban pada Minggu pagi. Fokus pembersihan dipusatkan pada saluran drainase lingkungan dan area fasilitas umum warga.\n\nDivisi Sosial & Kegiatan bersama warga menyiapkan peralatan kebersihan serta membagikan bibit tanaman hijau untuk penghijauan pekarangan.",
-      "kategori": "Program Kerja",
-      "tanggal": "24 September 2026",
-      "penulis": "Divisi Sosial & Kegiatan",
-      "gambarUrl": "/uploads/berita/berita-1790753545005-sev6.webp",
-      "status": "published"
-    },
-    {
-      "id": "berita-2",
-      "judul": "Turnamen Futsal dan Badminton Pemuda Margabakti 07 Berlangsung Meriah",
-      "slug": "turnamen-olahraga-margabakti-07-2026",
-      "ringkasan": "Ajang kompetisi olahraga persahabatan antar pemuda memperebutkan Piala Bergilir Margabakti 07 sukses diselenggarakan.",
-      "isi": "Final turnamen olahraga antar pemuda berlangsung di lapangan serbaguna Margabakti 07. Selain futsal, cabang badminton ganda putra dan putri juga diikuti dengan penuh sportivitas tinggi.\n\nDivisi Olahraga dan Kesehatan berharap turnamen ini terus menjadi wadah mempererat persaudaraan dan kebugaran jasmani seluruh warga.",
-      "kategori": "Olahraga",
-      "tanggal": "18 September 2026",
-      "penulis": "Divisi Olahraga dan Kesehatan",
-      "gambarUrl": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
-      "status": "published"
-    },
-    {
       "id": "berita-3",
       "judul": "Workshop Pemasaran Digital dan Pemberdayaan UMKM Pemuda Margabakti 07",
       "slug": "workshop-umkm-pemuda-margabakti-07-2026",

@@ -45,14 +45,16 @@ const sseHeartbeat = setInterval(() => {
 }, 15000);
 sseHeartbeat.unref();
 
-// SSE Subscription Endpoint
 apiApp.get('/api/events', (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache, no-transform',
     Connection: 'keep-alive',
     'Access-Control-Allow-Origin': '*',
+    'X-Accel-Buffering': 'no',
   });
+
+  res.flushHeaders();
 
   res.write(`event: connected\ndata: ${JSON.stringify({ status: 'connected', clients: sseClients.size + 1 })}\n\n`);
   sseClients.add(res);

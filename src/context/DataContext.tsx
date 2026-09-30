@@ -470,11 +470,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteBerita = async (id: string) => {
-    setBeritaList((prev) => prev.filter((b) => b.id !== id));
     try {
-      await fetch(`/api/berita/${id}`, { method: 'DELETE' });
-    } catch {}
-    showToast('Berita telah dihapus', 'info');
+      const res = await fetch(`/api/berita/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        showToast('Gagal menghapus berita dari server', 'error');
+        return;
+      }
+
+      setBeritaList((prev) => prev.filter((b) => b.id !== id));
+      showToast('Berita telah dihapus', 'info');
+      return;
+    } catch {
+      showToast('Server tidak dapat dihubungi, berita belum dihapus', 'error');
+      return;
+    }
   };
 
   // Tim Handlers
