@@ -17,7 +17,7 @@ initDb().catch(() => {
 const distPath = path.join(process.cwd(), 'dist');
 if (fs.existsSync(distPath)) {
   apiApp.use(express.static(distPath));
-  apiApp.get('*', (_req, res) => {
+  apiApp.get(/.*/, (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
