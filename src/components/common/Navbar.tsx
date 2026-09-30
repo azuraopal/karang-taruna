@@ -73,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 relative ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
           ? 'bg-slate-900/95 backdrop-blur-md shadow-md py-3 border-b border-slate-800'
           : 'bg-slate-900 py-4.5 border-b border-slate-800/80'
