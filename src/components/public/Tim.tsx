@@ -41,7 +41,7 @@ export const Tim: React.FC = () => {
             Susunan Pengurus Karang Taruna
           </h2>
 
-          <p className="text-slate-600 text-base leading-relaxed">
+          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
             Digerakkan oleh pemuda-pemudi berdedikasi yang siap mengabdi dan mendampingi kemajuan warga Margabakti 07.
           </p>
         </div>

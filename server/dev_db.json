@@ -1,0 +1,270 @@
+{
+  "berita": [
+    {
+      "id": "berita-1",
+      "judul": "Kerja Bakti Massal Margabakti 07 dan Gerakan Bersih Saluran Air",
+      "slug": "kerja-bakti-margabakti-07-2026",
+      "ringkasan": "Puluhan pemuda Karang Taruna Margabakti 07 bersama warga bergotong royong membersihkan saluran air dan merapikan taman lingkungan.",
+      "isi": "Kegiatan kerja bakti gabungan pemuda Karang Taruna Margabakti 07 dan segenap warga berjalan dengan penuh keakraban pada Minggu pagi. Fokus pembersihan dipusatkan pada saluran drainase lingkungan dan area fasilitas umum warga.\n\nDivisi Sosial & Kegiatan bersama warga menyiapkan peralatan kebersihan serta membagikan bibit tanaman hijau untuk penghijauan pekarangan.",
+      "kategori": "Program Kerja",
+      "tanggal": "24 September 2026",
+      "penulis": "Divisi Sosial & Kegiatan",
+      "gambarUrl": "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=800&q=80",
+      "status": "published"
+    },
+    {
+      "id": "berita-2",
+      "judul": "Turnamen Futsal dan Badminton Pemuda Margabakti 07 Berlangsung Meriah",
+      "slug": "turnamen-olahraga-margabakti-07-2026",
+      "ringkasan": "Ajang kompetisi olahraga persahabatan antar pemuda memperebutkan Piala Bergilir Margabakti 07 sukses diselenggarakan.",
+      "isi": "Final turnamen olahraga antar pemuda berlangsung di lapangan serbaguna Margabakti 07. Selain futsal, cabang badminton ganda putra dan putri juga diikuti dengan penuh sportivitas tinggi.\n\nDivisi Olahraga dan Kesehatan berharap turnamen ini terus menjadi wadah mempererat persaudaraan dan kebugaran jasmani seluruh warga.",
+      "kategori": "Olahraga",
+      "tanggal": "18 September 2026",
+      "penulis": "Divisi Olahraga dan Kesehatan",
+      "gambarUrl": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
+      "status": "published"
+    },
+    {
+      "id": "berita-3",
+      "judul": "Workshop Pemasaran Digital dan Pemberdayaan UMKM Pemuda Margabakti 07",
+      "slug": "workshop-umkm-pemuda-margabakti-07-2026",
+      "ringkasan": "Pelatihan praktis pengelolaan produk dan strategi promosi daring bagi para wirausahawan muda Margabakti 07.",
+      "isi": "Divisi Ekonomi & Kewirausahaan bekerjasama dengan praktisi digital marketing menggelar lokakarya sehari penuh di balai warga Margabakti 07. Materi mencakup fotografi produk terjangkau dengan ponsel serta optimasi penjualan melalui media sosial.",
+      "kategori": "Pendidikan",
+      "tanggal": "10 September 2026",
+      "penulis": "Divisi Ekonomi & Kewirausahaan",
+      "gambarUrl": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+      "status": "published"
+    },
+    {
+      "id": "berita-4",
+      "judul": "Kajian Pemuda dan Penyaluran Santunan Sosial untuk Warga Prasejahtera",
+      "slug": "kajian-santunan-margabakti-07-2026",
+      "ringkasan": "Kolaborasi Divisi Kerohanian dan Divisi Sosial menyalurkan santunan paket sembako serta perlengkapan belajar.",
+      "isi": "Kegiatan silaturahmi bulanan pemuda dirangkaikan dengan kajian tematik serta penyerahan santunan kepada keluarga membutuhkan di lingkungan Margabakti 07. Acara ditutup dengan doa bersama untuk kerukunan dan kemajuan warga.",
+      "kategori": "Sosial & Warga",
+      "tanggal": "02 September 2026",
+      "penulis": "Divisi Kerohanian",
+      "gambarUrl": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80",
+      "status": "published"
+    },
+    {
+      "id": "berita-5",
+      "judul": "Pelatihan Kepemimpinan Dasar dan Kaderisasi Pemuda (LDKP) Margabakti 07",
+      "slug": "pelatihan-ldkp-margabakti-07-2026",
+      "ringkasan": "Divisi PSDM membuka pendaftaran peserta pelatihan manajemen organisasi dan kepemimpinan untuk remaja Margabakti 07.",
+      "isi": "Divisi PSDM Karang Taruna Margabakti 07 mengundang seluruh pemuda berusia 16 sampai 25 tahun untuk mengikuti sesi pelatihan manajemen organisasi, komunikasi efektif, dan kerja sama tim yang akan dilaksanakan awal bulan depan.",
+      "kategori": "Pengumuman",
+      "tanggal": "28 September 2026",
+      "penulis": "Divisi PSDM",
+      "gambarUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
+      "status": "published"
+    }
+  ],
+  "tim": [
+    {
+      "id": "tim-1",
+      "nama": "Rizky Pratama, S.Kom.",
+      "jabatan": "Ketua Karang Taruna",
+      "divisi": "Pengurus Harian",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Memimpin koordinasi strategis Karang Taruna Margabakti 07 dengan fokus digitalisasi kegiatan, pemberdayaan pemuda, dan kemitraan warga.",
+      "email": "rizky.pratama@katar-margabakti07.id",
+      "noHp": "0812-3456-7890"
+    },
+    {
+      "id": "tim-2",
+      "nama": "Siti Nurhaliza",
+      "jabatan": "Wakil Ketua",
+      "divisi": "Pengurus Harian",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Mendampingi kepengurusan harian serta mengoordinasikan sinergi antardivisi dan pendampingan program kepemudaan warga.",
+      "email": "siti.nurhaliza@katar-margabakti07.id",
+      "noHp": "0813-9876-5432"
+    },
+    {
+      "id": "tim-3",
+      "nama": "Fajar Nugroho",
+      "jabatan": "Sekretaris Umum",
+      "divisi": "Pengurus Harian",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Mengelola tata kelola administrasi, surat menyurat resmi, notula musyawarah, dan dokumentasi perizinan kegiatan organisasi.",
+      "email": "fajar.nugroho@katar-margabakti07.id",
+      "noHp": "0815-2233-4455"
+    },
+    {
+      "id": "tim-4",
+      "nama": "Anisa Rahmawati, S.E.",
+      "jabatan": "Bendahara Umum",
+      "divisi": "Pengurus Harian",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Bertanggung jawab atas pembukuan kas, transparansi sirkulasi dana kas pemuda, dan pelaporan keuangan kegiatan.",
+      "email": "anisa.rahma@katar-margabakti07.id",
+      "noHp": "0817-6677-8899"
+    },
+    {
+      "id": "tim-5",
+      "nama": "Ilham Ramadhan, S.Psi.",
+      "jabatan": "Koordinator Divisi PSDM",
+      "divisi": "PSDM",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Menyelenggarakan pelatihan kepemimpinan pemuda, kaderisasi anggota baru, dan pengembangan potensi personal anggota karang taruna.",
+      "email": "ilham.psdm@katar-margabakti07.id",
+      "noHp": "0819-3344-5566"
+    },
+    {
+      "id": "tim-6",
+      "nama": "Dewi Anggraini",
+      "jabatan": "Koordinator Kreativitas & Humas",
+      "divisi": "Kreativitas dan Humas",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Mengelola kanal komunikasi publik, media sosial resmi, branding kegiatan, dan penghubung komunikasi dengan tokoh masyarakat.",
+      "email": "dewi.humas@katar-margabakti07.id",
+      "noHp": "0821-4433-2211"
+    },
+    {
+      "id": "tim-7",
+      "nama": "Ahmad Fauzi",
+      "jabatan": "Koordinator Sosial & Kegiatan",
+      "divisi": "Sosial & Kegiatan",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Menggerakkan aksi gotong royong kerja bakti, santunan warga prasejahtera, dan kepanitiaan hari besar nasional.",
+      "email": "fauzi.sosial@katar-margabakti07.id",
+      "noHp": "0821-8899-0011"
+    },
+    {
+      "id": "tim-8",
+      "nama": "Dimas Pratama",
+      "jabatan": "Koordinator Olahraga & Kesehatan",
+      "divisi": "Olahraga dan Kesehatan",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Mengorganisasi turnamen badminton, futsal, senam sehat warga, serta program posyandu remaja dan donor darah.",
+      "email": "dimas.olahraga@katar-margabakti07.id",
+      "noHp": "0818-1122-3344"
+    },
+    {
+      "id": "tim-9",
+      "nama": "Maya Kartika, S.Pd.",
+      "jabatan": "Koordinator Pendidikan & Seni Budaya",
+      "divisi": "Pendidikan & Seni Budaya",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Membimbing pojok baca warga, pendampingan belajar adik-adik, sanggar tari kreasi, dan pementasan seni warga.",
+      "email": "maya.seni@katar-margabakti07.id",
+      "noHp": "0857-4455-6677"
+    },
+    {
+      "id": "tim-10",
+      "nama": "M. Syahrul Hidayat",
+      "jabatan": "Koordinator Divisi Kerohanian",
+      "divisi": "Kerohanian",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Mengawal agenda pembinaan akhlak, peringatan hari besar keagamaan, kajian kepemudaan, dan toleransi kebersamaan.",
+      "email": "syahrul.rohani@katar-margabakti07.id",
+      "noHp": "0816-7788-9900"
+    },
+    {
+      "id": "tim-11",
+      "nama": "Hendra Setiawan",
+      "jabatan": "Koordinator Ekonomi & Kewirausahaan",
+      "divisi": "Ekonomi & Kewirausahaan",
+      "fotoUrl": "/default-avatar.svg",
+      "bio": "Mendorong inkubasi usaha kreatif pemuda, bazar kuliner lingkungan, dan pelatihan literasi keuangan mandiri.",
+      "email": "hendra.ekonomi@katar-margabakti07.id",
+      "noHp": "0822-7788-9900"
+    }
+  ],
+  "galeri": [
+    {
+      "id": "galeri-1",
+      "judul": "Gotong Royong Perbaikan Lapangan Margabakti 07",
+      "kategori": "Olahraga",
+      "tanggal": "21 September 2026",
+      "gambarUrl": "https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=800&q=80",
+      "deskripsi": "Pengecatan ulang garis lapangan dan perbaikan jaring pengaman bersama pemuda perwakilan tiap lingkungan.",
+      "lokasi": "Lapangan Fasum Margabakti 07"
+    },
+    {
+      "id": "galeri-2",
+      "judul": "Aksi Lingkungan Bersih dan Penanaman Tanaman Obat",
+      "kategori": "Lingkungan",
+      "tanggal": "15 September 2026",
+      "gambarUrl": "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80",
+      "deskripsi": "Penataan taman lingkungan dan edukasi pemilahan sampah organik dan anorganik.",
+      "lokasi": "Taman Warga Margabakti 07"
+    },
+    {
+      "id": "galeri-3",
+      "judul": "Pentas Seni Musik Tradisional dan Tari Kreasi Pemuda",
+      "kategori": "Pentas Seni",
+      "tanggal": "20 Agustus 2026",
+      "gambarUrl": "https://images.unsplash.com/photo-1469488865564-c2de10f69f96?auto=format&fit=crop&w=800&q=80",
+      "deskripsi": "Pementasan tari daerah dan pentas musik akustik yang dibawakan adik-adik sanggar binaan Karang Taruna.",
+      "lokasi": "Panggung Terbuka Margabakti 07"
+    },
+    {
+      "id": "galeri-4",
+      "judul": "Bazar Kewirausahaan Kuliner dan Produk Kreatif",
+      "kategori": "Pelatihan",
+      "tanggal": "17 Agustus 2026",
+      "gambarUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
+      "deskripsi": "Stan aneka makanan dan kerajinan tangan hasil karya pemuda untuk mendorong kemandirian ekonomi.",
+      "lokasi": "Area Balai Pertemuan Margabakti 07"
+    },
+    {
+      "id": "galeri-5",
+      "judul": "Bakti Donor Darah dan Pemeriksaan Kesehatan Massal",
+      "kategori": "Kegiatan Sosial",
+      "tanggal": "09 Agustus 2026",
+      "gambarUrl": "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80",
+      "deskripsi": "Kerjasama dengan PMI kota dan petugas posyandu, berhasil mengumpulkan donor darah dari warga sukarela.",
+      "lokasi": "Gedung Serbaguna Margabakti 07"
+    },
+    {
+      "id": "galeri-6",
+      "judul": "Lomba Catur Cepat dan Tenis Meja Persahabatan",
+      "kategori": "Olahraga",
+      "tanggal": "05 Agustus 2026",
+      "gambarUrl": "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=800&q=80",
+      "deskripsi": "Pertandingan asah strategi dan ketangkasan fisik yang diikuti antusias oleh pemuda serta tokoh warga.",
+      "lokasi": "Balai Warga Margabakti 07"
+    }
+  ],
+  "aspirasi": [
+    {
+      "id": "asp-1",
+      "nama": "Bambang Pamungkas",
+      "email": "bambang.p@gmail.com",
+      "noHp": "0812-9988-7766",
+      "kategori": "Saran Kegiatan",
+      "pesan": "Mohon diadakan pelatihan dasar komputer dan desain grafis untuk pemuda Margabakti 07 saat liburan sekolah.",
+      "tanggal": "27 September 2026",
+      "status": "dibaca"
+    },
+    {
+      "id": "asp-2",
+      "nama": "Ratna Sari",
+      "email": "ratnasari@yahoo.com",
+      "noHp": "0857-1122-3344",
+      "kategori": "Aduan Lingkungan",
+      "pesan": "Lampu penerangan di gang dekat lapangan Margabakti 07 sempat redup, mohon dicek bersama tim teknis.",
+      "tanggal": "25 September 2026",
+      "status": "selesai"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-1",
+      "username": "admin",
+      "namaLengkap": "Administrator Utama",
+      "role": "admin",
+      "createdAt": "September 2026"
+    },
+    {
+      "id": "user-2",
+      "username": "pengurus",
+      "namaLengkap": "Staff Pengurus Harian",
+      "role": "pengurus",
+      "createdAt": "September 2026"
+    }
+  ]
+}

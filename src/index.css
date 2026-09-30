@@ -26,3 +26,10 @@
     outline-offset: 2px;
   }
 }
+
+@layer utilities {
+  .font-subtitle {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    letter-spacing: 0.02em;
+  }
+}

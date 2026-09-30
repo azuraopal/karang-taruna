@@ -48,7 +48,7 @@ export const BeritaSection: React.FC = () => {
             Warta Kegiatan & Pengumuman
           </h2>
 
-          <p className="text-slate-600 text-base leading-relaxed">
+          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
             Ikuti laporan pelaksanaan program kerja, pengumuman agenda rapat, turnamen, dan aksi sosial kemasyarakatan.
           </p>
         </div>

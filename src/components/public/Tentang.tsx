@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Users, HeartHandshake, Sparkles, Award, Target, BookOpen, Compass } from 'lucide-react';
+import { Users, HeartHandshake, Sparkles, Award, Target, BookOpen, Compass } from 'lucide-react';
 import { TENTANG_DATA } from '../../data/initialData';
 import { Logo } from '../common/Logo';
 
@@ -57,7 +57,7 @@ export const Tentang: React.FC = () => {
             Mengenal Karang Taruna Margabakti 07
           </h2>
 
-          <p className="text-slate-600 text-base leading-relaxed">
+          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
             Organisasi sosial kepemudaan yang berdiri mandiri di tingkat rukun warga, berfungsi sebagai wadah untuk meningkatkan kepedulian sosial terhadap masyarakat dan lingkungan sekitar.
           </p>
         </div>

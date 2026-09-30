@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Users, Plus, Edit, Trash2, Shield, User, Eye, EyeOff,
-  AlertTriangle, CheckCircle2, Lock, Crown
+  Plus, Edit, Trash2, User, Eye, EyeOff,
+  AlertTriangle, CheckCircle2, Crown
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { UserAccount, UserRole } from '../../types';

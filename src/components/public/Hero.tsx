@@ -62,7 +62,7 @@ export const Hero: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+              className="text-base sm:text-lg text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-subtitle text-lg sm:text-xl"
             >
               Menjadikan Karang Taruna sebagai wadah pemuda yang aktif, inovatif dan menjadi penggerak perubahan dilingkungan masyarakat.
             </motion.p>

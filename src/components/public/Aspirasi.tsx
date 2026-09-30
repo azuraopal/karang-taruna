@@ -55,7 +55,7 @@ export const AspirasiSection: React.FC = () => {
               Kirim Aspirasi & Ide Positif untuk Kemajuan Margabakti 07
             </h2>
 
-            <p className="text-slate-600 text-sm leading-relaxed">
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-subtitle">
               Punya usulan kegiatan pemuda, ide lomba baru, aduan fasilitas umum, atau ingin mengajak kolaborasi? Sampaikan langsung kepada pengurus melalui formulir ini.
             </p>
 

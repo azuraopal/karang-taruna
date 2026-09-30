@@ -29,8 +29,8 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
           <div className="lg:col-span-5 space-y-4">
             <div className="space-y-2">
               <Logo variant="white" className="h-9 sm:h-10 w-auto" />
-              <p className="text-xs text-amber-400 font-semibold tracking-wide">
-                
+              <p className="text-xs text-amber-400 font-semibold tracking-wide font-subtitle">
+                Muda Berkarya, Nyata Berdaya
               </p>
             </div>
 
@@ -148,7 +148,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
             &copy; 2026 Karang Taruna Margabakti 07. Seluruh hak cipta dilindungi.
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-slate-400">Semangat Aditya Karya Mahatva Yodha</span>
+            <span className="text-slate-400 font-subtitle">Semangat Pemuda Margabakti 07</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Sistem Aktif" />
           </div>
         </div>

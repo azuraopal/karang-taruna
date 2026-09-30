@@ -1,4 +1,4 @@
-import type { AnggotaTim, Berita, ItemGaleri, Aspirasi } from '../types';
+import type { AnggotaTim, Berita, ItemGaleri, Aspirasi } from '../types/index.js';
 
 export const DEFAULT_AVATAR = '/default-avatar.svg';
 
@@ -75,7 +75,7 @@ export const INITIAL_TIM: AnggotaTim[] = [
   },
   {
     id: 'tim-8',
-    nama: 'Dimas Aditya',
+    nama: 'Dimas Pratama',
     jabatan: 'Koordinator Olahraga & Kesehatan',
     divisi: 'Olahraga dan Kesehatan',
     fotoUrl: DEFAULT_AVATAR,
@@ -297,5 +297,6 @@ export const TENTANG_DATA = {
     email: 'katarrmargabaktii@gmail.com',
     telepon: '+62 831-7807-4542',
     whatsapp: '+62 831-7807-4542',
+    jadwalKumpul: 'Setiap Sabtu Malam Pukul 19.30 WIB di Balai Margabakti 07',
   }
 };

@@ -38,7 +38,7 @@ export const Galeri: React.FC = () => {
             Galeri Kegiatan Pemuda
           </h2>
 
-          <p className="text-slate-600 text-base leading-relaxed">
+          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
             Rekam jejak kebersamaan, aksi sosial, kompetisi olahraga, serta festival kebudayaan yang diselenggarakan bersama masyarakat.
           </p>
         </div>
