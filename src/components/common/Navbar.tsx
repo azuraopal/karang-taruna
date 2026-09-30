@@ -17,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      setMobileMenuOpen(false);
 
       // Detect active section on scroll
       const sections = ['beranda', 'tentang', 'tim', 'galeri', 'berita', 'aspirasi'];
@@ -35,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -72,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 relative ${
         isScrolled
           ? 'bg-slate-900/95 backdrop-blur-md shadow-md py-3 border-b border-slate-800'
           : 'bg-slate-900 py-4.5 border-b border-slate-800/80'
@@ -198,11 +199,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="lg:hidden border-t border-slate-800 bg-slate-900/98 backdrop-blur-xl px-4 pt-3 pb-6 shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: -18, scaleY: 0.96 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -18, scaleY: 0.96 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className={`lg:hidden fixed left-0 right-0 ${isScrolled ? 'top-[72px]' : 'top-[88px]'} z-50 border-t border-slate-800 bg-slate-900/98 backdrop-blur-xl px-4 pt-3 pb-6 shadow-[0_18px_40px_rgba(2,6,23,0.45)] origin-top`}
           >
             <div className="flex flex-col gap-1.5 pt-2">
               {navLinks.map((link) => {
