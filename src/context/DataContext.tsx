@@ -450,12 +450,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateBerita = async (id: string, updated: Partial<Berita>) => {
     setBeritaList((prev) => prev.map((b) => (b.id === id ? { ...b, ...updated } : b)));
     try {
-      await fetch(`/api/berita/${id}`, {
+      const res = await fetch(`/api/berita/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated),
       });
-    } catch {}
+      if (!res.ok) {
+        showToast('Gagal menyimpan perubahan berita ke server', 'error');
+        return;
+      }
+
+      const saved = await res.json();
+      setBeritaList((prev) => prev.map((b) => (b.id === id ? saved : b)));
+    } catch {
+      showToast('Server tidak dapat menyimpan perubahan berita', 'error');
+      return;
+    }
     showToast('Perubahan berita berhasil disimpan', 'success');
   };
 

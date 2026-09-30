@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { X, RefreshCw, CheckCircle2, Upload } from 'lucide-react';
 
 interface ImagePickerProps {
@@ -26,6 +26,10 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
   const [showUrlInput, setShowUrlInput] = useState<boolean>(false);
   const [manualUrl, setManualUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPreviewUrl(value);
+  }, [value]);
 
   // Compress & optimize image via HTML5 Canvas before uploading
   const optimizeImage = (file: File): Promise<string> => {

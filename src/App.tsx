@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { DataProvider, useData } from './context/DataContext';
 import { ToastContainer } from './components/common/Toast';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
-import { AdminLoginModal } from './components/admin/AdminLoginModal';
-import { Hero } from './components/public/Hero';
-import { Tentang } from './components/public/Tentang';
-import { Tim } from './components/public/Tim';
-import { Galeri } from './components/public/Galeri';
-import { BeritaSection } from './components/public/Berita';
-import { AspirasiSection } from './components/public/Aspirasi';
-import { AdminLayout } from './components/admin/AdminLayout';
+
+const AdminLoginModal = lazy(() => import('./components/admin/AdminLoginModal').then((module) => ({ default: module.AdminLoginModal })));
+const Hero = lazy(() => import('./components/public/Hero').then((module) => ({ default: module.Hero })));
+const Tentang = lazy(() => import('./components/public/Tentang').then((module) => ({ default: module.Tentang })));
+const Tim = lazy(() => import('./components/public/Tim').then((module) => ({ default: module.Tim })));
+const Galeri = lazy(() => import('./components/public/Galeri').then((module) => ({ default: module.Galeri })));
+const BeritaSection = lazy(() => import('./components/public/Berita').then((module) => ({ default: module.BeritaSection })));
+const AspirasiSection = lazy(() => import('./components/public/Aspirasi').then((module) => ({ default: module.AspirasiSection })));
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then((module) => ({ default: module.AdminLayout })));
+
+const LazyFallback: React.FC = () => (
+  <div className="flex min-h-32 items-center justify-center text-sm text-slate-500">
+    Memuat halaman...
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const { currentView, isAdminLoggedIn } = useData();
@@ -21,7 +28,9 @@ const AppContent: React.FC = () => {
     return (
       <div className="min-h-screen bg-stone-100 text-slate-900 font-sans antialiased selection:bg-amber-400 selection:text-slate-950">
         <ToastContainer />
-        <AdminLayout />
+        <Suspense fallback={<LazyFallback />}>
+          <AdminLayout />
+        </Suspense>
       </div>
     );
   }
@@ -35,23 +44,29 @@ const AppContent: React.FC = () => {
       <Navbar onOpenLoginModal={() => setIsLoginModalOpen(true)} />
 
       {/* Main Public Content */}
-      <main className="flex-1">
-        <Hero />
-        <Tentang />
-        <Tim />
-        <Galeri />
-        <BeritaSection />
-        <AspirasiSection />
-      </main>
+      <Suspense fallback={<LazyFallback />}>
+        <main className="flex-1">
+          <Hero />
+          <Tentang />
+          <Tim />
+          <Galeri />
+          <BeritaSection />
+          <AspirasiSection />
+        </main>
+      </Suspense>
 
       {/* Public Footer */}
       <Footer onOpenLoginModal={() => setIsLoginModalOpen(true)} />
 
       {/* Admin Login Dialog */}
-      <AdminLoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
+      {isLoginModalOpen && (
+        <Suspense fallback={null}>
+          <AdminLoginModal
+            isOpen
+            onClose={() => setIsLoginModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

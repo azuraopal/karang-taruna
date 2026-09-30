@@ -132,13 +132,7 @@ export const Hero: React.FC = () => {
             className="lg:col-span-5 relative"
           >
             <div className="relative mx-auto max-w-md bg-slate-800/60 rounded-3xl p-3 border border-slate-700/80 shadow-2xl backdrop-blur-xs">
-              <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden group">
-                <img
-                  src=""
-                  alt="Aksi gotong royong pemuda Karang Taruna"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
+              <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden group bg-black">
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
 
                 <div className="absolute bottom-4 left-4 right-4">
