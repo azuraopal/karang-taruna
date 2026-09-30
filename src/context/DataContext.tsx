@@ -145,6 +145,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const hasLoadedServerDataRef = useRef(false);
 
   // Toast Helper
   const showToast = useCallback((pesan: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -200,7 +201,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await fetch('/api/berita');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) setBeritaList(data);
+          if (Array.isArray(data)) {
+            setBeritaList(data);
+            hasLoadedServerDataRef.current = true;
+          }
         }
       }
       if (category === 'all' || category === 'tim') {
@@ -232,9 +236,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     } catch {
-      // Backend temporarily unreachable
+      if (!hasLoadedServerDataRef.current) {
+        showToast('Data server belum tersambung. Menampilkan cache lokal sementara.', 'error');
+      }
     }
-  }, []);
+  }, [showToast]);
 
   const refreshAllData = useCallback(async () => {
     await fetchCategory('all');
