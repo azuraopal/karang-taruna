@@ -6,6 +6,7 @@ import { Logo } from '../common/Logo';
 
 export const Hero: React.FC = () => {
   const { beritaList, timList, galeriList } = useData();
+  const featuredBerita = beritaList.find((item) => item.status === 'published') ?? beritaList[0] ?? null;
 
   const handleScrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -133,18 +134,25 @@ export const Hero: React.FC = () => {
           >
             <div className="relative mx-auto max-w-md bg-slate-800/60 rounded-3xl p-3 border border-slate-700/80 shadow-2xl backdrop-blur-xs">
               <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden group bg-black">
-                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                {featuredBerita?.gambarUrl ? (
+                  <img
+                    src={featuredBerita.gambarUrl}
+                    alt={featuredBerita.judul}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/45 to-slate-900/10" />
 
                 <div className="absolute bottom-4 left-4 right-4">
                   <span className="inline-block px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 text-[11px] font-bold uppercase tracking-wider mb-2">
                     Kegiatan Terkini
                   </span>
                   <h2 className="text-base font-bold text-white line-clamp-2">
-                    {beritaList[0]?.judul || 'Kerja Bakti Bersih Saluran Air dan Penghijauan'}
+                    {featuredBerita?.judul || 'Kerja Bakti Bersih Saluran Air dan Penghijauan'}
                   </h2>
                   <p className="text-xs text-slate-300 mt-1 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{beritaList[0]?.tanggal || 'September 2026'}</span>
+                    <span>{featuredBerita?.tanggal || 'September 2026'}</span>
                   </p>
                 </div>
               </div>
@@ -157,16 +165,16 @@ export const Hero: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-200">
-                      Pelaksanaan Pentas Seni & Budaya dibulan Agustus
+                      {featuredBerita?.judul || 'Pelaksanaan Pentas Seni & Budaya dibulan Agustus'}
                     </div>
                     <div className="text-[11px] text-slate-400">
-                      Pelaksanaan Pentas Seni & Budaya dibulan Agustus
+                      {featuredBerita?.ringkasan || 'Pelaksanaan Pentas Seni & Budaya dibulan Agustus'}
                     </div>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleScrollTo('tentang')}
+                  onClick={() => handleScrollTo('berita')}
                   className="text-xs font-bold text-amber-400 hover:text-amber-300 focus:outline-none p-1"
                 >
                   Detail
