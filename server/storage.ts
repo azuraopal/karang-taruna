@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { pool, checkDbConnection } from './db.js';
-import { INITIAL_TIM, INITIAL_BERITA, INITIAL_GALERI, INITIAL_ASPIRASI } from '../src/data/initialData.js';
 import type { Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount } from '../src/types/index.js';
 
 const DB_FILE = path.join(process.cwd(), 'server', 'dev_db.json');
@@ -31,10 +30,10 @@ function loadDevDb(): DevDbData {
   }
 
   const initialData: DevDbData = {
-    berita: INITIAL_BERITA,
-    tim: INITIAL_TIM,
-    galeri: INITIAL_GALERI,
-    aspirasi: INITIAL_ASPIRASI,
+    berita: [],
+    tim: [],
+    galeri: [],
+    aspirasi: [],
     users: DEFAULT_USERS,
   };
   saveDevDb(initialData);
@@ -448,14 +447,3 @@ export async function authenticate(username: string, pass: string): Promise<User
   return null;
 }
 
-// ---------------------- RESET ----------------------
-export async function resetAllData() {
-  localDb = {
-    berita: INITIAL_BERITA,
-    tim: INITIAL_TIM,
-    galeri: INITIAL_GALERI,
-    aspirasi: INITIAL_ASPIRASI,
-    users: DEFAULT_USERS,
-  };
-  saveDevDb(localDb);
-}

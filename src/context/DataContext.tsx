@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { AnggotaTim, Berita, ItemGaleri, Aspirasi, ToastMessage, UserAccount } from '../types';
-import { INITIAL_TIM, INITIAL_BERITA, INITIAL_GALERI, INITIAL_ASPIRASI } from '../data/initialData';
 
 interface DataContextType {
   // Public vs Admin Navigation
@@ -51,7 +50,6 @@ interface DataContextType {
 
   // Global utilities
   refreshAllData: () => Promise<void>;
-  resetAllData: () => Promise<void>;
   toasts: ToastMessage[];
   showToast: (pesan: string, type?: 'success' | 'error' | 'info') => void;
   removeToast: (id: string) => void;
@@ -84,36 +82,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [timList, setTimList] = useState<AnggotaTim[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.TIM);
-      return saved ? JSON.parse(saved) : INITIAL_TIM;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_TIM;
+      return [];
     }
   });
 
   const [beritaList, setBeritaList] = useState<Berita[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.BERITA);
-      return saved ? JSON.parse(saved) : INITIAL_BERITA;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_BERITA;
+      return [];
     }
   });
 
   const [galeriList, setGaleriList] = useState<ItemGaleri[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.GALERI);
-      return saved ? JSON.parse(saved) : INITIAL_GALERI;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_GALERI;
+      return [];
     }
   });
 
   const [aspirasiList, setAspirasiList] = useState<Aspirasi[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ASPIRASI);
-      return saved ? JSON.parse(saved) : INITIAL_ASPIRASI;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_ASPIRASI;
+      return [];
     }
   });
 
@@ -620,25 +618,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('Aspirasi telah dihapus dari arsip', 'info');
   };
 
-  // Reset to seed data
-  const resetAllData = async () => {
-    setTimList(INITIAL_TIM);
-    setBeritaList(INITIAL_BERITA);
-    setGaleriList(INITIAL_GALERI);
-    setAspirasiList(INITIAL_ASPIRASI);
-    setUserList(DEFAULT_USERS);
-    localStorage.removeItem(STORAGE_KEYS.TIM);
-    localStorage.removeItem(STORAGE_KEYS.BERITA);
-    localStorage.removeItem(STORAGE_KEYS.GALERI);
-    localStorage.removeItem(STORAGE_KEYS.ASPIRASI);
-    localStorage.removeItem(STORAGE_KEYS.USERS_LIST);
-
-    try {
-      await fetch('/api/seed', { method: 'POST' });
-    } catch {}
-    showToast('Seluruh data berhasil di-reset kembali ke data awal', 'info');
-  };
-
   return (
     <DataContext.Provider
       value={{
@@ -673,7 +652,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateStatusAspirasi,
         deleteAspirasi,
         refreshAllData,
-        resetAllData,
         toasts,
         showToast,
         removeToast,

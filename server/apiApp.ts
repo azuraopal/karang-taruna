@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import type { Response } from 'express';
-import { checkDbConnection, seedIfEmpty } from './db.js';
+import { checkDbConnection } from './db.js';
 import * as storage from './storage.js';
 
 export const apiApp = express();
@@ -64,7 +64,7 @@ apiApp.get('/api/events', (req, res) => {
   });
 });
 
-// ---------------------- Health & Seed ----------------------
+// ---------------------- Health ----------------------
 apiApp.get('/api/health', async (_req, res) => {
   const dbOk = await checkDbConnection();
   res.json({
@@ -74,17 +74,6 @@ apiApp.get('/api/health', async (_req, res) => {
     clientsConnected: sseClients.size,
     timestamp: new Date().toISOString(),
   });
-});
-
-apiApp.post('/api/seed', async (_req, res) => {
-  try {
-    await seedIfEmpty();
-    await storage.resetAllData();
-    broadcastUpdate({ type: 'all', action: 'seed' });
-    res.json({ success: true, message: 'Database reset & seeded successfully!' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: (err as Error).message });
-  }
 });
 
 // ---------------------- File Upload ----------------------
