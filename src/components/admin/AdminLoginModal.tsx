@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, User, KeyRound, AlertCircle, Sparkles, Crown, Users } from 'lucide-react';
+import { Lock, User, KeyRound, AlertCircle, Sparkles } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useData } from '../../context/DataContext';
 import { Logo } from '../common/Logo';
@@ -37,12 +37,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
     } else {
       setErrorMsg('Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.');
     }
-  };
-
-  const handleQuickDemo = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
-    setErrorMsg('');
   };
 
   return (
@@ -103,46 +97,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               placeholder="Masukkan kata sandi"
               className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
             />
-          </div>
-        </div>
-
-        {/* Demo Roles Shortcut Buttons */}
-        <div className="bg-stone-50 rounded-2xl p-3.5 border border-stone-200 space-y-2">
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Pilih Akun Cepat Pengujian:
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('admin', 'katar2026')}
-              className={`p-2.5 rounded-xl border text-left transition-all flex items-start gap-2 ${
-                username === 'admin'
-                  ? 'border-amber-500 bg-amber-50 text-amber-950 font-bold'
-                  : 'border-stone-200 bg-white hover:border-amber-400 text-slate-800'
-              }`}
-            >
-              <Crown className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <div className="text-xs font-bold">Role: Administrator</div>
-                <div className="text-[10px] text-slate-500">Bisa kelola user & konten</div>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('pengurus', 'pengurus2026')}
-              className={`p-2.5 rounded-xl border text-left transition-all flex items-start gap-2 ${
-                username === 'pengurus'
-                  ? 'border-sky-500 bg-sky-50 text-sky-950 font-bold'
-                  : 'border-stone-200 bg-white hover:border-sky-400 text-slate-800'
-              }`}
-            >
-              <Users className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
-              <div>
-                <div className="text-xs font-bold">Role: Pengurus</div>
-                <div className="text-[10px] text-slate-500">Kelola konten, tanpa user</div>
-              </div>
-            </button>
           </div>
         </div>
 

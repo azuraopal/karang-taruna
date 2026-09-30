@@ -15,7 +15,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenCreateTim,
   onOpenCreateGaleri,
 }) => {
-  const { beritaList, timList, galeriList, aspirasiList, setCurrentView, isDatabaseConnected } = useData();
+  const { beritaList, timList, galeriList, aspirasiList, setCurrentView } = useData();
 
   const aspirasiBaruCount = aspirasiList.filter((a) => a.status === 'baru').length;
 
@@ -58,14 +58,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
               Panel Pengurus Aktif
-            </span>
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-              isDatabaseConnected
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                : 'bg-sky-500/20 text-sky-300 border-sky-500/30'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isDatabaseConnected ? 'bg-emerald-400' : 'bg-sky-400'}`} />
-              <span>{isDatabaseConnected ? 'PostgreSQL: Terhubung' : 'Penyimpanan: Mode Lokal (Offline Ready)'}</span>
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
