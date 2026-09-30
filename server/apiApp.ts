@@ -22,12 +22,10 @@ for (const cat of ['profiles', 'galeri', 'berita']) {
 apiApp.use('/uploads', express.static(uploadsRoot));
 apiApp.use('/uploads', express.static(publicUploadsRoot));
 
-// Try connecting PostgreSQL in background
 initDb().catch(() => {
   console.log('PostgreSQL belum aktif di lokal, menggunakan server storage lokal otomatis.');
 });
 
-// ---------------------- Realtime SSE Event Bus ----------------------
 const sseClients = new Set<Response>();
 
 export function broadcastUpdate(payload: { type: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'all'; action?: string }) {
@@ -41,8 +39,7 @@ export function broadcastUpdate(payload: { type: 'berita' | 'tim' | 'galeri' | '
   }
 }
 
-// Keep SSE connections alive with ping every 15s
-setInterval(() => {
+const sseHeartbeat = setInterval(() => {
   for (const client of sseClients) {
     try {
       client.write(': ping\n\n');
@@ -51,6 +48,7 @@ setInterval(() => {
     }
   }
 }, 15000);
+sseHeartbeat.unref();
 
 // SSE Subscription Endpoint
 apiApp.get('/api/events', (req, res) => {
