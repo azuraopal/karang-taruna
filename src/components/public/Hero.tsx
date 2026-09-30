@@ -17,11 +17,11 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="beranda"
-      className="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden"
+      className="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden"
     >
       {/* Subtle organic light accent behind hero */}
       <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[360px] bg-amber-500/10 rounded-full blur-3xl pointer-events-none"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-135 h-90 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"
         aria-hidden="true"
       />
 
@@ -52,7 +52,7 @@ export const Hero: React.FC = () => {
               className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]"
             >
               Kumpulan Pemuda,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 via-amber-300 to-amber-500">
                 Berdiri Sebagai
               </span>{' '}
               Penggerak
@@ -62,7 +62,7 @@ export const Hero: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-base sm:text-lg text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-subtitle text-lg sm:text-xl"
+              className="text-lg sm:text-xl text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-subtitle"
             >
               Menjadikan Karang Taruna sebagai wadah pemuda yang aktif, inovatif dan menjadi penggerak perubahan dilingkungan masyarakat.
             </motion.p>
@@ -133,7 +133,7 @@ export const Hero: React.FC = () => {
           >
             <div className="relative mx-auto max-w-md bg-slate-800/60 rounded-3xl p-3 border border-slate-700/80 shadow-2xl backdrop-blur-xs">
               <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden group bg-black">
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent" />
 
                 <div className="absolute bottom-4 left-4 right-4">
                   <span className="inline-block px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 text-[11px] font-bold uppercase tracking-wider mb-2">
