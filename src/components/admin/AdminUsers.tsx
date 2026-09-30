@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Plus, Edit, Trash2, User, Eye, EyeOff,
-  AlertTriangle, CheckCircle2, Crown
+  AlertTriangle, CheckCircle2, Crown, Users
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { UserAccount, UserRole } from '../../types';
@@ -198,63 +198,77 @@ export const AdminUsers: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
-              {userList.map((item) => {
-                const isSelf = item.id === currentUser?.id;
-                return (
-                  <tr
-                    key={item.id}
-                    className={`hover:bg-stone-50 transition-colors ${isSelf ? 'bg-amber-50/40' : ''}`}
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 ${item.role === 'admin' ? 'bg-amber-500' : 'bg-sky-500'}`}>
-                          {item.namaLengkap.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                            {item.namaLengkap}
-                            {isSelf && (
-                              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
-                                Akun Anda
-                              </span>
-                            )}
+              {userList.length > 0 ? (
+                userList.map((item) => {
+                  const isSelf = item.id === currentUser?.id;
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`hover:bg-stone-50 transition-colors ${isSelf ? 'bg-amber-50/40' : ''}`}
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 ${item.role === 'admin' ? 'bg-amber-500' : 'bg-sky-500'}`}>
+                            {item.namaLengkap.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                              {item.namaLengkap}
+                              {isSelf && (
+                                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+                                  Akun Anda
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <code className="text-xs bg-stone-100 text-slate-800 px-2 py-1 rounded-lg font-mono">
+                          {item.username}
+                        </code>
+                      </td>
+                      <td className="px-5 py-4">{roleBadge(item.role)}</td>
+                      <td className="px-5 py-4 text-xs text-slate-500 hidden sm:table-cell">
+                        {item.createdAt || 'September 2026'}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(item)}
+                            className="p-2 rounded-xl bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            title="Edit pengguna"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingItem(item)}
+                            disabled={isSelf}
+                            className="p-2 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-rose-400"
+                            title={isSelf ? 'Tidak dapat menghapus akun sendiri' : 'Hapus pengguna'}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">
+                        <Users className="h-7 w-7" />
                       </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <code className="text-xs bg-stone-100 text-slate-800 px-2 py-1 rounded-lg font-mono">
-                        {item.username}
-                      </code>
-                    </td>
-                    <td className="px-5 py-4">{roleBadge(item.role)}</td>
-                    <td className="px-5 py-4 text-xs text-slate-500 hidden sm:table-cell">
-                      {item.createdAt || 'September 2026'}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-2 rounded-xl bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
-                          title="Edit pengguna"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletingItem(item)}
-                          disabled={isSelf}
-                          className="p-2 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-rose-400"
-                          title={isSelf ? 'Tidak dapat menghapus akun sendiri' : 'Hapus pengguna'}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      <h3 className="text-lg font-black text-slate-800">Data Tidak Tersedia</h3>
+                      <p className="mt-2 text-sm text-slate-500">Belum ada data pengguna yang tersedia.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

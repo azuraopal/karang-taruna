@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Search, MapPin, Calendar, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, MapPin, Calendar, AlertTriangle, ImageOff } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri, KategoriGaleri } from '../../types';
 import { Modal } from '../common/Modal';
@@ -42,9 +42,7 @@ export const AdminGaleri: React.FC = () => {
       })
     );
     setLokasi('Balai Pertemuan Margabakti 07');
-    setGambarUrl(
-      'https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=800&q=80'
-    );
+    setGambarUrl('');
     setDeskripsi('');
     setFormError('');
   };
@@ -80,9 +78,7 @@ export const AdminGaleri: React.FC = () => {
       kategori,
       tanggal: tanggal.trim(),
       lokasi: lokasi.trim(),
-      gambarUrl:
-        gambarUrl.trim() ||
-        'https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=800&q=80',
+      gambarUrl: gambarUrl.trim(),
       deskripsi: deskripsi.trim(),
     };
 
@@ -167,65 +163,77 @@ export const AdminGaleri: React.FC = () => {
       </div>
 
       {/* Grid Galeri */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs flex flex-col justify-between"
-          >
-            <div>
-              <div className="relative h-48 bg-stone-200">
-                <img
-                  src={item.gambarUrl}
-                  alt={item.judul}
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900/90 text-amber-400">
-                  {item.kategori}
-                </span>
-              </div>
-
-              <div className="p-4 space-y-1.5">
-                <h3 className="text-sm font-bold text-slate-900 line-clamp-1">
-                  {item.judul}
-                </h3>
-                <p className="text-xs text-slate-500 line-clamp-2">
-                  {item.deskripsi}
-                </p>
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {item.tanggal}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {item.lokasi}
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs flex flex-col justify-between"
+            >
+              <div>
+                <div className="relative h-48 bg-stone-200">
+                  <img
+                    src={item.gambarUrl}
+                    alt={item.judul}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900/90 text-amber-400">
+                    {item.kategori}
                   </span>
                 </div>
+
+                <div className="p-4 space-y-1.5">
+                  <h3 className="text-sm font-bold text-slate-900 line-clamp-1">
+                    {item.judul}
+                  </h3>
+                  <p className="text-xs text-slate-500 line-clamp-2">
+                    {item.deskripsi}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {item.tanggal}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {item.lokasi}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 pt-0 border-t border-stone-100 flex items-center justify-end gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(item)}
+                  className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Ubah</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeletingItem(item)}
+                  className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 text-xs font-semibold flex items-center gap-1 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Hapus</span>
+                </button>
               </div>
             </div>
-
-            <div className="p-4 pt-0 border-t border-stone-100 flex items-center justify-end gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => handleOpenEdit(item)}
-                className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors"
-              >
-                <Edit className="w-3.5 h-3.5" />
-                <span>Ubah</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeletingItem(item)}
-                className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 text-xs font-semibold flex items-center gap-1 transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Hapus</span>
-              </button>
-            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-stone-300 rounded-2xl p-12">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">
+            <ImageOff className="h-7 w-7" />
           </div>
-        ))}
-      </div>
+          <h3 className="text-lg font-black text-slate-800">Data Tidak Tersedia</h3>
+          <p className="mt-2 max-w-md text-sm text-slate-500">
+            Belum ada dokumentasi foto yang sesuai dengan filter atau kata kunci saat ini.
+          </p>
+        </div>
+      )}
 
       {/* Modal Tambah / Edit Galeri */}
       <Modal

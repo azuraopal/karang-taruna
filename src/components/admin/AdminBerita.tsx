@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Search, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Eye, EyeOff, AlertTriangle, Newspaper } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita, KategoriBerita } from '../../types';
 import { Modal } from '../common/Modal';
@@ -49,9 +49,7 @@ export const AdminBerita: React.FC = () => {
       })
     );
     setPenulis('Pengurus Harian');
-    setGambarUrl(
-      'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=800&q=80'
-    );
+    setGambarUrl('');
     setStatus('published');
     setFormError('');
   };
@@ -100,9 +98,7 @@ export const AdminBerita: React.FC = () => {
       kategori,
       tanggal: tanggal.trim(),
       penulis: penulis.trim(),
-      gambarUrl:
-        gambarUrl.trim() ||
-        'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=800&q=80',
+      gambarUrl: gambarUrl.trim(),
       status,
     };
 
@@ -278,8 +274,14 @@ export const AdminBerita: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="p-12 text-center text-slate-500 text-xs">
-            Tidak ada berita yang sesuai dengan filter atau kata kunci.
+          <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-stone-300 rounded-2xl p-12 m-4">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">
+              <Newspaper className="h-7 w-7" />
+            </div>
+            <h3 className="text-lg font-black text-slate-800">Data Tidak Tersedia</h3>
+            <p className="mt-2 max-w-md text-sm text-slate-500">
+              Tidak ada berita yang sesuai dengan filter atau kata kunci saat ini.
+            </p>
           </div>
         )}
       </div>

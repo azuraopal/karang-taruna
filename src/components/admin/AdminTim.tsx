@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Search, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, AlertTriangle, Users } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim, DivisiTim } from '../../types';
 import { Modal } from '../common/Modal';
@@ -165,61 +165,73 @@ export const AdminTim: React.FC = () => {
       </div>
 
       {/* Grid Pengurus Admin */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-2xl border border-stone-200 p-5 flex flex-col justify-between shadow-2xs hover:shadow-sm transition-all"
-          >
-            <div className="flex items-start gap-4">
-              <img
-                src={item.fotoUrl}
-                alt={item.nama}
-                className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
-              />
-              <div className="min-w-0">
-                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 mb-1">
-                  {item.divisi}
-                </span>
-                <h3 className="text-sm font-bold text-slate-900 truncate">
-                  {item.nama}
-                </h3>
-                <p className="text-xs font-semibold text-amber-700">
-                  {item.jabatan}
-                </p>
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl border border-stone-200 p-5 flex flex-col justify-between shadow-2xs hover:shadow-sm transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <img
+                  src={item.fotoUrl}
+                  alt={item.nama}
+                  className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
+                />
+                <div className="min-w-0">
+                  <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 mb-1">
+                    {item.divisi}
+                  </span>
+                  <h3 className="text-sm font-bold text-slate-900 truncate">
+                    {item.nama}
+                  </h3>
+                  <p className="text-xs font-semibold text-amber-700">
+                    {item.jabatan}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 line-clamp-2 my-3 bg-stone-50 p-2.5 rounded-lg border border-stone-100">
+                {item.bio}
+              </p>
+
+              <div className="flex items-center justify-between border-t border-stone-100 pt-3">
+                <div className="text-[11px] text-slate-500 truncate pr-2">
+                  {item.noHp || item.email || 'Kontak via Sekretariat'}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(item)}
+                    className="p-1.5 rounded-lg bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 transition-colors"
+                    title="Edit data"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeletingItem(item)}
+                    className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 transition-colors"
+                    title="Hapus pengurus"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
-
-            <p className="text-xs text-slate-600 line-clamp-2 my-3 bg-stone-50 p-2.5 rounded-lg border border-stone-100">
-              {item.bio}
-            </p>
-
-            <div className="flex items-center justify-between border-t border-stone-100 pt-3">
-              <div className="text-[11px] text-slate-500 truncate pr-2">
-                {item.noHp || item.email || 'Kontak via Sekretariat'}
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(item)}
-                  className="p-1.5 rounded-lg bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 transition-colors"
-                  title="Edit data"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeletingItem(item)}
-                  className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 transition-colors"
-                  title="Hapus pengurus"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-stone-300 rounded-2xl p-12 mt-2">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">
+            <Users className="h-7 w-7" />
           </div>
-        ))}
-      </div>
+          <h3 className="text-lg font-black text-slate-800">Data Tidak Tersedia</h3>
+          <p className="mt-2 max-w-md text-sm text-slate-500">
+            Belum ada data pengurus yang tersedia untuk divisi atau pencarian ini.
+          </p>
+        </div>
+      )}
 
       {/* Modal Tambah / Edit Pengurus */}
       <Modal

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   LayoutDashboard, Newspaper, Users, Camera, MessageSquare,
-  RotateCcw, ArrowLeft, LogOut, Menu, X, UserCog, Crown, User, ShieldCheck
+  ArrowLeft, LogOut, Menu, X, UserCog, Crown, User, ShieldCheck
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Logo } from '../common/Logo';
@@ -11,7 +11,6 @@ import { AdminTim } from './AdminTim';
 import { AdminGaleri } from './AdminGaleri';
 import { AdminAspirasi } from './AdminAspirasi';
 import { AdminUsers } from './AdminUsers';
-import { Modal } from '../common/Modal';
 
 export const AdminLayout: React.FC = () => {
   const {
@@ -23,13 +22,11 @@ export const AdminLayout: React.FC = () => {
     aspirasiList,
     userList,
     currentUser,
-    isRealtimeConnected,
-    resetAllData
+    isRealtimeConnected
   } = useData();
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const isAdmin = currentUser?.role === 'admin';
   const aspirasiBaru = aspirasiList.filter((a) => a.status === 'baru').length;
@@ -215,19 +212,6 @@ export const AdminLayout: React.FC = () => {
               );
             })}
 
-            {/* Reset Data (Khusus Admin) */}
-            {isAdmin && (
-              <div className="pt-3 mt-2 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setIsResetConfirmOpen(true)}
-                  className="min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2.5 transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4 text-rose-600" />
-                  <span>Reset Data Awal</span>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Role Status Card */}
@@ -299,38 +283,6 @@ export const AdminLayout: React.FC = () => {
         </main>
       </div>
 
-      {/* Modal Konfirmasi Reset Data */}
-      <Modal
-        isOpen={isResetConfirmOpen}
-        onClose={() => setIsResetConfirmOpen(false)}
-        title="Konfirmasi Reset Data Default"
-        maxWidth="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Apakah Anda yakin ingin mengembalikan seluruh data berita, pengurus tim, foto galeri, dan aspirasi kembali ke pengaturan awal?
-          </p>
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setIsResetConfirmOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800"
-            >
-              Batal
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                await resetAllData();
-                setIsResetConfirmOpen(false);
-              }}
-              className="px-4 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl hover:bg-rose-700 shadow-sm"
-            >
-              Ya, Reset Data
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };
