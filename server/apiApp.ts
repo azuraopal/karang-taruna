@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import type { Response } from 'express';
-import { checkDbConnection, initDb, seedIfEmpty } from './db.js';
+import { checkDbConnection, seedIfEmpty } from './db.js';
 import * as storage from './storage.js';
 
 export const apiApp = express();
@@ -11,7 +11,6 @@ export const apiApp = express();
 apiApp.use(cors());
 apiApp.use(express.json({ limit: '20mb' }));
 
-// Setup uploads folders
 const uploadsRoot = path.join(process.cwd(), 'uploads');
 const publicUploadsRoot = path.join(process.cwd(), 'public', 'uploads');
 for (const cat of ['profiles', 'galeri', 'berita']) {
@@ -21,10 +20,6 @@ for (const cat of ['profiles', 'galeri', 'berita']) {
 
 apiApp.use('/uploads', express.static(uploadsRoot));
 apiApp.use('/uploads', express.static(publicUploadsRoot));
-
-initDb().catch(() => {
-  console.log('PostgreSQL belum aktif di lokal, menggunakan server storage lokal otomatis.');
-});
 
 const sseClients = new Set<Response>();
 
