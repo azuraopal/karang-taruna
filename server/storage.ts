@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { pool, checkDbConnection } from './db.js';
 import { INITIAL_TIM, INITIAL_BERITA, INITIAL_GALERI, INITIAL_ASPIRASI } from '../src/data/initialData.js';
 import type { Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount } from '../src/types/index.js';
@@ -52,6 +53,25 @@ function saveDevDb(data: DevDbData) {
 
 // Global in-memory cache synchronized with disk
 let localDb = loadDevDb();
+
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `scrypt:${salt}:${hash}`;
+}
+
+function verifyPassword(password: string, storedPassword: string): boolean {
+  if (!storedPassword.startsWith('scrypt:')) {
+    return storedPassword === password;
+  }
+
+  const [, salt, expectedHash] = storedPassword.split(':');
+  const actualHash = crypto.scryptSync(password, salt, 64).toString('hex');
+  const expectedBuffer = Buffer.from(expectedHash, 'hex');
+  const actualBuffer = Buffer.from(actualHash, 'hex');
+
+  return expectedBuffer.length === actualBuffer.length && crypto.timingSafeEqual(expectedBuffer, actualBuffer);
+}
 
 // ---------------------- BERITA ----------------------
 export async function getBerita(): Promise<Berita[]> {
@@ -350,7 +370,7 @@ export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAcc
       `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt"`,
-      [id, record.username, record.password || '123456', record.namaLengkap, record.role]
+      [id, record.username, hashPassword(record.password || '123456'), record.namaLengkap, record.role]
     );
     return res.rows[0];
   }
@@ -367,7 +387,7 @@ export async function updateUser(id: string, item: Partial<UserAccount>): Promis
     const values: (string | null)[] = [item.namaLengkap?.trim() || null, item.role || null];
     if (item.password && item.password.trim()) {
       query += ', password_hash = $3 WHERE id = $4';
-      values.push(item.password.trim(), id);
+      values.push(hashPassword(item.password.trim()), id);
     } else {
       query += ' WHERE id = $3';
       values.push(id);
@@ -401,17 +421,20 @@ export async function authenticate(username: string, pass: string): Promise<User
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, username, nama_lengkap as "namaLengkap", role FROM admin_users WHERE username = $1 AND password_hash = $2',
-      [username.trim(), pass.trim()]
+      'SELECT id, username, password_hash, nama_lengkap as "namaLengkap", role FROM admin_users WHERE username = $1',
+      [username.trim()]
     );
-    if (res.rows.length > 0) return res.rows[0];
+    if (res.rows.length > 0 && verifyPassword(pass.trim(), res.rows[0].password_hash)) {
+      const { password_hash: _passwordHash, ...user } = res.rows[0];
+      return user;
+    }
   }
 
   // Check localDb
   const found = localDb.users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
   if (found) {
     if (found.password) {
-      if (found.password === pass.trim()) return found;
+      if (verifyPassword(pass.trim(), found.password)) return found;
     } else if (found.username === 'admin' && pass.trim() === 'katar2026') {
       return found;
     } else if (found.username === 'pengurus' && pass.trim() === 'pengurus2026') {
