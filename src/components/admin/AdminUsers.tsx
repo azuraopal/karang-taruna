@@ -346,40 +346,40 @@ export const AdminUsers: React.FC = () => {
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
               Peran / Role *
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'admin' ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:border-amber-300'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'admin' ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:border-amber-300'}`}>
                 <input
                   type="radio"
                   name="role"
                   value="admin"
                   checked={role === 'admin'}
                   onChange={() => setRole('admin')}
-                  className="mt-0.5 accent-amber-500"
+                  className="mt-0.5 shrink-0 accent-amber-500"
                 />
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-black text-slate-900 flex items-center gap-1">
                     <Crown className="w-3.5 h-3.5 text-amber-600" />
                     Administrator
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Akses penuh termasuk kelola user</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 break-words">Akses penuh termasuk kelola user</p>
                 </div>
               </label>
 
-              <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'pengurus' ? 'border-sky-500 bg-sky-50' : 'border-stone-200 hover:border-sky-300'}`}>
+              <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'pengurus' ? 'border-sky-500 bg-sky-50' : 'border-stone-200 hover:border-sky-300'}`}>
                 <input
                   type="radio"
                   name="role"
                   value="pengurus"
                   checked={role === 'pengurus'}
                   onChange={() => setRole('pengurus')}
-                  className="mt-0.5 accent-sky-500"
+                  className="mt-0.5 shrink-0 accent-sky-500"
                 />
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-black text-slate-900 flex items-center gap-1">
                     <User className="w-3.5 h-3.5 text-sky-600" />
                     Pengurus
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Kelola konten, tanpa kelola user</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 break-words">Kelola konten, tanpa kelola user</p>
                 </div>
               </label>
             </div>

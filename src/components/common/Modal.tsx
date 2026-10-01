@@ -72,7 +72,7 @@ export const Modal: React.FC<ModalProps> = ({
             className={`relative w-full ${widthClasses} bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-10 my-8`}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 bg-slate-50/70">
+            <div className="flex items-center justify-between px-4 py-4.5 sm:px-6 border-b border-slate-100 bg-slate-50/70">
               <h2
                 id="modal-title"
                 className="text-lg font-bold text-slate-900 tracking-tight"
@@ -90,7 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 max-h-[calc(85vh-120px)] overflow-y-auto">
+            <div className="p-4 sm:p-6 max-h-[calc(85vh-120px)] overflow-y-auto">
               {children}
             </div>
           </motion.div>
