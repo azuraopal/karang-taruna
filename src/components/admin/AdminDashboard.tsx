@@ -101,7 +101,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div
             key={idx}
             onClick={() => onNavigateTab(stat.tab)}
-            className={`p-6 rounded-2xl border transition-all cursor-pointer bg-white hover:shadow-md ${
+            className={`min-w-0 p-6 rounded-2xl border transition-all cursor-pointer bg-white hover:shadow-md ${
               stat.highlight
                 ? 'border-rose-300 bg-rose-50/30'
                 : 'border-stone-200 hover:border-slate-400'
@@ -120,9 +120,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {stat.value}
             </div>
 
-            <div className="mt-2 text-xs text-slate-600 flex items-center justify-between">
-              <span>{stat.keterangan}</span>
-              <span className="text-amber-700 font-bold hover:underline">Kelola &rarr;</span>
+            <div className="mt-2 text-xs text-slate-600 flex items-center justify-between gap-3">
+              <span className="min-w-0">{stat.keterangan}</span>
+              <span className="shrink-0 whitespace-nowrap text-amber-700 font-bold hover:underline">Kelola &rarr;</span>
             </div>
           </div>
         ))}

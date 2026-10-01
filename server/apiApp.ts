@@ -183,9 +183,7 @@ apiApp.post('/api/logs', async (req, res) => {
 });
 
 apiApp.delete('/api/logs', async (_req, res) => {
-  await storage.clearActivityLogs();
-  broadcastUpdate({ type: 'logs', action: 'clear' });
-  res.json({ success: true });
+  res.status(405).json({ error: 'Log aktivitas bersifat permanen dan tidak dapat dihapus melalui aplikasi' });
 });
 
 // ---------------------- Berita ----------------------

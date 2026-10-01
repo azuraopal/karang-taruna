@@ -73,16 +73,6 @@ export async function createActivityLog(item: ActivityLog): Promise<ActivityLog>
   return record;
 }
 
-export async function clearActivityLogs(): Promise<void> {
-  const isPg = await checkDbConnection();
-  if (isPg) {
-    await pool.query('DELETE FROM activity_logs');
-    return;
-  }
-  localDb.activityLogs = [];
-  saveDevDb(localDb);
-}
-
 function saveDevDb(data: DevDbData) {
   try {
     const dir = path.dirname(DB_FILE);

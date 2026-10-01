@@ -24,7 +24,6 @@ interface DataContextType {
   updateUser: (id: string, item: Partial<UserAccount>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   activityLogs: ActivityLog[];
-  clearActivityLogs: () => void;
 
   // Berita CRUD
   beritaList: Berita[];
@@ -227,13 +226,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Keep the local cache when the server is unavailable.
     });
   }, [currentUser]);
-
-  const clearActivityLogs = useCallback(() => {
-    setActivityLogs([]);
-    void fetch('/api/logs', { method: 'DELETE' }).catch(() => {
-      // Keep the local state cleared when the server is unavailable.
-    });
-  }, []);
 
   // Central Fetch Function
   const fetchCategory = useCallback(async (category: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'logs' | 'all') => {
@@ -718,7 +710,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateUser,
         deleteUser,
         activityLogs,
-        clearActivityLogs,
         beritaList,
         addBerita,
         updateBerita,

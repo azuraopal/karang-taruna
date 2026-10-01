@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Activity, Filter, Trash2 } from 'lucide-react';
+import { Activity, Filter } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ActivityAction } from '../../types';
 
@@ -20,7 +20,7 @@ const actionColors: Record<ActivityAction, string> = {
 };
 
 export const AdminLogs: React.FC = () => {
-  const { activityLogs, clearActivityLogs } = useData();
+  const { activityLogs } = useData();
   const [actionFilter, setActionFilter] = useState<'semua' | ActivityAction>('semua');
 
   const filteredLogs = useMemo(
@@ -61,15 +61,6 @@ export const AdminLogs: React.FC = () => {
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            onClick={clearActivityLogs}
-            disabled={activityLogs.length === 0}
-            className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-100 text-xs font-bold hover:bg-rose-100 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Bersihkan Log
-          </button>
         </div>
       </div>
 
