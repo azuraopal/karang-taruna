@@ -6,7 +6,7 @@ import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
 
 export const AdminTim: React.FC = () => {
-  const { timList, addAnggotaTim, updateAnggotaTim, deleteAnggotaTim } = useData();
+  const { timList, addAnggotaTim, updateAnggotaTim, deleteAnggotaTim, currentUser } = useData();
 
   const [search, setSearch] = useState('');
   const [selectedDivisi, setSelectedDivisi] = useState('Semua');
@@ -195,9 +195,11 @@ export const AdminTim: React.FC = () => {
                 {item.bio}
               </p>
 
-              <p className="text-[11px] text-slate-400 truncate mb-3">
-                Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
-              </p>
+              {currentUser?.role === 'admin' && (
+                <p className="text-[11px] text-slate-400 truncate mb-3">
+                  Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
+                </p>
+              )}
 
               <div className="flex items-center justify-between border-t border-stone-100 pt-3">
                 <div className="text-[11px] text-slate-500 truncate pr-2">

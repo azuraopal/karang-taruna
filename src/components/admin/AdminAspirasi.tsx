@@ -5,7 +5,7 @@ import type { Aspirasi } from '../../types';
 import { Modal } from '../common/Modal';
 
 export const AdminAspirasi: React.FC = () => {
-  const { aspirasiList, updateStatusAspirasi, deleteAspirasi } = useData();
+  const { aspirasiList, updateStatusAspirasi, deleteAspirasi, currentUser } = useData();
 
   const [statusFilter, setStatusFilter] = useState<'Semua' | Aspirasi['status']>('Semua');
   const [search, setSearch] = useState('');
@@ -125,9 +125,11 @@ export const AdminAspirasi: React.FC = () => {
                       {item.email}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Ditambahkan oleh {item.dibuatOleh || 'Warga / Publik'}
-                  </p>
+                  {currentUser?.role === 'admin' && (
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Ditambahkan oleh {item.dibuatOleh || 'Warga / Publik'}
+                    </p>
+                  )}
                 </div>
 
                 <p className="text-xs text-slate-700 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-200/60">

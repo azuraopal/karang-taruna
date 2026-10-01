@@ -6,7 +6,7 @@ import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
 
 export const AdminBerita: React.FC = () => {
-  const { beritaList, addBerita, updateBerita, deleteBerita } = useData();
+  const { beritaList, addBerita, updateBerita, deleteBerita, currentUser } = useData();
 
   const [search, setSearch] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua');
@@ -225,7 +225,9 @@ export const AdminBerita: React.FC = () => {
                       <span>{item.tanggal}</span>
                       <span>&bull;</span>
                       <span>Oleh {item.penulis}</span>
-                      <span className="truncate">Ditambahkan oleh {item.dibuatOleh || 'Data lama'}</span>
+                      {currentUser?.role === 'admin' && (
+                        <span className="truncate">Ditambahkan oleh {item.dibuatOleh || 'Data lama'}</span>
+                      )}
                     </div>
                   </div>
                 </div>

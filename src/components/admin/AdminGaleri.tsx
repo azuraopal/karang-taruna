@@ -6,7 +6,7 @@ import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
 
 export const AdminGaleri: React.FC = () => {
-  const { galeriList, addGaleri, updateGaleri, deleteGaleri } = useData();
+  const { galeriList, addGaleri, updateGaleri, deleteGaleri, currentUser } = useData();
 
   const [search, setSearch] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua');
@@ -199,9 +199,11 @@ export const AdminGaleri: React.FC = () => {
                       {item.lokasi}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 truncate pt-1">
-                    Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
-                  </p>
+                  {currentUser?.role === 'admin' && (
+                    <p className="text-[11px] text-slate-400 truncate pt-1">
+                      Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
+                    </p>
+                  )}
                 </div>
               </div>
 
