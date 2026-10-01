@@ -206,12 +206,12 @@ export const AdminUsers: React.FC = () => {
                       key={item.id}
                       className={`hover:bg-stone-50 transition-colors ${isSelf ? 'bg-amber-50/40' : ''}`}
                     >
-                      <td className="px-5 py-4">
+                      <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 ${item.role === 'admin' ? 'bg-amber-500' : 'bg-sky-500'}`}>
                             {item.namaLengkap.charAt(0).toUpperCase()}
                           </div>
-                          <div>
+                          <div className="min-w-max">
                             <div className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                               {item.namaLengkap}
                               {isSelf && (
@@ -223,7 +223,7 @@ export const AdminUsers: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
                         <code className="text-xs bg-stone-100 text-slate-800 px-2 py-1 rounded-lg font-mono">
                           {item.username}
                         </code>

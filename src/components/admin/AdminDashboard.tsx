@@ -15,9 +15,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenCreateTim,
   onOpenCreateGaleri,
 }) => {
-  const { beritaList, timList, galeriList, aspirasiList, setCurrentView } = useData();
+  const { beritaList, timList, galeriList, aspirasiList, currentUser, setCurrentView } = useData();
 
   const aspirasiBaruCount = aspirasiList.filter((a) => a.status === 'baru').length;
+  const jakartaHour = Number(new Intl.DateTimeFormat('id-ID', {
+    hour: 'numeric',
+    hourCycle: 'h23',
+    timeZone: 'Asia/Jakarta',
+  }).format(new Date()));
+  const greeting = jakartaHour < 11
+    ? 'Selamat Pagi'
+    : jakartaHour < 15
+      ? 'Selamat Siang'
+      : jakartaHour < 18
+        ? 'Selamat Sore'
+        : 'Selamat Malam';
 
   const statCards = [
     {
@@ -53,26 +65,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="space-y-8">
-      <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-slate-800 shadow-md">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-2">
+      <div className="bg-slate-900 rounded-3xl p-5 sm:p-8 text-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-5 sm:gap-6 border border-slate-800 shadow-md">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
               Panel Pengurus Aktif
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+          <p className="text-xl sm:text-2xl font-black text-amber-300 mb-1">
+            {greeting}, {currentUser?.namaLengkap || 'Pengurus'}
+          </p>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white break-words">
             Pusat Kendali Portal Karang Taruna Margabakti 07
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+          <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-xl leading-relaxed">
             Kelola warta kabar, dokumentasi kegiatan, susunan pengurus, dan respon aspirasi warga secara langsung.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 md:shrink-0">
           <button
             type="button"
             onClick={() => setCurrentView('public')}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full md:w-auto justify-center px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
             <span>Tinjau Website Publik</span>
             <ArrowUpRight className="w-4 h-4" />
