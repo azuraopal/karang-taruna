@@ -59,9 +59,26 @@ CREATE TABLE IF NOT EXISTS admin_users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE berita ADD COLUMN IF NOT EXISTS dibuat_oleh VARCHAR(150);
+ALTER TABLE anggota_tim ADD COLUMN IF NOT EXISTS dibuat_oleh VARCHAR(150);
+ALTER TABLE galeri ADD COLUMN IF NOT EXISTS dibuat_oleh VARCHAR(150);
+ALTER TABLE aspirasi ADD COLUMN IF NOT EXISTS dibuat_oleh VARCHAR(150);
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS dibuat_oleh VARCHAR(150);
+
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id VARCHAR(96) PRIMARY KEY,
+  action VARCHAR(20) NOT NULL,
+  entity VARCHAR(50) NOT NULL,
+  description TEXT NOT NULL,
+  actor_name VARCHAR(150) NOT NULL,
+  actor_role VARCHAR(30),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indeks untuk pencarian cepat
 CREATE INDEX IF NOT EXISTS idx_berita_kategori ON berita(kategori);
 CREATE INDEX IF NOT EXISTS idx_berita_status ON berita(status);
 CREATE INDEX IF NOT EXISTS idx_tim_divisi ON anggota_tim(divisi);
 CREATE INDEX IF NOT EXISTS idx_galeri_kategori ON galeri(kategori);
 CREATE INDEX IF NOT EXISTS idx_aspirasi_status ON aspirasi(status);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);

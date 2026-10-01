@@ -195,6 +195,10 @@ export const AdminTim: React.FC = () => {
                 {item.bio}
               </p>
 
+              <p className="text-[11px] text-slate-400 truncate mb-3">
+                Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
+              </p>
+
               <div className="flex items-center justify-between border-t border-stone-100 pt-3">
                 <div className="text-[11px] text-slate-500 truncate pr-2">
                   {item.noHp || item.email || 'Kontak via Sekretariat'}

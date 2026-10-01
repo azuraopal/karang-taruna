@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import type { AnggotaTim, Berita, ItemGaleri, Aspirasi, ToastMessage, UserAccount } from '../types';
+import type { ActivityAction, ActivityEntity, ActivityLog, AnggotaTim, Berita, ItemGaleri, Aspirasi, ToastMessage, UserAccount } from '../types';
 
 interface DataContextType {
   // Public vs Admin Navigation
@@ -23,6 +23,8 @@ interface DataContextType {
   addUser: (item: Omit<UserAccount, 'id'>) => Promise<void>;
   updateUser: (id: string, item: Partial<UserAccount>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
+  activityLogs: ActivityLog[];
+  clearActivityLogs: () => void;
 
   // Berita CRUD
   beritaList: Berita[];
@@ -63,6 +65,7 @@ const STORAGE_KEYS = {
   AUTH: 'kt_admin_auth_v2',
   CURRENT_USER: 'kt_current_user_v2',
   USERS_LIST: 'kt_users_list_v2',
+  ACTIVITY_LOGS: 'kt_activity_logs_v1',
 };
 
 const DEFAULT_USERS: UserAccount[] = [
@@ -142,6 +145,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ACTIVITY_LOGS);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const hasLoadedServerDataRef = useRef(false);
 
@@ -192,8 +204,39 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(STORAGE_KEYS.USERS_LIST, JSON.stringify(userList));
   }, [userList]);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ACTIVITY_LOGS, JSON.stringify(activityLogs));
+  }, [activityLogs]);
+
+  const addActivityLog = useCallback((action: ActivityAction, entity: ActivityEntity, description: string, actor = currentUser) => {
+    const log: ActivityLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      action,
+      entity,
+      description,
+      actorName: actor?.namaLengkap || 'Warga / Publik',
+      actorRole: actor?.role || 'public',
+      createdAt: new Date().toISOString(),
+    };
+    setActivityLogs((prev) => [log, ...prev].slice(0, 300));
+    void fetch('/api/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(log),
+    }).catch(() => {
+      // Keep the local cache when the server is unavailable.
+    });
+  }, [currentUser]);
+
+  const clearActivityLogs = useCallback(() => {
+    setActivityLogs([]);
+    void fetch('/api/logs', { method: 'DELETE' }).catch(() => {
+      // Keep the local state cleared when the server is unavailable.
+    });
+  }, []);
+
   // Central Fetch Function
-  const fetchCategory = useCallback(async (category: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'all') => {
+  const fetchCategory = useCallback(async (category: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'logs' | 'all') => {
     try {
       if (category === 'all' || category === 'berita') {
         const res = await fetch('/api/berita');
@@ -231,6 +274,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setUserList(data);
+        }
+      }
+      if (category === 'all' || category === 'logs') {
+        const res = await fetch('/api/logs');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setActivityLogs(data);
         }
       }
     } catch {
@@ -329,6 +379,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (data.success && data.user) {
           setCurrentUser(data.user);
           setIsAdminLoggedIn(true);
+          addActivityLog('login', 'Sistem', `Masuk ke panel sebagai ${data.user.role === 'admin' ? 'Administrator' : 'Pengurus'}`, data.user);
           const roleLabel = data.user.role === 'admin' ? 'Administrator' : 'Pengurus';
           showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
           // Fetch users list if admin
@@ -345,6 +396,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const demoAdmin = DEFAULT_USERS[0];
       setCurrentUser(demoAdmin);
       setIsAdminLoggedIn(true);
+      addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Administrator', demoAdmin);
       showToast('Berhasil masuk sebagai Administrator (Demo)', 'success');
       return true;
     }
@@ -352,6 +404,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const demoPengurus = DEFAULT_USERS[1];
       setCurrentUser(demoPengurus);
       setIsAdminLoggedIn(true);
+      addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Pengurus', demoPengurus);
       showToast('Berhasil masuk sebagai Pengurus (Demo)', 'success');
       return true;
     }
@@ -375,28 +428,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
       });
       if (res.ok) {
         const created = await res.json();
-        setUserList((prev) => [...prev, created]);
-        showToast(`Pengguna "${created.namaLengkap}" berhasil ditambahkan`, 'success');
+        const createdWithActor: UserAccount = { ...created, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
+        setUserList((prev) => [...prev, createdWithActor]);
+        addActivityLog('tambah', 'Pengguna', `Menambahkan akun pengguna "${created.namaLengkap}"`);
+        showToast(`Pengguna "${createdWithActor.namaLengkap}" berhasil ditambahkan`, 'success');
         return;
       }
     } catch {
       // fallback
     }
-    const temp: UserAccount = { ...item, id: 'user-' + Date.now(), createdAt: 'September 2026' };
+    const temp: UserAccount = { ...item, id: 'user-' + Date.now(), createdAt: 'September 2026', dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
     setUserList((prev) => [...prev, temp]);
+    addActivityLog('tambah', 'Pengguna', `Menambahkan akun pengguna "${temp.namaLengkap}"`);
     showToast(`Pengguna "${temp.namaLengkap}" berhasil ditambahkan (Lokal)`, 'success');
   };
 
   const updateUser = async (id: string, item: Partial<UserAccount>) => {
+    const existingUser = userList.find((user) => user.id === id);
     try {
       const res = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -404,6 +461,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentUser?.id === id) {
           setCurrentUser((prev) => (prev ? { ...prev, ...updated } : prev));
         }
+        addActivityLog('ubah', 'Pengguna', `Mengubah akun pengguna "${updated.namaLengkap || existingUser?.namaLengkap || 'Tanpa nama'}"`);
         showToast('Data pengguna berhasil diperbarui', 'success');
         return;
       }
@@ -411,14 +469,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // fallback
     }
     setUserList((prev) => prev.map((u) => (u.id === id ? { ...u, ...item } : u)));
+    addActivityLog('ubah', 'Pengguna', `Mengubah akun pengguna "${item.namaLengkap || existingUser?.namaLengkap || 'Tanpa nama'}"`);
     showToast('Data pengguna berhasil diperbarui (Lokal)', 'success');
   };
 
   const deleteUser = async (id: string) => {
+    const existingUser = userList.find((user) => user.id === id);
     try {
       const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setUserList((prev) => prev.filter((u) => u.id !== id));
+        addActivityLog('hapus', 'Pengguna', `Menghapus akun pengguna "${existingUser?.namaLengkap || 'Tanpa nama'}"`);
         showToast('Pengguna telah dihapus', 'info');
         return;
       }
@@ -426,32 +487,35 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // fallback
     }
     setUserList((prev) => prev.filter((u) => u.id !== id));
+    addActivityLog('hapus', 'Pengguna', `Menghapus akun pengguna "${existingUser?.namaLengkap || 'Tanpa nama'}"`);
     showToast('Pengguna telah dihapus (Lokal)', 'info');
   };
 
   // Berita Handlers
   const addBerita = async (item: Omit<Berita, 'id'>) => {
     const tempId = 'berita-' + Date.now();
-    const newBerita: Berita = { ...item, id: tempId };
+    const newBerita: Berita = { ...item, id: tempId, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
     setBeritaList((prev) => [newBerita, ...prev]);
 
     try {
       const res = await fetch('/api/berita', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
       });
       if (res.ok) {
         const saved = await res.json();
-        setBeritaList((prev) => prev.map((b) => (b.id === tempId ? saved : b)));
+        setBeritaList((prev) => prev.map((b) => (b.id === tempId ? { ...saved, dibuatOleh: newBerita.dibuatOleh } : b)));
       }
     } catch {
       // local fallback
     }
     showToast(`Berita "${newBerita.judul.substring(0, 30)}..." berhasil dipublikasikan`, 'success');
+    addActivityLog('tambah', 'Berita', `Menambahkan berita "${newBerita.judul}"`);
   };
 
   const updateBerita = async (id: string, updated: Partial<Berita>) => {
+    const existingBerita = beritaList.find((item) => item.id === id);
     setBeritaList((prev) => prev.map((b) => (b.id === id ? { ...b, ...updated } : b)));
     try {
       const res = await fetch(`/api/berita/${id}`, {
@@ -471,9 +535,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     showToast('Perubahan berita berhasil disimpan', 'success');
+    addActivityLog('ubah', 'Berita', `Mengubah berita "${updated.judul || existingBerita?.judul || 'Tanpa judul'}"`);
   };
 
   const deleteBerita = async (id: string) => {
+    const existingBerita = beritaList.find((item) => item.id === id);
     try {
       const res = await fetch(`/api/berita/${id}`, { method: 'DELETE' });
       if (!res.ok) {
@@ -483,6 +549,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setBeritaList((prev) => prev.filter((b) => b.id !== id));
       showToast('Berita telah dihapus', 'info');
+      addActivityLog('hapus', 'Berita', `Menghapus berita "${existingBerita?.judul || 'Tanpa judul'}"`);
       return;
     } catch {
       showToast('Server tidak dapat dihubungi, berita belum dihapus', 'error');
@@ -493,24 +560,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Tim Handlers
   const addAnggotaTim = async (item: Omit<AnggotaTim, 'id'>) => {
     const tempId = 'tim-' + Date.now();
-    const newAnggota: AnggotaTim = { ...item, id: tempId };
+    const newAnggota: AnggotaTim = { ...item, id: tempId, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
     setTimList((prev) => [...prev, newAnggota]);
 
     try {
       const res = await fetch('/api/tim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
       });
       if (res.ok) {
         const saved = await res.json();
-        setTimList((prev) => prev.map((t) => (t.id === tempId ? saved : t)));
+        setTimList((prev) => prev.map((t) => (t.id === tempId ? { ...saved, dibuatOleh: newAnggota.dibuatOleh } : t)));
       }
     } catch {}
     showToast(`Anggota tim ${newAnggota.nama} berhasil ditambahkan`, 'success');
+    addActivityLog('tambah', 'Tim Pengurus', `Menambahkan anggota tim "${newAnggota.nama}"`);
   };
 
   const updateAnggotaTim = async (id: string, updated: Partial<AnggotaTim>) => {
+    const existingAnggota = timList.find((item) => item.id === id);
     setTimList((prev) => prev.map((t) => (t.id === id ? { ...t, ...updated } : t)));
     try {
       await fetch(`/api/tim/${id}`, {
@@ -520,37 +589,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch {}
     showToast('Data pengurus tim berhasil diperbarui', 'success');
+    addActivityLog('ubah', 'Tim Pengurus', `Mengubah kegiatan/pengurus "${updated.nama || existingAnggota?.nama || 'Tanpa nama'}"`);
   };
 
   const deleteAnggotaTim = async (id: string) => {
+    const existingAnggota = timList.find((item) => item.id === id);
     setTimList((prev) => prev.filter((t) => t.id !== id));
     try {
       await fetch(`/api/tim/${id}`, { method: 'DELETE' });
     } catch {}
     showToast('Data pengurus berhasil dihapus', 'info');
+    addActivityLog('hapus', 'Tim Pengurus', `Menghapus kegiatan/pengurus "${existingAnggota?.nama || 'Tanpa nama'}"`);
   };
 
   // Galeri Handlers
   const addGaleri = async (item: Omit<ItemGaleri, 'id'>) => {
     const tempId = 'galeri-' + Date.now();
-    const newGaleri: ItemGaleri = { ...item, id: tempId };
+    const newGaleri: ItemGaleri = { ...item, id: tempId, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
     setGaleriList((prev) => [newGaleri, ...prev]);
 
     try {
       const res = await fetch('/api/galeri', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
       });
       if (res.ok) {
         const saved = await res.json();
-        setGaleriList((prev) => prev.map((g) => (g.id === tempId ? saved : g)));
+        setGaleriList((prev) => prev.map((g) => (g.id === tempId ? { ...saved, dibuatOleh: newGaleri.dibuatOleh } : g)));
       }
     } catch {}
     showToast(`Foto kegiatan "${newGaleri.judul}" ditambahkan ke galeri`, 'success');
+    addActivityLog('tambah', 'Galeri', `Menambahkan foto galeri "${newGaleri.judul}"`);
   };
 
   const updateGaleri = async (id: string, updated: Partial<ItemGaleri>) => {
+    const existingGaleri = galeriList.find((item) => item.id === id);
     setGaleriList((prev) => prev.map((g) => (g.id === id ? { ...g, ...updated } : g)));
     try {
       await fetch(`/api/galeri/${id}`, {
@@ -560,14 +634,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch {}
     showToast('Data dokumentasi galeri berhasil diperbarui', 'success');
+    addActivityLog('ubah', 'Galeri', `Mengubah kegiatan "${updated.judul || existingGaleri?.judul || 'Tanpa judul'}"`);
   };
 
   const deleteGaleri = async (id: string) => {
+    const existingGaleri = galeriList.find((item) => item.id === id);
     setGaleriList((prev) => prev.filter((g) => g.id !== id));
     try {
       await fetch(`/api/galeri/${id}`, { method: 'DELETE' });
     } catch {}
     showToast('Foto dokumentasi telah dihapus dari galeri', 'info');
+    addActivityLog('hapus', 'Galeri', `Menghapus kegiatan "${existingGaleri?.judul || 'Tanpa judul'}"`);
   };
 
   // Aspirasi Handlers
@@ -581,24 +658,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
     const tanggalSekarang = new Date().toLocaleDateString('id-ID', options);
     const tempId = 'asp-' + Date.now();
-    const newAspirasi: Aspirasi = { ...item, id: tempId, tanggal: tanggalSekarang, status: 'baru' };
+    const newAspirasi: Aspirasi = { ...item, id: tempId, tanggal: tanggalSekarang, status: 'baru', dibuatOleh: currentUser?.namaLengkap || 'Warga / Publik' };
     setAspirasiList((prev) => [newAspirasi, ...prev]);
 
     try {
       const res = await fetch('/api/aspirasi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Warga / Publik' }),
       });
       if (res.ok) {
         const saved = await res.json();
-        setAspirasiList((prev) => prev.map((a) => (a.id === tempId ? saved : a)));
+        setAspirasiList((prev) => prev.map((a) => (a.id === tempId ? { ...saved, dibuatOleh: newAspirasi.dibuatOleh } : a)));
       }
     } catch {}
     showToast('Terima kasih, aspirasi Anda telah kami terima untuk ditindaklanjuti!', 'success');
+    addActivityLog('tambah', 'Aspirasi', `Menerima aspirasi dari "${newAspirasi.nama}"`, currentUser);
   };
 
   const updateStatusAspirasi = async (id: string, status: Aspirasi['status']) => {
+    const existingAspirasi = aspirasiList.find((item) => item.id === id);
     setAspirasiList((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
     try {
       await fetch(`/api/aspirasi/${id}`, {
@@ -608,14 +687,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch {}
     showToast(`Status aspirasi diubah menjadi "${status}"`, 'info');
+    addActivityLog('status', 'Aspirasi', `Mengubah status aspirasi dari "${existingAspirasi?.nama || 'Warga'}" menjadi "${status}"`);
   };
 
   const deleteAspirasi = async (id: string) => {
+    const existingAspirasi = aspirasiList.find((item) => item.id === id);
     setAspirasiList((prev) => prev.filter((a) => a.id !== id));
     try {
       await fetch(`/api/aspirasi/${id}`, { method: 'DELETE' });
     } catch {}
     showToast('Aspirasi telah dihapus dari arsip', 'info');
+    addActivityLog('hapus', 'Aspirasi', `Menghapus aspirasi dari "${existingAspirasi?.nama || 'Warga'}"`);
   };
 
   return (
@@ -635,6 +717,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addUser,
         updateUser,
         deleteUser,
+        activityLogs,
+        clearActivityLogs,
         beritaList,
         addBerita,
         updateBerita,

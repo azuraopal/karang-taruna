@@ -199,6 +199,9 @@ export const AdminGaleri: React.FC = () => {
                       {item.lokasi}
                     </span>
                   </div>
+                  <p className="text-[11px] text-slate-400 truncate pt-1">
+                    Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
+                  </p>
                 </div>
               </div>
 

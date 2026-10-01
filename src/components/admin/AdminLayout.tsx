@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   LayoutDashboard, Newspaper, Users, Camera, MessageSquare,
-  ArrowLeft, LogOut, Menu, X, UserCog, Crown, User, ShieldCheck
+  ArrowLeft, LogOut, Menu, X, UserCog, Crown, User, ShieldCheck, ClipboardList
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Logo } from '../common/Logo';
@@ -11,6 +11,7 @@ import { AdminTim } from './AdminTim';
 import { AdminGaleri } from './AdminGaleri';
 import { AdminAspirasi } from './AdminAspirasi';
 import { AdminUsers } from './AdminUsers';
+import { AdminLogs } from './AdminLogs';
 
 export const AdminLayout: React.FC = () => {
   const {
@@ -71,6 +72,11 @@ export const AdminLayout: React.FC = () => {
             icon: <UserCog className="w-4 h-4" />,
             badge: userList.length,
             badgeColor: 'bg-amber-400 text-slate-950',
+          },
+          {
+            id: 'logs',
+            label: 'Log Aktivitas',
+            icon: <ClipboardList className="w-4 h-4" />,
           },
         ]
       : []),
@@ -280,6 +286,8 @@ export const AdminLayout: React.FC = () => {
               </div>
             )
           )}
+
+          {activeTab === 'logs' && isAdmin && <AdminLogs />}
         </main>
       </div>
 

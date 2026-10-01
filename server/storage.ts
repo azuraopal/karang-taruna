@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { pool, checkDbConnection } from './db.js';
-import type { Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount } from '../src/types/index.js';
+import type { ActivityLog, Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount } from '../src/types/index.js';
 
 const DB_FILE = path.join(process.cwd(), 'server', 'dev_db.json');
 
@@ -17,6 +17,7 @@ interface DevDbData {
   galeri: ItemGaleri[];
   aspirasi: Aspirasi[];
   users: UserAccount[];
+  activityLogs: ActivityLog[];
 }
 
 function loadDevDb(): DevDbData {
@@ -35,9 +36,51 @@ function loadDevDb(): DevDbData {
     galeri: [],
     aspirasi: [],
     users: DEFAULT_USERS,
+    activityLogs: [],
   };
   saveDevDb(initialData);
   return initialData;
+}
+
+// ---------------------- ACTIVITY LOGS ----------------------
+export async function getActivityLogs(): Promise<ActivityLog[]> {
+  const isPg = await checkDbConnection();
+  if (isPg) {
+    const res = await pool.query(
+      `SELECT id, action, entity, description, actor_name as "actorName", actor_role as "actorRole", created_at as "createdAt"
+       FROM activity_logs ORDER BY created_at DESC LIMIT 300`
+    );
+    return res.rows;
+  }
+  return (localDb.activityLogs || []).slice(0, 300);
+}
+
+export async function createActivityLog(item: ActivityLog): Promise<ActivityLog> {
+  const record = { ...item, createdAt: item.createdAt || new Date().toISOString() };
+  const isPg = await checkDbConnection();
+  if (isPg) {
+    const res = await pool.query(
+      `INSERT INTO activity_logs (id, action, entity, description, actor_name, actor_role, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (id) DO NOTHING
+       RETURNING id, action, entity, description, actor_name as "actorName", actor_role as "actorRole", created_at as "createdAt"`,
+      [record.id, record.action, record.entity, record.description, record.actorName, record.actorRole || null, record.createdAt]
+    );
+    return res.rows[0] || record;
+  }
+  localDb.activityLogs = [record, ...(localDb.activityLogs || [])].slice(0, 300);
+  saveDevDb(localDb);
+  return record;
+}
+
+export async function clearActivityLogs(): Promise<void> {
+  const isPg = await checkDbConnection();
+  if (isPg) {
+    await pool.query('DELETE FROM activity_logs');
+    return;
+  }
+  localDb.activityLogs = [];
+  saveDevDb(localDb);
 }
 
 function saveDevDb(data: DevDbData) {
@@ -77,7 +120,7 @@ export async function getBerita(): Promise<Berita[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status FROM berita ORDER BY created_at DESC'
+      'SELECT id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh" FROM berita ORDER BY created_at DESC'
     );
     return res.rows;
   }
@@ -92,10 +135,10 @@ export async function createBerita(item: Omit<Berita, 'id'>): Promise<Berita> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO berita (id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status`,
-      [id, record.judul, record.slug, record.ringkasan, record.isi, record.kategori, record.tanggal, record.penulis, record.gambarUrl, record.status]
+      `INSERT INTO berita (id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url, status, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh"`,
+      [id, record.judul, record.slug, record.ringkasan, record.isi, record.kategori, record.tanggal, record.penulis, record.gambarUrl, record.status, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -150,7 +193,7 @@ export async function getTim(): Promise<AnggotaTim[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, nama, jabatan, divisi, foto_url as "fotoUrl", bio, email, no_hp as "noHp" FROM anggota_tim ORDER BY urutan ASC, created_at ASC'
+      'SELECT id, nama, jabatan, divisi, foto_url as "fotoUrl", bio, email, no_hp as "noHp", dibuat_oleh as "dibuatOleh" FROM anggota_tim ORDER BY urutan ASC, created_at ASC'
     );
     return res.rows;
   }
@@ -164,10 +207,10 @@ export async function createTim(item: Omit<AnggotaTim, 'id'>): Promise<AnggotaTi
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO anggota_tim (id, nama, jabatan, divisi, foto_url, bio, email, no_hp)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, nama, jabatan, divisi, foto_url as "fotoUrl", bio, email, no_hp as "noHp"`,
-      [id, record.nama, record.jabatan, record.divisi, record.fotoUrl, record.bio, record.email || null, record.noHp || null]
+      `INSERT INTO anggota_tim (id, nama, jabatan, divisi, foto_url, bio, email, no_hp, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, nama, jabatan, divisi, foto_url as "fotoUrl", bio, email, no_hp as "noHp", dibuat_oleh as "dibuatOleh"`,
+      [id, record.nama, record.jabatan, record.divisi, record.fotoUrl, record.bio, record.email || null, record.noHp || null, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -220,7 +263,7 @@ export async function getGaleri(): Promise<ItemGaleri[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi FROM galeri ORDER BY created_at DESC'
+      'SELECT id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi, dibuat_oleh as "dibuatOleh" FROM galeri ORDER BY created_at DESC'
     );
     return res.rows;
   }
@@ -234,10 +277,10 @@ export async function createGaleri(item: Omit<ItemGaleri, 'id'>): Promise<ItemGa
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO galeri (id, judul, kategori, tanggal, gambar_url, deskripsi, lokasi)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi`,
-      [id, record.judul, record.kategori, record.tanggal, record.gambarUrl, record.deskripsi, record.lokasi]
+      `INSERT INTO galeri (id, judul, kategori, tanggal, gambar_url, deskripsi, lokasi, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi, dibuat_oleh as "dibuatOleh"`,
+      [id, record.judul, record.kategori, record.tanggal, record.gambarUrl, record.deskripsi, record.lokasi, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -289,14 +332,14 @@ export async function getAspirasi(): Promise<Aspirasi[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, nama, email, no_hp as "noHp", kategori, pesan, tanggal, status FROM aspirasi ORDER BY created_at DESC'
+      'SELECT id, nama, email, no_hp as "noHp", kategori, pesan, tanggal, status, dibuat_oleh as "dibuatOleh" FROM aspirasi ORDER BY created_at DESC'
     );
     return res.rows;
   }
   return localDb.aspirasi;
 }
 
-export async function createAspirasi(item: { nama: string; email: string; noHp: string; kategori: Aspirasi['kategori']; pesan: string }): Promise<Aspirasi> {
+export async function createAspirasi(item: { nama: string; email: string; noHp: string; kategori: Aspirasi['kategori']; pesan: string; dibuatOleh?: string }): Promise<Aspirasi> {
   const id = 'asp-' + Date.now();
   const tanggal = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const record: Aspirasi = { ...item, id, tanggal, status: 'baru' };
@@ -304,10 +347,10 @@ export async function createAspirasi(item: { nama: string; email: string; noHp: 
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO aspirasi (id, nama, email, no_hp, kategori, pesan, tanggal, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, nama, email, no_hp as "noHp", kategori, pesan, tanggal, status`,
-      [id, record.nama, record.email, record.noHp, record.kategori, record.pesan, tanggal, 'baru']
+      `INSERT INTO aspirasi (id, nama, email, no_hp, kategori, pesan, tanggal, status, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, nama, email, no_hp as "noHp", kategori, pesan, tanggal, status, dibuat_oleh as "dibuatOleh"`,
+      [id, record.nama, record.email, record.noHp, record.kategori, record.pesan, tanggal, 'baru', record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -351,7 +394,7 @@ export async function getUsers(): Promise<UserAccount[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt" FROM admin_users ORDER BY created_at ASC'
+      'SELECT id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt", dibuat_oleh as "dibuatOleh" FROM admin_users ORDER BY created_at ASC'
     );
     return res.rows;
   }
@@ -366,10 +409,10 @@ export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAcc
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt"`,
-      [id, record.username, hashPassword(record.password || '123456'), record.namaLengkap, record.role]
+      `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt", dibuat_oleh as "dibuatOleh"`,
+      [id, record.username, hashPassword(record.password || '123456'), record.namaLengkap, record.role, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -391,7 +434,7 @@ export async function updateUser(id: string, item: Partial<UserAccount>): Promis
       query += ' WHERE id = $3';
       values.push(id);
     }
-    query += ' RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt"';
+    query += ' RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt", dibuat_oleh as "dibuatOleh"';
     const res = await pool.query(query, values);
     return res.rows[0] || null;
   }

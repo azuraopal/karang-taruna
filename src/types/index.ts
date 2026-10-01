@@ -17,6 +17,7 @@ export interface AnggotaTim {
   bio: string;
   email?: string;
   noHp?: string;
+  dibuatOleh?: string;
 }
 
 export type KategoriBerita =
@@ -37,6 +38,7 @@ export interface Berita {
   penulis: string;
   gambarUrl: string;
   status: 'published' | 'draft';
+  dibuatOleh?: string;
 }
 
 export type KategoriGaleri =
@@ -54,6 +56,7 @@ export interface ItemGaleri {
   gambarUrl: string;
   deskripsi: string;
   lokasi: string;
+  dibuatOleh?: string;
 }
 
 export interface Aspirasi {
@@ -65,6 +68,20 @@ export interface Aspirasi {
   pesan: string;
   tanggal: string;
   status: 'baru' | 'dibaca' | 'selesai';
+  dibuatOleh?: string;
+}
+
+export type ActivityAction = 'login' | 'tambah' | 'ubah' | 'hapus' | 'status';
+export type ActivityEntity = 'Pengguna' | 'Berita' | 'Tim Pengurus' | 'Galeri' | 'Aspirasi' | 'Sistem';
+
+export interface ActivityLog {
+  id: string;
+  action: ActivityAction;
+  entity: ActivityEntity;
+  description: string;
+  actorName: string;
+  actorRole?: UserRole | 'public';
+  createdAt: string;
 }
 
 export interface ToastMessage {
@@ -82,4 +99,5 @@ export interface UserAccount {
   role: UserRole;
   password?: string;
   createdAt?: string;
+  dibuatOleh?: string;
 }

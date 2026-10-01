@@ -225,6 +225,7 @@ export const AdminBerita: React.FC = () => {
                       <span>{item.tanggal}</span>
                       <span>&bull;</span>
                       <span>Oleh {item.penulis}</span>
+                      <span className="truncate">Ditambahkan oleh {item.dibuatOleh || 'Data lama'}</span>
                     </div>
                   </div>
                 </div>

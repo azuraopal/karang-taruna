@@ -3,13 +3,17 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import type { Response } from 'express';
-import { checkDbConnection } from './db.js';
+import { checkDbConnection, initDb } from './db.js';
 import * as storage from './storage.js';
 
 export const apiApp = express();
 
 apiApp.use(cors());
 apiApp.use(express.json({ limit: '20mb' }));
+apiApp.use(async (_req, _res, next) => {
+  await initDb();
+  next();
+});
 
 const uploadsRoot = path.join(process.cwd(), 'uploads');
 const publicUploadsRoot = path.join(process.cwd(), 'public', 'uploads');
@@ -23,7 +27,7 @@ apiApp.use('/uploads', express.static(publicUploadsRoot));
 
 const sseClients = new Set<Response>();
 
-export function broadcastUpdate(payload: { type: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'all'; action?: string }) {
+export function broadcastUpdate(payload: { type: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'logs' | 'all'; action?: string }) {
   const message = `event: update\ndata: ${JSON.stringify({ ...payload, timestamp: Date.now() })}\n\n`;
   for (const client of sseClients) {
     try {
@@ -130,12 +134,12 @@ apiApp.get('/api/users', async (_req, res) => {
 });
 
 apiApp.post('/api/users', async (req, res) => {
-  const { username, password, namaLengkap, role } = req.body;
+  const { username, password, namaLengkap, role, dibuatOleh } = req.body;
   if (!username || !password || !namaLengkap) {
     return res.status(400).json({ error: 'Seluruh kolom wajib diisi' });
   }
 
-  const created = await storage.createUser({ username, password, namaLengkap, role: role || 'pengurus' });
+  const created = await storage.createUser({ username, password, namaLengkap, role: role || 'pengurus', dibuatOleh });
   broadcastUpdate({ type: 'users', action: 'create' });
   res.status(201).json(created);
 });
@@ -151,6 +155,37 @@ apiApp.delete('/api/users/:id', async (req, res) => {
   const success = await storage.deleteUser(req.params.id);
   broadcastUpdate({ type: 'users', action: 'delete' });
   res.json({ success });
+});
+
+// ---------------------- Activity Logs ----------------------
+apiApp.get('/api/logs', async (_req, res) => {
+  const logs = await storage.getActivityLogs();
+  res.json(logs);
+});
+
+apiApp.post('/api/logs', async (req, res) => {
+  const { id, action, entity, description, actorName, actorRole, createdAt } = req.body;
+  if (!id || !action || !entity || !description || !actorName) {
+    return res.status(400).json({ error: 'Data log aktivitas belum lengkap' });
+  }
+
+  const created = await storage.createActivityLog({
+    id,
+    action,
+    entity,
+    description,
+    actorName,
+    actorRole,
+    createdAt,
+  });
+  broadcastUpdate({ type: 'logs', action: 'create' });
+  res.status(201).json(created);
+});
+
+apiApp.delete('/api/logs', async (_req, res) => {
+  await storage.clearActivityLogs();
+  broadcastUpdate({ type: 'logs', action: 'clear' });
+  res.json({ success: true });
 });
 
 // ---------------------- Berita ----------------------

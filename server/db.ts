@@ -25,6 +25,8 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
+let schemaInitPromise: Promise<boolean> | null = null;
+
 export async function checkDbConnection(): Promise<boolean> {
   try {
     const res = await pool.query('SELECT NOW()');
@@ -35,26 +37,38 @@ export async function checkDbConnection(): Promise<boolean> {
   }
 }
 
-export async function initDb() {
-  const isConnected = await checkDbConnection();
-  if (!isConnected) {
-    console.warn('Skipping DB schema init: database unreachable at current connectionString.');
-    return false;
-  }
+export function initDb(): Promise<boolean> {
+  if (schemaInitPromise) return schemaInitPromise;
 
-  try {
-    const schemaPath = path.join(__dirname, 'schema.sql');
-    if (fs.existsSync(schemaPath)) {
+  schemaInitPromise = (async () => {
+    const isConnected = await checkDbConnection();
+    if (!isConnected) {
+      console.warn('Skipping DB schema init: database unreachable at current connectionString.');
+      return false;
+    }
+
+    try {
+      const schemaCandidates = [
+        path.join(process.cwd(), 'server', 'schema.sql'),
+        path.join(__dirname, 'schema.sql'),
+      ];
+      const schemaPath = schemaCandidates.find((candidate) => fs.existsSync(candidate));
+      if (!schemaPath) {
+        console.warn('PostgreSQL schema file was not found.');
+        return false;
+      }
+
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await pool.query(sql);
       console.log('PostgreSQL schema initialized successfully.');
+      return true;
+    } catch (err) {
+      console.error('Error initializing PostgreSQL schema:', err);
+      return false;
     }
+  })();
 
-    return true;
-  } catch (err) {
-    console.error('Error initializing PostgreSQL schema:', err);
-    return false;
-  }
+  return schemaInitPromise;
 }
 
 export async function ensureDefaultAdmin() {
