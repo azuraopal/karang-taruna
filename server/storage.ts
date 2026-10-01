@@ -7,6 +7,7 @@ import type { ActivityLog, Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount
 const DB_FILE = path.join(process.cwd(), 'server', 'dev_db.json');
 
 export const DEFAULT_USERS: UserAccount[] = [
+  { id: 'user-0', username: 'superadmin', namaLengkap: 'Super Administrator', role: 'superadmin', createdAt: 'September 2026' },
   { id: 'user-1', username: 'admin', namaLengkap: 'Administrator Utama', role: 'admin', createdAt: 'September 2026' },
   { id: 'user-2', username: 'pengurus', namaLengkap: 'Staff Pengurus Harian', role: 'pengurus', createdAt: 'September 2026' },
 ];

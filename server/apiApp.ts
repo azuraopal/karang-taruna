@@ -134,7 +134,10 @@ apiApp.get('/api/users', async (_req, res) => {
 });
 
 apiApp.post('/api/users', async (req, res) => {
-  const { username, password, namaLengkap, role, dibuatOleh } = req.body;
+  const { username, password, namaLengkap, role, dibuatOleh, actorRole } = req.body;
+  if (actorRole !== 'superadmin') {
+    return res.status(403).json({ error: 'Hanya Super Admin yang dapat mengelola akun pengguna' });
+  }
   if (!username || !password || !namaLengkap) {
     return res.status(400).json({ error: 'Seluruh kolom wajib diisi' });
   }
@@ -145,6 +148,9 @@ apiApp.post('/api/users', async (req, res) => {
 });
 
 apiApp.put('/api/users/:id', async (req, res) => {
+  if (req.body.actorRole !== 'superadmin') {
+    return res.status(403).json({ error: 'Hanya Super Admin yang dapat mengelola akun pengguna' });
+  }
   const updated = await storage.updateUser(req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'User tidak ditemukan' });
   broadcastUpdate({ type: 'users', action: 'update' });
@@ -152,6 +158,9 @@ apiApp.put('/api/users/:id', async (req, res) => {
 });
 
 apiApp.delete('/api/users/:id', async (req, res) => {
+  if (req.body.actorRole !== 'superadmin') {
+    return res.status(403).json({ error: 'Hanya Super Admin yang dapat mengelola akun pengguna' });
+  }
   const success = await storage.deleteUser(req.params.id);
   broadcastUpdate({ type: 'users', action: 'delete' });
   res.json({ success });

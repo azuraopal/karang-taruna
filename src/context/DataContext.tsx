@@ -68,6 +68,7 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_USERS: UserAccount[] = [
+  { id: 'user-0', username: 'superadmin', namaLengkap: 'Super Administrator', role: 'superadmin', createdAt: 'September 2026' },
   { id: 'user-1', username: 'admin', namaLengkap: 'Administrator Utama', role: 'admin', createdAt: 'September 2026' },
   { id: 'user-2', username: 'pengurus', namaLengkap: 'Staff Pengurus Harian', role: 'pengurus', createdAt: 'September 2026' },
 ];
@@ -372,10 +373,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCurrentUser(data.user);
           setIsAdminLoggedIn(true);
           addActivityLog('login', 'Sistem', `Masuk ke panel sebagai ${data.user.role === 'admin' ? 'Administrator' : 'Pengurus'}`, data.user);
-          const roleLabel = data.user.role === 'admin' ? 'Administrator' : 'Pengurus';
+          const roleLabel = data.user.role === 'superadmin'
+            ? 'Super Admin'
+            : data.user.role === 'admin'
+              ? 'Administrator'
+              : 'Pengurus';
           showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
           // Fetch users list if admin
-          if (data.user.role === 'admin') fetchCategory('users');
+          if (data.user.role === 'admin' || data.user.role === 'superadmin') fetchCategory('users');
           return true;
         }
       }
@@ -384,8 +389,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Offline Demo Fallbacks
+    if (user.trim() === 'superadmin' && pass.trim() === 'superadmin2026') {
+      const demoSuperAdmin = DEFAULT_USERS[0];
+      setCurrentUser(demoSuperAdmin);
+      setIsAdminLoggedIn(true);
+      addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Super Admin', demoSuperAdmin);
+      showToast('Berhasil masuk sebagai Super Admin (Demo)', 'success');
+      return true;
+    }
     if (user.trim() === 'admin' && pass.trim() === 'katar2026') {
-      const demoAdmin = DEFAULT_USERS[0];
+      const demoAdmin = DEFAULT_USERS[1];
       setCurrentUser(demoAdmin);
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Administrator', demoAdmin);
@@ -393,7 +406,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     }
     if (user.trim() === 'pengurus' && pass.trim() === 'pengurus2026') {
-      const demoPengurus = DEFAULT_USERS[1];
+      const demoPengurus = DEFAULT_USERS[2];
       setCurrentUser(demoPengurus);
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Pengurus', demoPengurus);
@@ -420,8 +433,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem', actorRole: currentUser?.role }),
       });
+      if (res.status === 403) {
+        showToast('Hanya Super Admin yang dapat mengelola akun pengguna.', 'error');
+        return;
+      }
       if (res.ok) {
         const created = await res.json();
         const createdWithActor: UserAccount = { ...created, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
@@ -445,8 +462,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
+        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem', actorRole: currentUser?.role }),
       });
+      if (res.status === 403) {
+        showToast('Hanya Super Admin yang dapat mengelola akun pengguna.', 'error');
+        return;
+      }
       if (res.ok) {
         const updated = await res.json();
         setUserList((prev) => prev.map((u) => (u.id === id ? updated : u)));
@@ -468,7 +489,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteUser = async (id: string) => {
     const existingUser = userList.find((user) => user.id === id);
     try {
-      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/users/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actorRole: currentUser?.role }),
+      });
+      if (res.status === 403) {
+        showToast('Hanya Super Admin yang dapat mengelola akun pengguna.', 'error');
+        return;
+      }
       if (res.ok) {
         setUserList((prev) => prev.filter((u) => u.id !== id));
         addActivityLog('hapus', 'Pengguna', `Menghapus akun pengguna "${existingUser?.namaLengkap || 'Tanpa nama'}"`);

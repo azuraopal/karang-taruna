@@ -29,7 +29,8 @@ export const AdminLayout: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
+  const isSuperAdmin = currentUser?.role === 'superadmin';
   const aspirasiBaru = aspirasiList.filter((a) => a.status === 'baru').length;
 
   const navItems = [
@@ -148,7 +149,7 @@ export const AdminLayout: React.FC = () => {
                   {currentUser?.namaLengkap || (isAdmin ? 'Administrator' : 'Pengurus')}
                 </div>
                 <div className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
-                  {isAdmin ? 'Administrator' : 'Pengurus'}
+                  {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Administrator' : 'Pengurus'}
                 </div>
               </div>
             </div>
@@ -231,8 +232,12 @@ export const AdminLayout: React.FC = () => {
             }`}>
               {isAdmin ? (
                 <>
-                  <strong className="block mb-0.5">Role: Administrator</strong>
-                  Anda memiliki akses penuh mengelola konten dan <strong>mengatur akun pengguna</strong>.
+                <strong className="block mb-0.5">Role: {isSuperAdmin ? 'Super Admin' : 'Administrator'}</strong>
+                {isSuperAdmin ? (
+                  <>Anda memiliki akses penuh termasuk <strong>mengatur semua akun pengguna</strong>.</>
+                ) : (
+                  <>Anda dapat mengelola konten, tetapi <strong>tidak dapat mengubah akun pengguna lain</strong>.</>
+                )}
                 </>
               ) : (
                 <>

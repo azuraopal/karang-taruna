@@ -199,7 +199,7 @@ export const AdminGaleri: React.FC = () => {
                       {item.lokasi}
                     </span>
                   </div>
-                  {currentUser?.role === 'admin' && (
+                  {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
                     <p className="text-[11px] text-slate-400 truncate pt-1">
                       Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
                     </p>

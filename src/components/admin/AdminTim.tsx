@@ -195,7 +195,7 @@ export const AdminTim: React.FC = () => {
                 {item.bio}
               </p>
 
-              {currentUser?.role === 'admin' && (
+              {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
                 <p className="text-[11px] text-slate-400 truncate mb-3">
                   Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
                 </p>

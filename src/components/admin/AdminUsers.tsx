@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Plus, Edit, Trash2, User, Eye, EyeOff,
-  AlertTriangle, CheckCircle2, Crown, Users
+  AlertTriangle, CheckCircle2, Crown, Users, ShieldCheck
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { UserAccount, UserRole } from '../../types';
@@ -9,6 +9,7 @@ import { Modal } from '../common/Modal';
 
 export const AdminUsers: React.FC = () => {
   const { userList, addUser, updateUser, deleteUser, currentUser, showToast } = useData();
+  const isSuperAdmin = currentUser?.role === 'superadmin';
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -33,11 +34,19 @@ export const AdminUsers: React.FC = () => {
   };
 
   const handleOpenCreate = () => {
+    if (!isSuperAdmin) {
+      showToast('Hanya Super Admin yang dapat menambah akun pengguna.', 'error');
+      return;
+    }
     resetForm();
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (item: UserAccount) => {
+    if (!isSuperAdmin) {
+      showToast('Hanya Super Admin yang dapat mengubah akun pengguna.', 'error');
+      return;
+    }
     setEditingId(item.id);
     setUsername(item.username);
     setNamaLengkap(item.namaLengkap);
@@ -95,6 +104,11 @@ export const AdminUsers: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!deletingItem) return;
+    if (!isSuperAdmin) {
+      showToast('Hanya Super Admin yang dapat menghapus akun pengguna.', 'error');
+      setDeletingItem(null);
+      return;
+    }
     // Cegah hapus akun diri sendiri
     if (deletingItem.id === currentUser?.id) {
       showToast('Tidak dapat menghapus akun yang sedang digunakan!', 'error');
@@ -113,7 +127,12 @@ export const AdminUsers: React.FC = () => {
   };
 
   const roleBadge = (r: UserRole) =>
-    r === 'admin' ? (
+    r === 'superadmin' ? (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-900 border border-violet-300">
+        <ShieldCheck className="w-3 h-3" />
+        Super Admin
+      </span>
+    ) : r === 'admin' ? (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
         <Crown className="w-3 h-3" />
         Administrator
@@ -134,13 +153,15 @@ export const AdminUsers: React.FC = () => {
             Kelola Akun Pengguna
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Hanya <strong className="text-amber-700">Administrator</strong> yang dapat menambah, mengubah, atau menghapus akun pengguna.
+            Hanya <strong className="text-violet-700">Super Admin</strong> yang dapat menambah, mengubah, atau menghapus akun pengguna.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleOpenCreate}
+          disabled={!isSuperAdmin}
+          title={!isSuperAdmin ? 'Hanya Super Admin yang dapat menambah pengguna' : 'Tambah pengguna baru'}
           className="min-h-[44px] px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
         >
           <Plus className="w-4 h-4" />
@@ -220,7 +241,7 @@ export const AdminUsers: React.FC = () => {
                                 </span>
                               )}
                             </div>
-                            {currentUser?.role === 'admin' && (
+                            {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
                               <div className="text-[11px] text-slate-400 mt-0.5">
                                 Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
                               </div>
@@ -242,17 +263,18 @@ export const AdminUsers: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(item)}
-                            className="p-2 rounded-xl bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
-                            title="Edit pengguna"
+                            disabled={!isSuperAdmin}
+                            className="p-2 rounded-xl bg-stone-100 hover:bg-slate-900 hover:text-amber-400 text-slate-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            title={!isSuperAdmin ? 'Hanya Super Admin yang dapat mengubah pengguna' : 'Edit pengguna'}
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => setDeletingItem(item)}
-                            disabled={isSelf}
+                            disabled={isSelf || !isSuperAdmin}
                             className="p-2 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-rose-400"
-                            title={isSelf ? 'Tidak dapat menghapus akun sendiri' : 'Hapus pengguna'}
+                            title={!isSuperAdmin ? 'Hanya Super Admin yang dapat menghapus pengguna' : isSelf ? 'Tidak dapat menghapus akun sendiri' : 'Hapus pengguna'}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -351,7 +373,7 @@ export const AdminUsers: React.FC = () => {
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
               Peran / Role *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'admin' ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:border-amber-300'}`}>
                 <input
                   type="radio"
@@ -387,6 +409,26 @@ export const AdminUsers: React.FC = () => {
                   <p className="text-[11px] text-slate-500 mt-0.5 break-words">Kelola konten, tanpa kelola user</p>
                 </div>
               </label>
+
+              {isSuperAdmin && (
+                <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'superadmin' ? 'border-violet-500 bg-violet-50' : 'border-stone-200 hover:border-violet-300'}`}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="superadmin"
+                    checked={role === 'superadmin'}
+                    onChange={() => setRole('superadmin')}
+                    className="mt-0.5 shrink-0 accent-violet-500"
+                  />
+                  <div className="min-w-0">
+                    <div className="text-xs font-black text-slate-900 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-violet-600" />
+                      Super Admin
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5 break-words">Kelola semua akun pengguna</p>
+                  </div>
+                </label>
+              )}
             </div>
           </div>
 

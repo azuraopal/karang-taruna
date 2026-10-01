@@ -90,7 +90,7 @@ export interface ToastMessage {
   pesan: string;
 }
 
-export type UserRole = 'admin' | 'pengurus';
+export type UserRole = 'superadmin' | 'admin' | 'pengurus';
 
 export interface UserAccount {
   id: string;

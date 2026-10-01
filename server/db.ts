@@ -60,6 +60,7 @@ export function initDb(): Promise<boolean> {
 
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await pool.query(sql);
+      await ensureDefaultAdmin();
       console.log('PostgreSQL schema initialized successfully.');
       return true;
     } catch (err) {
@@ -83,6 +84,11 @@ export async function ensureDefaultAdmin() {
          ON CONFLICT (username) DO NOTHING`
       );
     }
+    await pool.query(
+      `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
+       VALUES ('user-0', 'superadmin', 'superadmin2026', 'Super Administrator', 'superadmin')
+       ON CONFLICT (username) DO NOTHING`
+    );
   } catch (err) {
     console.error('Error creating default admin:', err);
   }

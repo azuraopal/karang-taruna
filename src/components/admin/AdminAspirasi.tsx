@@ -125,7 +125,7 @@ export const AdminAspirasi: React.FC = () => {
                       {item.email}
                     </span>
                   </div>
-                  {currentUser?.role === 'admin' && (
+                  {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
                     <p className="text-[11px] text-slate-400 mt-1">
                       Ditambahkan oleh {item.dibuatOleh || 'Warga / Publik'}
                     </p>
