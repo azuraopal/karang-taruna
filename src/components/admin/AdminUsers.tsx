@@ -306,7 +306,7 @@ export const AdminUsers: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title={editingId ? 'Ubah Data Pengguna' : 'Tambah Pengguna Baru'}
-        maxWidth="md"
+        maxWidth="xl"
       >
         <form onSubmit={handleSave} className="space-y-4">
           {formError && (
@@ -373,8 +373,8 @@ export const AdminUsers: React.FC = () => {
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
               Peran / Role *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'admin' ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:border-amber-300'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label className={`flex min-w-0 items-start gap-3 p-3.5 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'admin' ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:border-amber-300'}`}>
                 <input
                   type="radio"
                   name="role"
@@ -392,7 +392,7 @@ export const AdminUsers: React.FC = () => {
                 </div>
               </label>
 
-              <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'pengurus' ? 'border-sky-500 bg-sky-50' : 'border-stone-200 hover:border-sky-300'}`}>
+              <label className={`flex min-w-0 items-start gap-3 p-3.5 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'pengurus' ? 'border-sky-500 bg-sky-50' : 'border-stone-200 hover:border-sky-300'}`}>
                 <input
                   type="radio"
                   name="role"
@@ -411,7 +411,7 @@ export const AdminUsers: React.FC = () => {
               </label>
 
               {isSuperAdmin && (
-                <label className={`flex min-w-0 items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'superadmin' ? 'border-violet-500 bg-violet-50' : 'border-stone-200 hover:border-violet-300'}`}>
+                <label className={`flex min-w-0 items-start gap-3 p-3.5 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${role === 'superadmin' ? 'border-violet-500 bg-violet-50' : 'border-stone-200 hover:border-violet-300'}`}>
                   <input
                     type="radio"
                     name="role"
@@ -432,17 +432,17 @@ export const AdminUsers: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-3">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => { setIsModalOpen(false); resetForm(); }}
-              className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800"
+              className="w-full sm:w-auto px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 rounded-xl hover:bg-stone-100"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-slate-900 text-amber-400 font-bold text-xs rounded-xl hover:bg-slate-800 shadow-sm flex items-center gap-2"
+              className="w-full sm:w-auto justify-center px-5 py-2.5 bg-slate-900 text-amber-400 font-bold text-xs rounded-xl hover:bg-slate-800 shadow-sm flex items-center gap-2"
             >
               <CheckCircle2 className="w-4 h-4" />
               {editingId ? 'Simpan Perubahan' : 'Buat Akun Pengguna'}

@@ -69,7 +69,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className={`relative w-full ${widthClasses} bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-10 my-8`}
+            className={`relative w-full max-w-[calc(100vw-2rem)] ${widthClasses} bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-10 my-4 sm:my-8`}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between px-4 py-4.5 sm:px-6 border-b border-slate-100 bg-slate-50/70">
@@ -90,7 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
 
             {/* Modal Content */}
-            <div className="p-4 sm:p-6 max-h-[calc(85vh-120px)] overflow-y-auto">
+            <div className="p-4 sm:p-6 max-h-[calc(100vh-7rem)] sm:max-h-[calc(85vh-120px)] overflow-y-auto">
               {children}
             </div>
           </motion.div>
