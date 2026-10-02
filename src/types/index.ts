@@ -56,6 +56,7 @@ export interface ItemGaleri {
   kategori: KategoriGaleri;
   tanggal: string;
   gambarUrl: string;
+  gambarUrls?: string[];
   deskripsi: string;
   lokasi: string;
   dibuatOleh?: string;

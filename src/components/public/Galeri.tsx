@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
 import { Modal } from '../common/Modal';
+
+const getGalleryImages = (item: ItemGaleri) => [item.gambarUrl, ...(item.gambarUrls || [])].filter(Boolean);
 
 export const Galeri: React.FC = () => {
   const { galeriList } = useData();
   const [selectedKategori, setSelectedKategori] = useState<string>('Semua');
   const [activePhoto, setActivePhoto] = useState<ItemGaleri | null>(null);
   const [photoZoom, setPhotoZoom] = useState(1);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   const kategoriList = [
     'Semua',
@@ -84,6 +87,7 @@ export const Galeri: React.FC = () => {
                   onClick={() => {
                     setActivePhoto(item);
                     setPhotoZoom(1);
+                    setActivePhotoIndex(0);
                   }}
                   className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
                   tabIndex={0}
@@ -166,14 +170,66 @@ export const Galeri: React.FC = () => {
         >
           {activePhoto && (
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden flex items-center justify-center">
-                <img
-                  src={activePhoto.gambarUrl}
-                  alt={activePhoto.judul}
-                  className="block w-auto max-w-full max-h-[70vh] object-contain transition-transform duration-300"
-                  style={{ transform: `scale(${photoZoom})` }}
-                />
+              <div className="relative rounded-2xl overflow-hidden flex items-center justify-center group">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={getGalleryImages(activePhoto)[activePhotoIndex]}
+                    src={getGalleryImages(activePhoto)[activePhotoIndex]}
+                    alt={`${activePhoto.judul} - foto ${activePhotoIndex + 1}`}
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    animate={{ opacity: 1, scale: photoZoom }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.3 }}
+                    className="block w-auto max-w-full max-h-[70vh] object-contain"
+                  />
+                </AnimatePresence>
+                {getGalleryImages(activePhoto).length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setActivePhotoIndex((index) => (index - 1 + getGalleryImages(activePhoto).length) % getGalleryImages(activePhoto).length)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
+                      aria-label="Foto sebelumnya"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActivePhotoIndex((index) => (index + 1) % getGalleryImages(activePhoto).length)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
+                      aria-label="Foto berikutnya"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    <span className="absolute right-3 bottom-3 px-2.5 py-1 rounded-full bg-slate-950/75 text-white text-[11px] font-bold">
+                      {activePhotoIndex + 1} / {getGalleryImages(activePhoto).length}
+                    </span>
+                  </>
+                )}
               </div>
+
+              {getGalleryImages(activePhoto).length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
+                  {getGalleryImages(activePhoto).map((imageUrl, index) => (
+                    <button
+                      key={imageUrl + index}
+                      type="button"
+                      onClick={() => {
+                        setActivePhotoIndex(index);
+                        setPhotoZoom(1);
+                      }}
+                      className={`relative shrink-0 snap-start w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhotoIndex === index ? 'border-amber-500 ring-2 ring-amber-200' : 'border-transparent opacity-65 hover:opacity-100'}`}
+                      aria-label={`Tampilkan foto ${index + 1}`}
+                    >
+                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                  <div className="flex items-center gap-1 text-[11px] text-slate-500 px-1 shrink-0">
+                    <Images className="w-3.5 h-3.5" />
+                    Galeri kegiatan
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-center gap-2">
                 <button

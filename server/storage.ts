@@ -256,7 +256,7 @@ export async function getGaleri(): Promise<ItemGaleri[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi, dibuat_oleh as "dibuatOleh" FROM galeri ORDER BY created_at DESC'
+      'SELECT id, judul, kategori, tanggal, gambar_url as "gambarUrl", gambar_urls as "gambarUrls", deskripsi, lokasi, dibuat_oleh as "dibuatOleh" FROM galeri ORDER BY created_at DESC'
     );
     return res.rows;
   }
@@ -270,10 +270,10 @@ export async function createGaleri(item: Omit<ItemGaleri, 'id'>): Promise<ItemGa
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO galeri (id, judul, kategori, tanggal, gambar_url, deskripsi, lokasi, dibuat_oleh)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi, dibuat_oleh as "dibuatOleh"`,
-      [id, record.judul, record.kategori, record.tanggal, record.gambarUrl, record.deskripsi, record.lokasi, record.dibuatOleh || null]
+      `INSERT INTO galeri (id, judul, kategori, tanggal, gambar_url, gambar_urls, deskripsi, lokasi, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, judul, kategori, tanggal, gambar_url as "gambarUrl", gambar_urls as "gambarUrls", deskripsi, lokasi, dibuat_oleh as "dibuatOleh"`,
+      [id, record.judul, record.kategori, record.tanggal, record.gambarUrl, JSON.stringify(record.gambarUrls || []), record.deskripsi, record.lokasi, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -292,11 +292,12 @@ export async function updateGaleri(id: string, item: Partial<ItemGaleri>): Promi
            kategori = COALESCE($2, kategori),
            tanggal = COALESCE($3, tanggal),
            gambar_url = COALESCE($4, gambar_url),
-           deskripsi = COALESCE($5, deskripsi),
-           lokasi = COALESCE($6, lokasi)
-       WHERE id = $7
-       RETURNING id, judul, kategori, tanggal, gambar_url as "gambarUrl", deskripsi, lokasi`,
-      [item.judul, item.kategori, item.tanggal, item.gambarUrl, item.deskripsi, item.lokasi, id]
+             gambar_urls = COALESCE($5::jsonb, gambar_urls),
+             deskripsi = COALESCE($6, deskripsi),
+             lokasi = COALESCE($7, lokasi)
+           WHERE id = $8
+           RETURNING id, judul, kategori, tanggal, gambar_url as "gambarUrl", gambar_urls as "gambarUrls", deskripsi, lokasi`,
+          [item.judul, item.kategori, item.tanggal, item.gambarUrl, item.gambarUrls ? JSON.stringify(item.gambarUrls) : null, item.deskripsi, item.lokasi, id]
     );
     return res.rows[0] || null;
   }
