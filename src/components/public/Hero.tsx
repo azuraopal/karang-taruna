@@ -21,7 +21,9 @@ export const Hero: React.FC = () => {
       className="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden"
     >
       {/* Subtle organic light accent behind hero */}
-      <div
+      <motion.div
+        animate={{ opacity: [0.55, 0.8, 0.55], scale: [1, 1.08, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-135 h-90 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"
         aria-hidden="true"
       />
@@ -130,14 +132,17 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            whileHover={{ y: -8 }}
             className="lg:col-span-5 relative"
           >
             <div className="relative mx-auto max-w-md bg-slate-800/60 rounded-3xl p-3 border border-slate-700/80 shadow-2xl backdrop-blur-xs">
               <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden group bg-black">
                 {featuredBerita?.gambarUrl ? (
-                  <img
+                  <motion.img
                     src={featuredBerita.gambarUrl}
                     alt={featuredBerita.judul}
+                    animate={{ scale: [1.02, 1.07, 1.02], x: [0, -4, 0] }}
+                    transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 ) : null}

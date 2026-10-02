@@ -87,10 +87,12 @@ export const Tim: React.FC = () => {
               {displayedMembers.map((member) => (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.2 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.25 }}
+                  transition={{ duration: 0.45, delay: Math.min(displayedMembers.indexOf(member) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -6 }}
                   key={member.id}
                   className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-all flex flex-col justify-between group"
                 >
@@ -103,7 +105,7 @@ export const Tim: React.FC = () => {
                         onError={(e) => {
                           e.currentTarget.src = '/default-avatar.svg';
                         }}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                         loading="lazy"
                       />
                       <div className="absolute top-3 left-3">

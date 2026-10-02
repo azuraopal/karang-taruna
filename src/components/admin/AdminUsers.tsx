@@ -15,7 +15,6 @@ export const AdminUsers: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingItem, setDeletingItem] = useState<UserAccount | null>(null);
 
-  // Form state
   const [username, setUsername] = useState('');
   const [namaLengkap, setNamaLengkap] = useState('');
   const [role, setRole] = useState<UserRole>('pengurus');

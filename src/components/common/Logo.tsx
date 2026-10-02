@@ -16,7 +16,7 @@ export const Logo: React.FC<LogoProps> = ({
   showBadge = true,
 }) => {
   // Selalu pakai versi putih
-  const logoSrc = '/katar-margabakti-white.svg';
+  const logoSrc = '/katar-margabakti-black.svg';
 
   const sizeClasses = {
     sm: 'h-5 sm:h-6 w-auto',
@@ -41,7 +41,7 @@ export const Logo: React.FC<LogoProps> = ({
           <img
             src={logoSrc}
             alt="Logo Katar Margabakti"
-            className={`${className || sizeClasses} object-contain shrink-0`}
+            className={`${className || sizeClasses} object-contain shrink-0 brightness-0 invert`}
             loading="eager"
             decoding="sync"
           />
@@ -63,7 +63,7 @@ export const Logo: React.FC<LogoProps> = ({
       <img
         src={logoSrc}
         alt="Logo Katar Margabakti"
-        className={`${className || sizeClasses} object-contain shrink-0`}
+        className={`${className || sizeClasses} object-contain shrink-0 brightness-0 invert`}
         loading="eager"
         decoding="sync"
       />

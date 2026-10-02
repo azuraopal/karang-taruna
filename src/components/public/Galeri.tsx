@@ -73,10 +73,12 @@ export const Galeri: React.FC = () => {
               {filteredGaleri.map((item) => (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.2 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.25 }}
+                  transition={{ duration: 0.45, delay: Math.min(filteredGaleri.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -6 }}
                   key={item.id}
                   onClick={() => setActivePhoto(item)}
                   className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
@@ -94,7 +96,7 @@ export const Galeri: React.FC = () => {
                     <img
                       src={item.gambarUrl}
                       alt={item.judul}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-colors flex items-center justify-center">
