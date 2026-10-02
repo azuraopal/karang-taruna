@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Mail, Phone, UserCheck, SearchX } from 'lucide-react';
 import { useData } from '../../context/DataContext';
@@ -9,6 +9,7 @@ export const Tim: React.FC = () => {
   const { timList } = useData();
   const [selectedDivisi, setSelectedDivisi] = useState<string>('Semua');
   const [selectedMember, setSelectedMember] = useState<AnggotaTim | null>(null);
+  const [visibleMemberCount, setVisibleMemberCount] = useState(10);
 
   const divisiList: string[] = [
     'Semua',
@@ -29,6 +30,13 @@ export const Tim: React.FC = () => {
         return Number(secondHasPhoto) - Number(firstHasPhoto);
       })
     : timList.filter((m) => m.divisi === selectedDivisi);
+  const displayedMembers = selectedDivisi === 'Semua'
+    ? filteredMembers.slice(0, visibleMemberCount)
+    : filteredMembers;
+
+  useEffect(() => {
+    setVisibleMemberCount(10);
+  }, [selectedDivisi]);
 
   return (
     <section id="tim" className="py-24 bg-white border-t border-stone-200">
@@ -76,7 +84,7 @@ export const Tim: React.FC = () => {
             className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             <AnimatePresence>
-              {filteredMembers.map((member) => (
+              {displayedMembers.map((member) => (
                 <motion.div
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -150,6 +158,18 @@ export const Tim: React.FC = () => {
               className="mt-4 px-4 py-2 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold hover:bg-slate-800"
             >
               Tampilkan Semua Pengurus
+            </button>
+          </div>
+        )}
+
+        {selectedDivisi === 'Semua' && visibleMemberCount < filteredMembers.length && (
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setVisibleMemberCount((count) => count + 10)}
+              className="min-h-[44px] px-5 py-2.5 rounded-xl bg-slate-900 text-amber-400 hover:bg-slate-800 font-bold text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
+            >
+              Lihat Data Lainnya
             </button>
           </div>
         )}
