@@ -212,7 +212,7 @@ export const BeritaSection: React.FC = () => {
           isOpen={!!readingArticle}
           onClose={() => setReadingArticle(null)}
           title="Warta Resmi Karang Taruna"
-          maxWidth="2xl"
+          maxWidth="xl"
         >
           {readingArticle && (
             <div className="space-y-5">
