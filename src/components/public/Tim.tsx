@@ -228,13 +228,25 @@ export const Tim: React.FC = () => {
                 {selectedMember.email && (
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>{selectedMember.email}</span>
+                    <a
+                      href={`mailto:${selectedMember.email}`}
+                      className="hover:text-amber-700 hover:underline transition-colors"
+                    >
+                      {selectedMember.email}
+                    </a>
                   </div>
                 )}
                 {selectedMember.noHp && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>{selectedMember.noHp}</span>
+                    <a
+                      href={`https://wa.me/${selectedMember.noHp.replace(/\D/g, '').replace(/^0/, '62')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-amber-700 hover:underline transition-colors"
+                    >
+                      {selectedMember.noHp}
+                    </a>
                   </div>
                 )}
               </div>
