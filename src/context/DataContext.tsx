@@ -477,6 +477,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = async (id: string, item: Partial<UserAccount>) => {
+    if (currentUser?.role !== 'superadmin') {
+      showToast('Hanya Super Admin yang dapat mengubah akun pengguna.', 'error');
+      return;
+    }
     const existingUser = userList.find((user) => user.id === id);
     try {
       const res = await fetch(`/api/users/${id}`, {

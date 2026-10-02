@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Search, Eye, EyeOff, AlertTriangle, Newspaper } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Plus, Edit, Trash2, Search, Eye, EyeOff, AlertTriangle, Newspaper, Images, RefreshCw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita, KategoriBerita } from '../../types';
 import { Modal } from '../common/Modal';
@@ -24,8 +24,11 @@ export const AdminBerita: React.FC = () => {
   const [tanggalPelaksanaan, setTanggalPelaksanaan] = useState('');
   const [penulis, setPenulis] = useState('');
   const [gambarUrl, setGambarUrl] = useState('');
+  const [gambarTambahan, setGambarTambahan] = useState<string[]>([]);
   const [status, setStatus] = useState<'published' | 'draft'>('published');
   const [formError, setFormError] = useState('');
+  const [isUploadingAdditional, setIsUploadingAdditional] = useState(false);
+  const additionalPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const kategoriOptions: KategoriBerita[] = [
     'Program Kerja',
@@ -52,6 +55,7 @@ export const AdminBerita: React.FC = () => {
     setTanggalPelaksanaan('');
     setPenulis(currentUser?.namaLengkap || 'Sistem');
     setGambarUrl('');
+    setGambarTambahan([]);
     setStatus('published');
     setFormError('');
   };
@@ -72,9 +76,47 @@ export const AdminBerita: React.FC = () => {
     setTanggalPelaksanaan(item.tanggalPelaksanaan || '');
     setPenulis(item.penulis);
     setGambarUrl(item.gambarUrl);
+    setGambarTambahan(item.gambarUrls || []);
     setStatus(item.status);
     setFormError('');
     setIsModalOpen(true);
+  };
+
+  const handleMultiplePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (files.length === 0) return;
+
+    setIsUploadingAdditional(true);
+    try {
+      const uploadedUrls = await Promise.all(files.map(async (file) => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Gagal membaca foto'));
+          reader.readAsDataURL(file);
+        });
+
+        try {
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: dataUrl, category: 'berita' }),
+          });
+          if (response.ok) {
+            const result = await response.json();
+            if (result.url) return result.url as string;
+          }
+        } catch {
+          // Gunakan data URL jika server upload belum tersedia.
+        }
+        return dataUrl;
+      }));
+
+      setGambarTambahan((current) => [...current, ...uploadedUrls]);
+    } finally {
+      setIsUploadingAdditional(false);
+    }
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -109,6 +151,7 @@ export const AdminBerita: React.FC = () => {
       tanggalPelaksanaan: kategori === 'Pengumuman' ? undefined : tanggalPelaksanaan,
       penulis: editingId ? penulis.trim() : currentUser?.namaLengkap || 'Sistem',
       gambarUrl: gambarUrl.trim(),
+      gambarUrls: gambarTambahan.filter((imageUrl) => imageUrl.trim()),
       status,
     };
 
@@ -409,6 +452,77 @@ export const AdminBerita: React.FC = () => {
             aspectRatio="video"
             maxWidth={1200}
           />
+
+          <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-sky-950">
+                  Foto Tambahan Kegiatan
+                </h3>
+                <p className="text-[11px] text-sky-800 mt-1">
+                  Tambahkan beberapa dokumentasi untuk ditampilkan sebagai galeri di detail warta.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setGambarTambahan((current) => [...current, ''])}
+                className="w-full sm:w-auto min-h-[40px] shrink-0 px-4 py-2 rounded-xl bg-sky-900 text-white hover:bg-sky-800 text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Tambah Foto
+              </button>
+            </div>
+
+            <input
+              ref={additionalPhotoInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleMultiplePhotoUpload}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => additionalPhotoInputRef.current?.click()}
+              disabled={isUploadingAdditional}
+              className="w-full min-h-[72px] rounded-xl border-2 border-dashed border-sky-300 bg-white hover:bg-sky-50 text-sky-900 transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-60"
+            >
+              {isUploadingAdditional ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Images className="w-5 h-5" />}
+              <span className="text-xs font-bold">
+                {isUploadingAdditional ? 'Mengunggah beberapa foto...' : 'Pilih Banyak Foto Sekaligus'}
+              </span>
+              <span className="text-[11px] text-sky-700">Tekan Ctrl/Cmd atau pilih beberapa foto dari galeri</span>
+            </button>
+
+            {gambarTambahan.length > 0 && (
+              <div className="space-y-4">
+                {gambarTambahan.map((imageUrl, index) => (
+                  <div key={`additional-photo-${index}`} className="relative rounded-xl border border-sky-200 bg-white p-3">
+                    <div className="flex justify-end mb-1">
+                      <button
+                        type="button"
+                        onClick={() => setGambarTambahan((current) => current.filter((_, currentIndex) => currentIndex !== index))}
+                        className="p-2 rounded-lg text-rose-600 hover:bg-rose-50"
+                        aria-label={`Hapus foto kegiatan ${index + 2}`}
+                        title="Hapus foto"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <ImagePicker
+                      value={imageUrl}
+                      onChange={(nextUrl) => setGambarTambahan((current) => current.map((currentUrl, currentIndex) => currentIndex === index ? nextUrl : currentUrl))}
+                      label={`Foto Kegiatan ${index + 2}`}
+                      sublabel="Upload dokumentasi tambahan"
+                      category="berita"
+                      aspectRatio="video"
+                      maxWidth={1200}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">

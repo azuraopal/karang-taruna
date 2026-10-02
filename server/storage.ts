@@ -111,7 +111,7 @@ export async function getBerita(): Promise<Berita[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh" FROM berita ORDER BY created_at DESC'
+      'SELECT id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", gambar_urls as "gambarUrls", status, dibuat_oleh as "dibuatOleh" FROM berita ORDER BY created_at DESC'
     );
     return res.rows;
   }
@@ -126,10 +126,10 @@ export async function createBerita(item: Omit<Berita, 'id'>): Promise<Berita> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO berita (id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan, penulis, gambar_url, status, dibuat_oleh)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh"`,
-      [id, record.judul, record.slug, record.ringkasan, record.isi, record.kategori, record.tanggal, record.tanggalPelaksanaan || null, record.penulis, record.gambarUrl, record.status, record.dibuatOleh || null]
+      `INSERT INTO berita (id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan, penulis, gambar_url, gambar_urls, status, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", gambar_urls as "gambarUrls", status, dibuat_oleh as "dibuatOleh"`,
+      [id, record.judul, record.slug, record.ringkasan, record.isi, record.kategori, record.tanggal, record.tanggalPelaksanaan || null, record.penulis, record.gambarUrl, JSON.stringify(record.gambarUrls || []), record.status, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -153,10 +153,11 @@ export async function updateBerita(id: string, item: Partial<Berita>): Promise<B
              tanggal_pelaksanaan = $7,
              penulis = COALESCE($8, penulis),
              gambar_url = COALESCE($9, gambar_url),
-             status = COALESCE($10, status)
-           WHERE id = $11
-           RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", status`,
-          [item.judul, item.slug, item.ringkasan, item.isi, item.kategori, item.tanggal, item.tanggalPelaksanaan || null, item.penulis, item.gambarUrl, item.status, id]
+             gambar_urls = COALESCE($10::jsonb, gambar_urls),
+             status = COALESCE($11, status)
+             WHERE id = $12
+             RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", gambar_urls as "gambarUrls", status`,
+            [item.judul, item.slug, item.ringkasan, item.isi, item.kategori, item.tanggal, item.tanggalPelaksanaan || null, item.penulis, item.gambarUrl, item.gambarUrls ? JSON.stringify(item.gambarUrls) : null, item.status, id]
     );
     return res.rows[0] || null;
   }

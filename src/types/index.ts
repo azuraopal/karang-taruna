@@ -38,6 +38,7 @@ export interface Berita {
   tanggalPelaksanaan?: string;
   penulis: string;
   gambarUrl: string;
+  gambarUrls?: string[];
   status: 'published' | 'draft';
   dibuatOleh?: string;
 }

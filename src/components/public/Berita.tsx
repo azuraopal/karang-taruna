@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Newspaper, Calendar, User, Search, ArrowRight, SearchX, BookOpen } from 'lucide-react';
+import { Newspaper, Calendar, User, Search, ArrowRight, SearchX, BookOpen, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita } from '../../types';
 import { Modal } from '../common/Modal';
@@ -16,11 +16,14 @@ const formatTanggalPelaksanaan = (value?: string) => {
   });
 };
 
+const getArticleImages = (article: Berita) => [article.gambarUrl, ...(article.gambarUrls || [])].filter(Boolean);
+
 export const BeritaSection: React.FC = () => {
   const { beritaList } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua');
   const [readingArticle, setReadingArticle] = useState<Berita | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const kategoriList = [
     'Semua',
@@ -168,7 +171,10 @@ export const BeritaSection: React.FC = () => {
                   <div className="p-6 pt-0">
                     <button
                       type="button"
-                      onClick={() => setReadingArticle(item)}
+                      onClick={() => {
+                        setReadingArticle(item);
+                        setActiveImageIndex(0);
+                      }}
                       className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-amber-400"
                     >
                       <span className="flex items-center gap-1.5">
@@ -216,13 +222,63 @@ export const BeritaSection: React.FC = () => {
         >
           {readingArticle && (
             <div className="space-y-5">
-              <div className="rounded-2xl overflow-hidden bg-slate-200 h-64 sm:h-72">
-                <img
-                  src={readingArticle.gambarUrl}
-                  alt={readingArticle.judul}
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative rounded-2xl overflow-hidden bg-slate-100 h-56 sm:h-72 md:h-80 group">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={getArticleImages(readingArticle)[activeImageIndex]}
+                    src={getArticleImages(readingArticle)[activeImageIndex]}
+                    alt={`${readingArticle.judul} - foto ${activeImageIndex + 1}`}
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full object-cover"
+                  />
+                </AnimatePresence>
+                {getArticleImages(readingArticle).length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setActiveImageIndex((index) => (index - 1 + getArticleImages(readingArticle).length) % getArticleImages(readingArticle).length)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
+                      aria-label="Foto sebelumnya"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveImageIndex((index) => (index + 1) % getArticleImages(readingArticle).length)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
+                      aria-label="Foto berikutnya"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    <span className="absolute right-3 bottom-3 px-2.5 py-1 rounded-full bg-slate-950/75 text-white text-[11px] font-bold">
+                      {activeImageIndex + 1} / {getArticleImages(readingArticle).length}
+                    </span>
+                  </>
+                )}
               </div>
+
+              {getArticleImages(readingArticle).length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
+                  {getArticleImages(readingArticle).map((imageUrl, index) => (
+                    <button
+                      key={imageUrl + index}
+                      type="button"
+                      onClick={() => setActiveImageIndex(index)}
+                      className={`relative shrink-0 snap-start w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${activeImageIndex === index ? 'border-amber-500 ring-2 ring-amber-200' : 'border-transparent opacity-65 hover:opacity-100'}`}
+                      aria-label={`Tampilkan foto ${index + 1}`}
+                    >
+                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                  <div className="flex items-center gap-1 text-[11px] text-slate-500 px-1 shrink-0">
+                    <Images className="w-3.5 h-3.5" />
+                    Galeri kegiatan
+                  </div>
+                </div>
+              )}
 
               <div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mb-2">
