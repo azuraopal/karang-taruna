@@ -22,10 +22,13 @@ export const Tim: React.FC = () => {
     'Ekonomi & Kewirausahaan',
   ];
 
-  const filteredMembers =
-    selectedDivisi === 'Semua'
-      ? timList
-      : timList.filter((m) => m.divisi === selectedDivisi);
+  const filteredMembers = selectedDivisi === 'Semua'
+    ? [...timList].sort((firstMember, secondMember) => {
+        const firstHasPhoto = Boolean(firstMember.fotoUrl && !firstMember.fotoUrl.includes('default-avatar.svg'));
+        const secondHasPhoto = Boolean(secondMember.fotoUrl && !secondMember.fotoUrl.includes('default-avatar.svg'));
+        return Number(secondHasPhoto) - Number(firstHasPhoto);
+      })
+    : timList.filter((m) => m.divisi === selectedDivisi);
 
   return (
     <section id="tim" className="py-24 bg-white border-t border-stone-200">

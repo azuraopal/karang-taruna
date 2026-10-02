@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Plus, Edit, Trash2, User, Eye, EyeOff,
-  AlertTriangle, CheckCircle2, Crown, Users, ShieldCheck
+  AlertTriangle, CheckCircle2, Crown, Users, ShieldCheck, Power
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { UserAccount, UserRole } from '../../types';
@@ -210,6 +210,9 @@ export const AdminUsers: React.FC = () => {
                 <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                   Peran
                 </th>
+                <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  Status
+                </th>
                 <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500 hidden sm:table-cell">
                   Bergabung
                 </th>
@@ -255,11 +258,26 @@ export const AdminUsers: React.FC = () => {
                         </code>
                       </td>
                       <td className="px-5 py-4">{roleBadge(item.role)}</td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.isActive !== false ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-stone-100 text-slate-500 border-stone-200'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${item.isActive !== false ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                          {item.isActive !== false ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                      </td>
                       <td className="px-5 py-4 text-xs text-slate-500 hidden sm:table-cell">
                         {item.createdAt || 'September 2026'}
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateUser(item.id, { isActive: item.isActive === false })}
+                            disabled={!isSuperAdmin || isSelf}
+                            className={`p-2 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 ${item.isActive !== false ? 'bg-emerald-50 hover:bg-amber-500 text-emerald-700 hover:text-white' : 'bg-stone-100 hover:bg-emerald-600 text-slate-500 hover:text-white'}`}
+                            title={isSelf ? 'Akun yang sedang digunakan tidak dapat dinonaktifkan' : !isSuperAdmin ? 'Hanya Super Admin yang dapat mengubah status akun' : item.isActive !== false ? 'Nonaktifkan akun' : 'Aktifkan akun'}
+                          >
+                            <Power className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(item)}
@@ -285,7 +303,7 @@ export const AdminUsers: React.FC = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12">
+                  <td colSpan={6} className="px-6 py-12">
                     <div className="flex flex-col items-center justify-center text-center">
                       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">
                         <Users className="h-7 w-7" />

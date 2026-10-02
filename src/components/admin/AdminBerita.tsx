@@ -48,7 +48,7 @@ export const AdminBerita: React.FC = () => {
         year: 'numeric',
       })
     );
-    setPenulis('Pengurus Harian');
+    setPenulis(currentUser?.namaLengkap || 'Sistem');
     setGambarUrl('');
     setStatus('published');
     setFormError('');
@@ -96,8 +96,12 @@ export const AdminBerita: React.FC = () => {
       ringkasan: ringkasan.trim(),
       isi: isi.trim(),
       kategori,
-      tanggal: tanggal.trim(),
-      penulis: penulis.trim(),
+      tanggal: editingId ? tanggal.trim() : new Date().toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      penulis: editingId ? penulis.trim() : currentUser?.namaLengkap || 'Sistem',
       gambarUrl: gambarUrl.trim(),
       status,
     };
@@ -358,9 +362,8 @@ export const AdminBerita: React.FC = () => {
               <input
                 type="text"
                 value={tanggal}
-                onChange={(e) => setTanggal(e.target.value)}
-                placeholder="Contoh: 28 September 2026"
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none"
+                readOnly
+                className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-600 cursor-not-allowed"
               />
             </div>
 
@@ -371,9 +374,8 @@ export const AdminBerita: React.FC = () => {
               <input
                 type="text"
                 value={penulis}
-                onChange={(e) => setPenulis(e.target.value)}
-                placeholder="Contoh: Sie Humas & Kemitraan"
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none"
+                readOnly
+                className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-600 cursor-not-allowed"
               />
             </div>
           </div>

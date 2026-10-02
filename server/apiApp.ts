@@ -124,7 +124,7 @@ apiApp.post('/api/auth/login', async (req, res) => {
     return res.status(401).json({ error: 'Username atau kata sandi tidak cocok' });
   }
 
-  res.json({ success: true, user: { id: user.id, username: user.username, namaLengkap: user.namaLengkap, role: user.role } });
+  res.json({ success: true, user: { id: user.id, username: user.username, namaLengkap: user.namaLengkap, role: user.role, isActive: user.isActive !== false } });
 });
 
 // ---------------------- Users (Admin Only) ----------------------
@@ -142,7 +142,7 @@ apiApp.post('/api/users', async (req, res) => {
     return res.status(400).json({ error: 'Seluruh kolom wajib diisi' });
   }
 
-  const created = await storage.createUser({ username, password, namaLengkap, role: role || 'pengurus', dibuatOleh });
+  const created = await storage.createUser({ username, password, namaLengkap, role: role || 'pengurus', isActive: true, dibuatOleh });
   broadcastUpdate({ type: 'users', action: 'create' });
   res.status(201).json(created);
 });

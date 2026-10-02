@@ -97,6 +97,7 @@ export interface UserAccount {
   username: string;
   namaLengkap: string;
   role: UserRole;
+  isActive?: boolean;
   password?: string;
   createdAt?: string;
   dibuatOleh?: string;

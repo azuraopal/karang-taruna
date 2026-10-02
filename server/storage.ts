@@ -7,9 +7,9 @@ import type { ActivityLog, Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount
 const DB_FILE = path.join(process.cwd(), 'server', 'dev_db.json');
 
 export const DEFAULT_USERS: UserAccount[] = [
-  { id: 'user-0', username: 'superadmin', namaLengkap: 'Super Administrator', role: 'superadmin', createdAt: 'September 2026' },
-  { id: 'user-1', username: 'admin', namaLengkap: 'Administrator Utama', role: 'admin', createdAt: 'September 2026' },
-  { id: 'user-2', username: 'pengurus', namaLengkap: 'Staff Pengurus Harian', role: 'pengurus', createdAt: 'September 2026' },
+  { id: 'user-0', username: 'superadmin', namaLengkap: 'Super Administrator', role: 'superadmin', isActive: true, createdAt: 'September 2026' },
+  { id: 'user-1', username: 'admin', namaLengkap: 'Administrator Utama', role: 'admin', isActive: true, createdAt: 'September 2026' },
+  { id: 'user-2', username: 'pengurus', namaLengkap: 'Staff Pengurus Harian', role: 'pengurus', isActive: true, createdAt: 'September 2026' },
 ];
 
 interface DevDbData {
@@ -385,7 +385,7 @@ export async function getUsers(): Promise<UserAccount[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt", dibuat_oleh as "dibuatOleh" FROM admin_users ORDER BY created_at ASC'
+      'SELECT id, username, nama_lengkap as "namaLengkap", role, is_active as "isActive", created_at as "createdAt", dibuat_oleh as "dibuatOleh" FROM admin_users ORDER BY created_at ASC'
     );
     return res.rows;
   }
@@ -395,15 +395,15 @@ export async function getUsers(): Promise<UserAccount[]> {
 export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAccount> {
   const id = 'user-' + Date.now();
   const createdAt = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-  const record: UserAccount = { ...item, id, createdAt };
+  const record: UserAccount = { ...item, id, isActive: item.isActive !== false, createdAt };
 
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role, dibuat_oleh)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt", dibuat_oleh as "dibuatOleh"`,
-      [id, record.username, hashPassword(record.password || '123456'), record.namaLengkap, record.role, record.dibuatOleh || null]
+      `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role, is_active, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, username, nama_lengkap as "namaLengkap", role, is_active as "isActive", created_at as "createdAt", dibuat_oleh as "dibuatOleh"`,
+      [id, record.username, hashPassword(record.password || '123456'), record.namaLengkap, record.role, record.isActive, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -416,16 +416,16 @@ export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAcc
 export async function updateUser(id: string, item: Partial<UserAccount>): Promise<UserAccount | null> {
   const isPg = await checkDbConnection();
   if (isPg) {
-    let query = 'UPDATE admin_users SET nama_lengkap = COALESCE($1, nama_lengkap), role = COALESCE($2, role)';
-    const values: (string | null)[] = [item.namaLengkap?.trim() || null, item.role || null];
+    let query = 'UPDATE admin_users SET nama_lengkap = COALESCE($1, nama_lengkap), role = COALESCE($2, role), is_active = COALESCE($3, is_active)';
+    const values: (string | boolean | null)[] = [item.namaLengkap?.trim() || null, item.role || null, item.isActive ?? null];
     if (item.password && item.password.trim()) {
-      query += ', password_hash = $3 WHERE id = $4';
+      query += ', password_hash = $4 WHERE id = $5';
       values.push(hashPassword(item.password.trim()), id);
     } else {
-      query += ' WHERE id = $3';
+      query += ' WHERE id = $4';
       values.push(id);
     }
-    query += ' RETURNING id, username, nama_lengkap as "namaLengkap", role, created_at as "createdAt", dibuat_oleh as "dibuatOleh"';
+    query += ' RETURNING id, username, nama_lengkap as "namaLengkap", role, is_active as "isActive", created_at as "createdAt", dibuat_oleh as "dibuatOleh"';
     const res = await pool.query(query, values);
     return res.rows[0] || null;
   }
@@ -454,10 +454,10 @@ export async function authenticate(username: string, pass: string): Promise<User
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, username, password_hash, nama_lengkap as "namaLengkap", role FROM admin_users WHERE username = $1',
+      'SELECT id, username, password_hash, nama_lengkap as "namaLengkap", role, is_active as "isActive" FROM admin_users WHERE username = $1',
       [username.trim()]
     );
-    if (res.rows.length > 0 && verifyPassword(pass.trim(), res.rows[0].password_hash)) {
+    if (res.rows.length > 0 && res.rows[0].isActive !== false && verifyPassword(pass.trim(), res.rows[0].password_hash)) {
       const { password_hash: _passwordHash, ...user } = res.rows[0];
       return user;
     }
@@ -465,7 +465,7 @@ export async function authenticate(username: string, pass: string): Promise<User
 
   // Check localDb
   const found = localDb.users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
-  if (found) {
+  if (found && found.isActive !== false) {
     if (found.password) {
       if (verifyPassword(pass.trim(), found.password)) return found;
     } else if (found.username === 'admin' && pass.trim() === 'katar2026') {

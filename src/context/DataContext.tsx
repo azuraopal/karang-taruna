@@ -515,14 +515,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Berita Handlers
   const addBerita = async (item: Omit<Berita, 'id'>) => {
     const tempId = 'berita-' + Date.now();
-    const newBerita: Berita = { ...item, id: tempId, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
+    const tanggalSekarang = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const beritaOtomatis = {
+      ...item,
+      tanggal: tanggalSekarang,
+      penulis: currentUser?.namaLengkap || 'Sistem',
+    };
+    const newBerita: Berita = { ...beritaOtomatis, id: tempId, dibuatOleh: currentUser?.namaLengkap || 'Sistem' };
     setBeritaList((prev) => [newBerita, ...prev]);
 
     try {
       const res = await fetch('/api/berita', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
+        body: JSON.stringify({ ...beritaOtomatis, dibuatOleh: currentUser?.namaLengkap || 'Sistem' }),
       });
       if (res.ok) {
         const saved = await res.json();
