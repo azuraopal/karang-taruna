@@ -81,7 +81,7 @@ export const Tim: React.FC = () => {
         {filteredMembers.length > 0 ? (
           <motion.div
             layout
-            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
           >
             <AnimatePresence>
               {displayedMembers.map((member) => (
