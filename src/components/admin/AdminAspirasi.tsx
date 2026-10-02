@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Trash2, Mail, Phone, Search, Inbox } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Aspirasi } from '../../types';
 import { Modal } from '../common/Modal';
+import { Pagination } from '../common/Pagination';
 
 export const AdminAspirasi: React.FC = () => {
   const { aspirasiList, updateStatusAspirasi, deleteAspirasi, currentUser } = useData();
@@ -10,6 +11,7 @@ export const AdminAspirasi: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'Semua' | Aspirasi['status']>('Semua');
   const [search, setSearch] = useState('');
   const [deletingItem, setDeletingItem] = useState<Aspirasi | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const filtered = aspirasiList.filter((a) => {
     const matchStatus = statusFilter === 'Semua' || a.status === statusFilter;
     const matchSearch =
@@ -18,6 +20,11 @@ export const AdminAspirasi: React.FC = () => {
       a.kategori.toLowerCase().includes(search.toLowerCase());
     return matchStatus && matchSearch;
   });
+  const paginated = filtered.slice((currentPage - 1) * 5, currentPage * 5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, filtered.length]);
 
   const confirmDelete = () => {
     if (deletingItem) {
@@ -79,7 +86,7 @@ export const AdminAspirasi: React.FC = () => {
       {/* List Aspirasi */}
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs divide-y divide-stone-100">
         {filtered.length > 0 ? (
-          filtered.map((item) => (
+          paginated.map((item) => (
             <div
               key={item.id}
               className={`p-5 flex flex-col sm:flex-row items-start justify-between gap-4 transition-colors ${
@@ -172,6 +179,7 @@ export const AdminAspirasi: React.FC = () => {
             </p>
           </div>
         )}
+        <Pagination currentPage={currentPage} totalItems={filtered.length} onPageChange={setCurrentPage} />
       </div>
 
       {/* Modal Hapus Aspirasi */}

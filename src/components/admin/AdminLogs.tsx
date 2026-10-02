@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, Filter } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ActivityAction } from '../../types';
+import { Pagination } from '../common/Pagination';
 
 const actionLabels: Record<ActivityAction, string> = {
   login: 'Login',
@@ -22,6 +23,7 @@ const actionColors: Record<ActivityAction, string> = {
 export const AdminLogs: React.FC = () => {
   const { activityLogs } = useData();
   const [actionFilter, setActionFilter] = useState<'semua' | ActivityAction>('semua');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredLogs = useMemo(
     () => actionFilter === 'semua'
@@ -29,6 +31,11 @@ export const AdminLogs: React.FC = () => {
       : activityLogs.filter((log) => log.action === actionFilter),
     [actionFilter, activityLogs]
   );
+  const paginatedLogs = filteredLogs.slice((currentPage - 1) * 5, currentPage * 5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [actionFilter, filteredLogs.length]);
 
   const formatDate = (value: string) => new Intl.DateTimeFormat('id-ID', {
     timeZone: 'Asia/Jakarta',
@@ -73,7 +80,7 @@ export const AdminLogs: React.FC = () => {
           </div>
         ) : (
           <div className="divide-y divide-stone-100">
-            {filteredLogs.map((log) => (
+            {paginatedLogs.map((log) => (
               <div key={log.id} className="p-4 sm:px-5 flex items-start gap-3 hover:bg-stone-50">
                 <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
                   <Activity className="w-4 h-4" />
@@ -94,6 +101,7 @@ export const AdminLogs: React.FC = () => {
             ))}
           </div>
         )}
+        <Pagination currentPage={currentPage} totalItems={filteredLogs.length} onPageChange={setCurrentPage} />
       </div>
     </div>
   );

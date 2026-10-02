@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Edit, Trash2, Search, Eye, EyeOff, AlertTriangle, Newspaper, Images, RefreshCw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita, KategoriBerita } from '../../types';
 import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
+import { Pagination } from '../common/Pagination';
 
 export const AdminBerita: React.FC = () => {
   const { beritaList, addBerita, updateBerita, deleteBerita, currentUser } = useData();
@@ -29,6 +30,7 @@ export const AdminBerita: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [isUploadingAdditional, setIsUploadingAdditional] = useState(false);
   const additionalPhotoInputRef = useRef<HTMLInputElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const kategoriOptions: KategoriBerita[] = [
     'Program Kerja',
@@ -179,6 +181,11 @@ export const AdminBerita: React.FC = () => {
       b.penulis.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
+  const paginated = filtered.slice((currentPage - 1) * 5, currentPage * 5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedKategori, filtered.length]);
 
   return (
     <div className="space-y-6">
@@ -238,8 +245,9 @@ export const AdminBerita: React.FC = () => {
       {/* List / Tabel Berita */}
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
         {filtered.length > 0 ? (
+          <>
           <div className="divide-y divide-stone-100">
-            {filtered.map((item) => (
+            {paginated.map((item) => (
               <div
                 key={item.id}
                 className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-stone-50/70 transition-colors"
@@ -329,6 +337,8 @@ export const AdminBerita: React.FC = () => {
               </div>
             ))}
           </div>
+          <Pagination currentPage={currentPage} totalItems={filtered.length} onPageChange={setCurrentPage} />
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-stone-300 rounded-2xl p-12 m-4">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">

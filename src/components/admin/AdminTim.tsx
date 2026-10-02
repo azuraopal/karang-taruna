@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Search, AlertTriangle, Users } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim, DivisiTim } from '../../types';
 import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
+import { Pagination } from '../common/Pagination';
 
 export const AdminTim: React.FC = () => {
   const { timList, addAnggotaTim, updateAnggotaTim, deleteAnggotaTim, currentUser } = useData();
@@ -13,6 +14,7 @@ export const AdminTim: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingItem, setDeletingItem] = useState<AnggotaTim | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Form states
   const [nama, setNama] = useState('');
@@ -108,6 +110,11 @@ export const AdminTim: React.FC = () => {
       m.jabatan.toLowerCase().includes(search.toLowerCase());
     return matchDivisi && matchSearch;
   });
+  const paginated = filtered.slice((currentPage - 1) * 5, currentPage * 5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDivisi, filtered.length]);
 
   return (
     <div className="space-y-6">
@@ -166,8 +173,9 @@ export const AdminTim: React.FC = () => {
 
       {/* Grid Pengurus Admin */}
       {filtered.length > 0 ? (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((item) => (
+          {paginated.map((item) => (
             <div
               key={item.id}
               className="bg-white rounded-2xl border border-stone-200 p-5 flex flex-col justify-between shadow-2xs hover:shadow-sm transition-all"
@@ -227,6 +235,8 @@ export const AdminTim: React.FC = () => {
             </div>
           ))}
         </div>
+        <Pagination currentPage={currentPage} totalItems={filtered.length} onPageChange={setCurrentPage} />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-stone-300 rounded-2xl p-12 mt-2">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">

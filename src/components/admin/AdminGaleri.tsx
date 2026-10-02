@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Edit, Trash2, Search, MapPin, Calendar, AlertTriangle, ImageOff, Images, RefreshCw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri, KategoriGaleri } from '../../types';
 import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
+import { Pagination } from '../common/Pagination';
 
 export const AdminGaleri: React.FC = () => {
   const { galeriList, addGaleri, updateGaleri, deleteGaleri, currentUser } = useData();
@@ -24,6 +25,7 @@ export const AdminGaleri: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [isUploadingAdditional, setIsUploadingAdditional] = useState(false);
   const additionalPhotoInputRef = useRef<HTMLInputElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const kategoriOptions: KategoriGaleri[] = [
     'Kegiatan Sosial',
@@ -149,6 +151,11 @@ export const AdminGaleri: React.FC = () => {
       g.lokasi.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
+  const paginated = filtered.slice((currentPage - 1) * 5, currentPage * 5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedKategori, filtered.length]);
 
   return (
     <div className="space-y-6">
@@ -207,8 +214,9 @@ export const AdminGaleri: React.FC = () => {
 
       {/* Grid Galeri */}
       {filtered.length > 0 ? (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((item) => (
+          {paginated.map((item) => (
             <div
               key={item.id}
               className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs flex flex-col justify-between"
@@ -271,6 +279,8 @@ export const AdminGaleri: React.FC = () => {
             </div>
           ))}
         </div>
+        <Pagination currentPage={currentPage} totalItems={filtered.length} onPageChange={setCurrentPage} />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-stone-300 rounded-2xl p-12">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">

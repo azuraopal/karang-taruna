@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Plus, Edit, Trash2, User, Eye, EyeOff,
   AlertTriangle, CheckCircle2, Crown, Users, ShieldCheck, Power
@@ -6,6 +6,7 @@ import {
 import { useData } from '../../context/DataContext';
 import type { UserAccount, UserRole } from '../../types';
 import { Modal } from '../common/Modal';
+import { Pagination } from '../common/Pagination';
 
 export const AdminUsers: React.FC = () => {
   const { userList, addUser, updateUser, deleteUser, currentUser, showToast } = useData();
@@ -21,6 +22,12 @@ export const AdminUsers: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const paginatedUsers = userList.slice((currentPage - 1) * 5, currentPage * 5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [userList.length]);
 
   const resetForm = () => {
     setEditingId(null);
@@ -222,7 +229,7 @@ export const AdminUsers: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-stone-100">
               {userList.length > 0 ? (
-                userList.map((item) => {
+                paginatedUsers.map((item) => {
                   const isSelf = item.id === currentUser?.id;
                   return (
                     <tr
@@ -316,6 +323,7 @@ export const AdminUsers: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination currentPage={currentPage} totalItems={userList.length} onPageChange={setCurrentPage} />
       </div>
 
       {/* Modal Tambah / Edit */}
