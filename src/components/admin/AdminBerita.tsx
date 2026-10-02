@@ -21,6 +21,7 @@ export const AdminBerita: React.FC = () => {
   const [isi, setIsi] = useState('');
   const [kategori, setKategori] = useState<KategoriBerita>('Program Kerja');
   const [tanggal, setTanggal] = useState('');
+  const [tanggalPelaksanaan, setTanggalPelaksanaan] = useState('');
   const [penulis, setPenulis] = useState('');
   const [gambarUrl, setGambarUrl] = useState('');
   const [status, setStatus] = useState<'published' | 'draft'>('published');
@@ -48,6 +49,7 @@ export const AdminBerita: React.FC = () => {
         year: 'numeric',
       })
     );
+    setTanggalPelaksanaan('');
     setPenulis(currentUser?.namaLengkap || 'Sistem');
     setGambarUrl('');
     setStatus('published');
@@ -67,6 +69,7 @@ export const AdminBerita: React.FC = () => {
     setIsi(item.isi);
     setKategori(item.kategori);
     setTanggal(item.tanggal);
+    setTanggalPelaksanaan(item.tanggalPelaksanaan || '');
     setPenulis(item.penulis);
     setGambarUrl(item.gambarUrl);
     setStatus(item.status);
@@ -78,8 +81,10 @@ export const AdminBerita: React.FC = () => {
     e.preventDefault();
     setFormError('');
 
-    if (!judul.trim() || !ringkasan.trim() || !isi.trim() || !penulis.trim()) {
-      setFormError('Mohon lengkapi judul, ringkasan, isi, dan penulis warta.');
+    if (!judul.trim() || !ringkasan.trim() || !isi.trim() || !penulis.trim() || (kategori !== 'Pengumuman' && !tanggalPelaksanaan)) {
+      setFormError(kategori === 'Pengumuman'
+        ? 'Mohon lengkapi judul, ringkasan, isi, dan penulis warta.'
+        : 'Tanggal diselenggarakan wajib diisi untuk berita kegiatan.');
       return;
     }
 
@@ -101,6 +106,7 @@ export const AdminBerita: React.FC = () => {
         month: 'long',
         year: 'numeric',
       }),
+      tanggalPelaksanaan: kategori === 'Pengumuman' ? undefined : tanggalPelaksanaan,
       penulis: editingId ? penulis.trim() : currentUser?.namaLengkap || 'Sistem',
       gambarUrl: gambarUrl.trim(),
       status,
@@ -353,6 +359,20 @@ export const AdminBerita: React.FC = () => {
               </select>
             </div>
           </div>
+
+          {kategori !== 'Pengumuman' && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Tanggal Diselenggarakan *
+              </label>
+              <input
+                type="date"
+                value={tanggalPelaksanaan}
+                onChange={(e) => setTanggalPelaksanaan(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-none"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

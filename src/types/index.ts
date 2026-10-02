@@ -35,6 +35,7 @@ export interface Berita {
   isi: string;
   kategori: KategoriBerita;
   tanggal: string;
+  tanggalPelaksanaan?: string;
   penulis: string;
   gambarUrl: string;
   status: 'published' | 'draft';

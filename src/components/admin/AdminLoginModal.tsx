@@ -26,16 +26,16 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
     }
 
     setIsLoading(true);
-    const success = await loginAdmin(username, password);
+    const result = await loginAdmin(username, password);
     setIsLoading(false);
 
-    if (success) {
+    if (result.success) {
       setCurrentView('admin');
       setUsername('');
       setPassword('');
       onClose();
     } else {
-      setErrorMsg('Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.');
+      setErrorMsg(result.error || 'Nama pengguna atau kata sandi tidak cocok. Silakan coba lagi.');
     }
   };
 

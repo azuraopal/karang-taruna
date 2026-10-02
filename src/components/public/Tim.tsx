@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Mail, Phone, UserCheck, SearchX } from 'lucide-react';
+import { Users, Mail, Phone, UserCheck, SearchX, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim } from '../../types';
 import { Modal } from '../common/Modal';
@@ -9,6 +9,8 @@ export const Tim: React.FC = () => {
   const { timList } = useData();
   const [selectedDivisi, setSelectedDivisi] = useState<string>('Semua');
   const [selectedMember, setSelectedMember] = useState<AnggotaTim | null>(null);
+  const [activePhotoMember, setActivePhotoMember] = useState<AnggotaTim | null>(null);
+  const [memberPhotoZoom, setMemberPhotoZoom] = useState(1);
   const [visibleMemberCount, setVisibleMemberCount] = useState(10);
 
   const divisiList: string[] = [
@@ -98,7 +100,15 @@ export const Tim: React.FC = () => {
                 >
                   <div>
                     {/* Foto Pengurus */}
-                    <div className="relative h-64 bg-slate-100 overflow-hidden flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActivePhotoMember(member);
+                        setMemberPhotoZoom(1);
+                      }}
+                      className="relative block w-full h-64 bg-slate-100 overflow-hidden flex items-center justify-center cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"
+                      aria-label={`Lihat foto ${member.nama}`}
+                    >
                       <img
                         src={member.fotoUrl || '/default-avatar.svg'}
                         alt={`Foto ${member.nama}`}
@@ -113,7 +123,7 @@ export const Tim: React.FC = () => {
                           {member.divisi}
                         </span>
                       </div>
-                    </div>
+                    </button>
 
                     {/* Informasi Pengurus */}
                     <div className="p-5 space-y-2">
@@ -234,6 +244,54 @@ export const Tim: React.FC = () => {
                   type="button"
                   onClick={() => setSelectedMember(null)}
                   className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+
+        {/* Lightbox Foto Pengurus */}
+        <Modal
+          isOpen={!!activePhotoMember}
+          onClose={() => setActivePhotoMember(null)}
+          title={activePhotoMember ? `Foto ${activePhotoMember.nama}` : 'Foto Pengurus'}
+          maxWidth="lg"
+        >
+          {activePhotoMember && (
+            <div className="space-y-4">
+              <div className="rounded-2xl overflow-hidden flex items-center justify-center">
+                <img
+                  src={activePhotoMember.fotoUrl || '/default-avatar.svg'}
+                  alt={`Foto ${activePhotoMember.nama}`}
+                  onError={(e) => {
+                    e.currentTarget.src = '/default-avatar.svg';
+                  }}
+                  className="block w-auto max-w-full max-h-[70vh] object-contain transition-transform duration-300"
+                  style={{ transform: `scale(${memberPhotoZoom})` }}
+                />
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <button type="button" onClick={() => setMemberPhotoZoom((zoom) => Math.max(1, Number((zoom - 0.25).toFixed(2))))} disabled={memberPhotoZoom <= 1} className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Perkecil foto" title="Perkecil foto">
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => setMemberPhotoZoom(1)} className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200" aria-label="Reset ukuran foto" title="Reset ukuran foto">
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => setMemberPhotoZoom((zoom) => Math.min(3, Number((zoom + 0.25).toFixed(2))))} disabled={memberPhotoZoom >= 3} className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Perbesar foto" title="Perbesar foto">
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{activePhotoMember.nama}</p>
+                  <p className="text-xs text-amber-700 mt-0.5">{activePhotoMember.jabatan}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActivePhotoMember(null)}
+                  className="shrink-0 px-4 py-2 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold hover:bg-slate-800"
                 >
                   Tutup
                 </button>

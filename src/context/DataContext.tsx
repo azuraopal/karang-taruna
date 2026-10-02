@@ -15,7 +15,7 @@ interface DataContextType {
   // Auth & Roles
   currentUser: UserAccount | null;
   isAdminLoggedIn: boolean;
-  loginAdmin: (user: string, pass: string) => Promise<boolean>;
+  loginAdmin: (user: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   logoutAdmin: () => void;
 
   // User Management (Admin Only)
@@ -266,7 +266,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await fetch('/api/users');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) setUserList(data);
+          if (Array.isArray(data)) {
+            const loggedInAccount = currentUser ? data.find((user: UserAccount) => user.id === currentUser.id) : null;
+            if (isAdminLoggedIn && currentUser && loggedInAccount?.isActive === false) {
+              setIsAdminLoggedIn(false);
+              setCurrentUser(null);
+              setCurrentView('public');
+              localStorage.removeItem(STORAGE_KEYS.AUTH);
+              localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+              showToast('Akun Anda telah dinonaktifkan. Anda telah keluar dari panel.', 'error');
+            }
+            setUserList(data);
+          }
         }
       }
       if (category === 'all' || category === 'logs') {
@@ -281,7 +292,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         showToast('Data server belum tersambung. Menampilkan cache lokal sementara.', 'error');
       }
     }
-  }, [showToast]);
+  }, [currentUser, isAdminLoggedIn, showToast]);
 
   const refreshAllData = useCallback(async () => {
     await fetchCategory('all');
@@ -359,7 +370,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [fetchCategory]);
 
   // Auth Handlers
-  const loginAdmin = async (user: string, pass: string): Promise<boolean> => {
+  const loginAdmin = async (user: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -381,11 +392,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
           // Fetch users list if admin
           if (data.user.role === 'admin' || data.user.role === 'superadmin') fetchCategory('users');
-          return true;
+          return { success: true };
         }
+      }
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        return { success: false, error: data.error || 'Akun Anda telah dinonaktifkan.' };
       }
     } catch {
       // offline fallback
+    }
+
+    const cachedAccount = userList.find((account) => account.username.toLowerCase() === user.trim().toLowerCase());
+    if (cachedAccount?.isActive === false) {
+      return { success: false, error: 'Akun Anda telah dinonaktifkan. Hubungi Administrator.' };
     }
 
     // Offline Demo Fallbacks
@@ -395,7 +415,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Super Admin', demoSuperAdmin);
       showToast('Berhasil masuk sebagai Super Admin (Demo)', 'success');
-      return true;
+      return { success: true };
     }
     if (user.trim() === 'admin' && pass.trim() === 'katar2026') {
       const demoAdmin = DEFAULT_USERS[1];
@@ -403,7 +423,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Administrator', demoAdmin);
       showToast('Berhasil masuk sebagai Administrator (Demo)', 'success');
-      return true;
+      return { success: true };
     }
     if (user.trim() === 'pengurus' && pass.trim() === 'pengurus2026') {
       const demoPengurus = DEFAULT_USERS[2];
@@ -411,11 +431,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Pengurus', demoPengurus);
       showToast('Berhasil masuk sebagai Pengurus (Demo)', 'success');
-      return true;
+      return { success: true };
     }
 
     showToast('Username atau password salah!', 'error');
-    return false;
+    return { success: false, error: 'Username atau password salah!' };
   };
 
   const logoutAdmin = () => {

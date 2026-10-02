@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Calendar, MapPin, Eye, SearchX } from 'lucide-react';
+import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
 import { Modal } from '../common/Modal';
@@ -9,6 +9,7 @@ export const Galeri: React.FC = () => {
   const { galeriList } = useData();
   const [selectedKategori, setSelectedKategori] = useState<string>('Semua');
   const [activePhoto, setActivePhoto] = useState<ItemGaleri | null>(null);
+  const [photoZoom, setPhotoZoom] = useState(1);
 
   const kategoriList = [
     'Semua',
@@ -80,7 +81,10 @@ export const Galeri: React.FC = () => {
                   transition={{ duration: 0.45, delay: Math.min(filteredGaleri.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
                   whileHover={{ y: -6 }}
                   key={item.id}
-                  onClick={() => setActivePhoto(item)}
+                  onClick={() => {
+                    setActivePhoto(item);
+                    setPhotoZoom(1);
+                  }}
                   className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
                   tabIndex={0}
                   role="button"
@@ -162,12 +166,45 @@ export const Galeri: React.FC = () => {
         >
           {activePhoto && (
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden bg-slate-950 max-h-[420px] flex items-center justify-center">
+              <div className="rounded-2xl overflow-hidden flex items-center justify-center">
                 <img
                   src={activePhoto.gambarUrl}
                   alt={activePhoto.judul}
-                  className="w-full h-auto max-h-[420px] object-contain"
+                  className="block w-auto max-w-full max-h-[70vh] object-contain transition-transform duration-300"
+                  style={{ transform: `scale(${photoZoom})` }}
                 />
+              </div>
+
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPhotoZoom((zoom) => Math.max(1, Number((zoom - 0.25).toFixed(2))))}
+                  disabled={photoZoom <= 1}
+                  className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="Perkecil foto"
+                  title="Perkecil foto"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhotoZoom(1)}
+                  className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200"
+                  aria-label="Reset ukuran foto"
+                  title="Reset ukuran foto"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhotoZoom((zoom) => Math.min(3, Number((zoom + 0.25).toFixed(2))))}
+                  disabled={photoZoom >= 3}
+                  className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="Perbesar foto"
+                  title="Perbesar foto"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
               </div>
 
               <div>

@@ -119,6 +119,11 @@ apiApp.post('/api/auth/login', async (req, res) => {
     return res.status(400).json({ error: 'Username dan password wajib diisi' });
   }
 
+  const accountIsActive = await storage.getUserActiveStatus(username);
+  if (accountIsActive === false) {
+    return res.status(403).json({ error: 'Akun Anda telah dinonaktifkan. Hubungi Administrator.' });
+  }
+
   const user = await storage.authenticate(username, password);
   if (!user) {
     return res.status(401).json({ error: 'Username atau kata sandi tidak cocok' });

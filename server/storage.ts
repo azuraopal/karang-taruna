@@ -111,7 +111,7 @@ export async function getBerita(): Promise<Berita[]> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      'SELECT id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh" FROM berita ORDER BY created_at DESC'
+      'SELECT id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh" FROM berita ORDER BY created_at DESC'
     );
     return res.rows;
   }
@@ -126,10 +126,10 @@ export async function createBerita(item: Omit<Berita, 'id'>): Promise<Berita> {
   const isPg = await checkDbConnection();
   if (isPg) {
     const res = await pool.query(
-      `INSERT INTO berita (id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url, status, dibuat_oleh)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh"`,
-      [id, record.judul, record.slug, record.ringkasan, record.isi, record.kategori, record.tanggal, record.penulis, record.gambarUrl, record.status, record.dibuatOleh || null]
+      `INSERT INTO berita (id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan, penulis, gambar_url, status, dibuat_oleh)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", status, dibuat_oleh as "dibuatOleh"`,
+      [id, record.judul, record.slug, record.ringkasan, record.isi, record.kategori, record.tanggal, record.tanggalPelaksanaan || null, record.penulis, record.gambarUrl, record.status, record.dibuatOleh || null]
     );
     return res.rows[0];
   }
@@ -150,12 +150,13 @@ export async function updateBerita(id: string, item: Partial<Berita>): Promise<B
            isi = COALESCE($4, isi),
            kategori = COALESCE($5, kategori),
            tanggal = COALESCE($6, tanggal),
-           penulis = COALESCE($7, penulis),
-           gambar_url = COALESCE($8, gambar_url),
-           status = COALESCE($9, status)
-       WHERE id = $10
-       RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, penulis, gambar_url as "gambarUrl", status`,
-      [item.judul, item.slug, item.ringkasan, item.isi, item.kategori, item.tanggal, item.penulis, item.gambarUrl, item.status, id]
+             tanggal_pelaksanaan = $7,
+             penulis = COALESCE($8, penulis),
+             gambar_url = COALESCE($9, gambar_url),
+             status = COALESCE($10, status)
+           WHERE id = $11
+           RETURNING id, judul, slug, ringkasan, isi, kategori, tanggal, tanggal_pelaksanaan as "tanggalPelaksanaan", penulis, gambar_url as "gambarUrl", status`,
+          [item.judul, item.slug, item.ringkasan, item.isi, item.kategori, item.tanggal, item.tanggalPelaksanaan || null, item.penulis, item.gambarUrl, item.status, id]
     );
     return res.rows[0] || null;
   }
@@ -450,6 +451,20 @@ export async function deleteUser(id: string): Promise<boolean> {
 }
 
 // ---------------------- AUTH ----------------------
+export async function getUserActiveStatus(username: string): Promise<boolean | null> {
+  const isPg = await checkDbConnection();
+  if (isPg) {
+    const res = await pool.query(
+      'SELECT is_active as "isActive" FROM admin_users WHERE LOWER(username) = LOWER($1)',
+      [username.trim()]
+    );
+    return res.rows.length > 0 ? res.rows[0].isActive !== false : null;
+  }
+
+  const found = localDb.users.find((user) => user.username.toLowerCase() === username.trim().toLowerCase());
+  return found ? found.isActive !== false : null;
+}
+
 export async function authenticate(username: string, pass: string): Promise<UserAccount | null> {
   const isPg = await checkDbConnection();
   if (isPg) {

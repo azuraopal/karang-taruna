@@ -5,6 +5,17 @@ import { useData } from '../../context/DataContext';
 import type { Berita } from '../../types';
 import { Modal } from '../common/Modal';
 
+const formatTanggalPelaksanaan = (value?: string) => {
+  if (!value) return '';
+  const [year, month, day] = value.split('-');
+  if (!year || !month || !day) return value;
+  return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
 export const BeritaSection: React.FC = () => {
   const { beritaList } = useData();
   const [searchQuery, setSearchQuery] = useState('');
@@ -137,6 +148,11 @@ export const BeritaSection: React.FC = () => {
                           {item.penulis}
                         </span>
                       </div>
+                      {item.tanggalPelaksanaan && (
+                        <div className="text-[11px] font-semibold text-amber-700">
+                          Diselenggarakan: {formatTanggalPelaksanaan(item.tanggalPelaksanaan)}
+                        </div>
+                      )}
 
                       <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
                         {item.judul}
@@ -221,6 +237,11 @@ export const BeritaSection: React.FC = () => {
                     <User className="w-3.5 h-3.5 text-slate-400" />
                     Ditulis oleh: {readingArticle.penulis}
                   </span>
+                  {readingArticle.tanggalPelaksanaan && (
+                    <span className="flex items-center gap-1 text-amber-700 font-semibold">
+                      Diselenggarakan: {formatTanggalPelaksanaan(readingArticle.tanggalPelaksanaan)}
+                    </span>
+                  )}
                 </div>
 
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
