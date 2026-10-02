@@ -94,7 +94,7 @@ export const Tentang: React.FC = () => {
                 </div>
                 <div>
                   <span className="font-bold text-slate-900 block mb-0.5">Pangkalan Utama:</span>
-                  <span>Balai Pertemuan Margabakti 07</span>
+                  <span>Majelis RT 003</span>
                 </div>
               </div>
             </div>

@@ -61,7 +61,7 @@ export const AspirasiSection: React.FC = () => {
 
             <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-slate-900 border-b border-stone-100 pb-2">
-                Kontak & Balai Pertemuan
+                Kontak
               </h3>
 
               <div className="space-y-3 text-xs text-slate-600">

@@ -145,7 +145,7 @@ export const INITIAL_BERITA: Berita[] = [
     judul: 'Workshop Pemasaran Digital dan Pemberdayaan UMKM Pemuda Margabakti 07',
     slug: 'workshop-umkm-pemuda-margabakti-07-2026',
     ringkasan: 'Pelatihan praktis pengelolaan produk dan strategi promosi daring bagi para wirausahawan muda Margabakti 07.',
-    isi: 'Divisi Ekonomi & Kewirausahaan bekerjasama dengan praktisi digital marketing menggelar lokakarya sehari penuh di balai warga Margabakti 07. Materi mencakup fotografi produk terjangkau dengan ponsel serta optimasi penjualan melalui media sosial.',
+    isi: 'Divisi Ekonomi & Kewirausahaan bekerjasama dengan praktisi digital marketing menggelar lokakarya sehari penuh di Majelis RT 003. Materi mencakup fotografi produk terjangkau dengan ponsel serta optimasi penjualan melalui media sosial.',
     kategori: 'Pendidikan',
     tanggal: '10 September 2026',
     penulis: 'Divisi Ekonomi & Kewirausahaan',
@@ -213,7 +213,7 @@ export const INITIAL_GALERI: ItemGaleri[] = [
     tanggal: '17 Agustus 2026',
     gambarUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
     deskripsi: 'Stan aneka makanan dan kerajinan tangan hasil karya pemuda untuk mendorong kemandirian ekonomi.',
-    lokasi: 'Area Balai Pertemuan Margabakti 07',
+    lokasi: 'Majelis RT 003',
   },
   {
     id: 'galeri-5',
@@ -231,7 +231,7 @@ export const INITIAL_GALERI: ItemGaleri[] = [
     tanggal: '05 Agustus 2026',
     gambarUrl: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=800&q=80',
     deskripsi: 'Pertandingan asah strategi dan ketangkasan fisik yang diikuti antusias oleh pemuda serta tokoh warga.',
-    lokasi: 'Balai Warga Margabakti 07',
+    lokasi: 'Majelis RT 003',
   },
 ];
 
@@ -297,6 +297,6 @@ export const TENTANG_DATA = {
     email: 'katarrmargabaktii@gmail.com',
     telepon: '+62 831-7807-4542',
     whatsapp: '+62 831-7807-4542',
-    jadwalKumpul: 'Setiap Sabtu Malam Pukul 19.30 WIB di Balai Margabakti 07',
+    jadwalKumpul: 'Fleksibel',
   }
 };

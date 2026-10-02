@@ -41,7 +41,7 @@ export const AdminGaleri: React.FC = () => {
         year: 'numeric',
       })
     );
-    setLokasi('Balai Pertemuan Margabakti 07');
+    setLokasi('Majelis rt 003');
     setGambarUrl('');
     setDeskripsi('');
     setFormError('');
