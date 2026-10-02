@@ -184,7 +184,7 @@ export const Tentang: React.FC = () => {
           <h3 className="text-xl font-bold text-slate-900 mb-6 text-center">
             7 Divisi Bidang Kerja Pemuda
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-5 lg:[&>*]:col-span-3 lg:[&>*:nth-child(5)]:col-start-2">
             {bidangKerja.map((bidang, idx) => (
               <div key={idx} className="bg-white rounded-2xl p-5 border border-amber-200/60 shadow-2xs">
                 <span className="text-[11px] font-black uppercase text-amber-700 tracking-wider block mb-1">
