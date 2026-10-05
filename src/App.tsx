@@ -3,6 +3,7 @@ import { DataProvider, useData } from './context/DataContext';
 import { ToastContainer } from './components/common/Toast';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import { CelebrationWidget } from './components/common/CelebrationWidget';
 
 const AdminLoginModal = lazy(() => import('./components/admin/AdminLoginModal').then((module) => ({ default: module.AdminLoginModal })));
 const Hero = lazy(() => import('./components/public/Hero').then((module) => ({ default: module.Hero })));
@@ -55,6 +56,8 @@ const AppContent: React.FC = () => {
         </main>
       </Suspense>
 
+      {/* Interactive Semangat Pemuda Cheer Widget */}
+      <CelebrationWidget />
       {/* Public Footer */}
       <Footer onOpenLoginModal={() => setIsLoginModalOpen(true)} />
 

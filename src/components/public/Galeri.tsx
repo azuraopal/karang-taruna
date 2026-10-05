@@ -4,7 +4,7 @@ import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw, Che
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
 import { Modal } from '../common/Modal';
-
+import { TiltCard } from '../common/TiltCard';
 const getGalleryImages = (item: ItemGaleri) => [item.gambarUrl, ...(item.gambarUrls || [])].filter(Boolean);
 
 export const Galeri: React.FC = () => {
@@ -89,7 +89,7 @@ export const Galeri: React.FC = () => {
                     setPhotoZoom(1);
                     setActivePhotoIndex(0);
                   }}
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-2xs hover:shadow-xl hover:border-amber-400 transition-all flex flex-col justify-between"
                   tabIndex={0}
                   role="button"
                   onKeyDown={(e) => {
@@ -100,43 +100,45 @@ export const Galeri: React.FC = () => {
                   }}
                   aria-label={`Buka foto ${item.judul}`}
                 >
-                  <div className="relative h-60 bg-slate-100 overflow-hidden">
-                    <img
-                      src={item.gambarUrl}
-                      alt={item.judul}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-colors flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white p-2.5 rounded-full backdrop-blur-xs">
-                        <Eye className="w-5 h-5" />
-                      </span>
+                  <TiltCard maxTilt={8} glareOpacity={0.22} className="h-full flex flex-col justify-between">
+                    <div className="relative h-60 bg-slate-100 overflow-hidden">
+                      <img
+                        src={item.gambarUrl}
+                        alt={item.judul}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-colors flex items-center justify-center">
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white p-2.5 rounded-full backdrop-blur-xs">
+                          <Eye className="w-5 h-5" />
+                        </span>
+                      </div>
+                      <div className="absolute top-3 left-3">
+                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-900/90 text-amber-400 backdrop-blur-xs">
+                          {item.kategori}
+                        </span>
+                      </div>
                     </div>
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-900/90 text-amber-400 backdrop-blur-xs">
-                        {item.kategori}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="p-5 space-y-2">
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-1">
-                      {item.judul}
-                    </h3>
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                      {item.deskripsi}
-                    </p>
-                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-amber-600" />
-                        {item.tanggal}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                        {item.lokasi}
-                      </span>
+                    <div className="p-5 space-y-2">
+                      <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-1">
+                        {item.judul}
+                      </h3>
+                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                        {item.deskripsi}
+                      </p>
+                      <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                          {item.tanggal}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                          {item.lokasi}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </TiltCard>
                 </motion.div>
               ))}
             </AnimatePresence>

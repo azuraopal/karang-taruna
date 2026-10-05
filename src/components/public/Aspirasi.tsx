@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, CheckCircle2, MapPin, Mail, Phone, Clock, AlertCircle } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle2, MapPin, Mail, Phone, Clock, AlertCircle, Sparkles } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Aspirasi } from '../../types';
 import { TENTANG_DATA } from '../../data/initialData';
+import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const AspirasiSection: React.FC = () => {
   const { addAspirasi } = useData();
@@ -32,14 +33,16 @@ export const AspirasiSection: React.FC = () => {
       kategori,
       pesan: pesan.trim(),
     });
-
     setIsSubmitted(true);
+    triggerParticleBurst({
+      count: 50,
+      power: 1.25,
+    });
     setNama('');
     setEmail('');
     setNoHp('');
     setPesan('');
   };
-
   return (
     <section id="aspirasi" className="py-24 bg-stone-50 border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,26 +97,37 @@ export const AspirasiSection: React.FC = () => {
           <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-sm">
             {isSubmitted ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
                 className="py-12 text-center space-y-4"
               >
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  Aspirasi Berhasil Disampaikan!
+                <motion.div
+                  animate={{ scale: [0.8, 1.15, 1], rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.6 }}
+                  className="w-18 h-18 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 border-2 border-emerald-300"
+                >
+                  <CheckCircle2 className="w-10 h-10" />
+                </motion.div>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
+                  <span>Aspirasi Berhasil Disampaikan!</span>
+                  <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
                 </h3>
                 <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                  Terima kasih atas partisipasi aktif Anda. Pesan telah tercatat pada sistem database pengurus untuk ditinjau segera.
+                  Terima kasih atas partisipasi aktif Anda. Pesan telah tercatat secara langsung pada sistem pengurus untuk segera ditinjau dan ditindaklanjuti.
                 </p>
-                <button
+                <motion.button
                   type="button"
-                  onClick={() => setIsSubmitted(false)}
-                  className="px-6 py-2.5 rounded-xl bg-slate-900 text-amber-400 font-bold text-xs hover:bg-slate-800 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 20 });
+                    setIsSubmitted(false);
+                  }}
+                  className="px-7 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs shadow-md transition-all cursor-pointer"
                 >
                   Kirim Aspirasi Lainnya
-                </button>
+                </motion.button>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4.5">
@@ -201,13 +215,15 @@ export const AspirasiSection: React.FC = () => {
                 </div>
 
                 <div className="pt-2">
-                  <button
+                  <motion.button
                     type="submit"
-                    className="min-h-[44px] w-full py-3 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="min-h-[44px] w-full py-3 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer border border-slate-800"
                   >
                     <Send className="w-4 h-4" />
                     <span>Kirim Aspirasi Sekarang</span>
-                  </button>
+                  </motion.button>
                 </div>
               </form>
             )}

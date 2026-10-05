@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Lock, LayoutDashboard, ArrowRight } from 'lucide-react';
+import { Menu, X, Lock, LayoutDashboard, ArrowUpRight } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Logo } from './Logo';
 
@@ -17,28 +17,30 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
-      setMobileMenuOpen(false);
-
-      // Detect active section on scroll
       const sections = ['beranda', 'tentang', 'tim', 'galeri', 'berita', 'aspirasi'];
       const scrollPos = window.scrollY + 140;
-
       for (const sec of sections) {
         const el = document.getElementById(sec);
         if (el) {
           const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
+          if (scrollPos >= top && scrollPos < top + el.offsetHeight) {
             setActiveNav(sec);
             break;
           }
         }
       }
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const navLinks = [
     { id: 'beranda', label: 'Beranda' },
@@ -49,48 +51,37 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
     { id: 'aspirasi', label: 'Aspirasi Warga' },
   ];
 
-  const handleNavClick = (id: string) => {
+  const handleNavClick = useCallback((id: string) => {
     setActiveNav(id);
     setMobileMenuOpen(false);
-
     if (currentView === 'admin') {
       setCurrentView('public');
-      // allow view swap to render then scroll
       setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
       return;
     }
-
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentView, setCurrentView]);
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-slate-900/95 backdrop-blur-md shadow-md py-3 border-b border-slate-800'
-          : 'bg-slate-900 py-4.5 border-b border-slate-800/80'
+          ? 'bg-slate-900/96 backdrop-blur-md shadow-lg shadow-black/30 py-3 border-b border-slate-800/80'
+          : 'bg-slate-900 py-4 border-b border-slate-800/60'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Logo & Brand Identity */}
+
+          {/* Logo */}
           <a
             href="#beranda"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick('beranda');
-            }}
+            onClick={(e) => { e.preventDefault(); handleNavClick('beranda'); }}
             className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg p-1"
           >
-            <Logo variant="white" className="h-7 sm:h-8.5 w-auto" />
+            <Logo variant="white" className="h-7 sm:h-8 w-auto" />
             <div className="hidden sm:block pl-2.5 border-l border-slate-700/80">
               <p className="text-xs text-slate-300 font-medium font-subtitle tracking-wide">
                 Muda Berkarya, Nyata Berdaya
@@ -98,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
             </div>
           </a>
 
-          {/* Desktop Navigation Links */}
+          {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1 bg-slate-950/60 p-1.5 rounded-full border border-slate-800">
             {navLinks.map((link) => {
               const isActive = activeNav === link.id && currentView === 'public';
@@ -107,9 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                   key={link.id}
                   onClick={() => handleNavClick(link.id)}
                   className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 ${
-                    isActive
-                      ? 'text-slate-950'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                    isActive ? 'text-slate-950' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
                   {isActive && (
@@ -153,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
               <button
                 type="button"
                 onClick={onOpenLoginModal}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800/90 hover:bg-slate-750 hover:text-white border border-slate-700 hover:border-slate-600 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-300 bg-slate-800/90 hover:text-white border border-slate-700 hover:border-slate-600 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
                 <Lock className="w-3.5 h-3.5 text-amber-400" />
                 <span>Masuk Admin</span>
@@ -161,94 +150,146 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
             )}
           </div>
 
-          {/* Mobile Menu Button - 44px tap target (R-03) */}
-          <div className="flex items-center gap-2 lg:hidden">
-            {!isAdminLoggedIn ? (
-              <button
-                type="button"
-                onClick={onOpenLoginModal}
-                className="p-2.5 rounded-xl bg-slate-800 text-amber-400 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                aria-label="Masuk ke Panel Admin"
-              >
-                <Lock className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setCurrentView(currentView === 'admin' ? 'public' : 'admin')}
-                className="px-2.5 py-1.5 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs"
-              >
-                {currentView === 'admin' ? 'Web' : 'Admin'}
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-              aria-expanded={mobileMenuOpen}
-              aria-label="Buka menu navigasi"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+          {/* Mobile: ONLY hamburger — no other buttons polluting the header */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-800/80 text-slate-200 border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu navigasi'}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {mobileMenuOpen ? (
+                <motion.span
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <X className="w-5 h-5 text-amber-400" />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="open"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Menu className="w-5 h-5" />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* ─── Full-Screen Mobile Curtain Menu ─────────────────────────────────
+          Inspired by:
+          · rules/waterfall-entry.md  — nav links arrive staggered from y:24
+          · rules/spring-pop-entrance.md — CTA section pops scale 0.9→1
+          · rules/ambient-glow-bloom.md — amber radial behind the brand mark
+          · blueprints/titlecard-reveal.md — composed serene, one move each
+      ──────────────────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -18, scaleY: 0.96 }}
-            animate={{ opacity: 1, y: 0, scaleY: 1 }}
-            exit={{ opacity: 0, y: -18, scaleY: 0.96 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className={`lg:hidden fixed left-0 right-0 ${isScrolled ? 'top-[72px]' : 'top-[88px]'} z-50 border-t border-slate-800 bg-slate-900/98 backdrop-blur-xl px-4 pt-3 pb-6 shadow-[0_18px_40px_rgba(2,6,23,0.45)] origin-top`}
-          >
-            <div className="flex flex-col gap-1.5 pt-2">
-              {navLinks.map((link) => {
-                const isActive = activeNav === link.id && currentView === 'public';
-                return (
-                  <button
-                    key={link.id}
-                    onClick={() => handleNavClick(link.id)}
-                    className={`min-h-[44px] flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${
-                      isActive
-                        ? 'bg-amber-400 text-slate-950'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                    }`}
-                  >
-                    <span>{link.label}</span>
-                    <ArrowRight className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-slate-500'}`} />
-                  </button>
-                );
-              })}
+          <>
+            {/* Backdrop (tap-to-close on overflow areas) */}
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="lg:hidden absolute inset-x-0 top-full bg-black/20 z-30"
+              style={{ height: `calc(100dvh - ${isScrolled ? '56px' : '64px'})` }}
+              aria-hidden="true"
+            />
 
-              <div className="pt-3 mt-2 border-t border-slate-800 flex flex-col gap-2">
+            {/* Curtain Panel */}
+            {/* Curtain Panel — slide down from header edge */}
+            <motion.div
+              key="curtain"
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:hidden absolute inset-x-0 top-full z-35 bg-slate-950 flex flex-col overflow-y-auto"
+              style={{ height: `calc(100dvh - ${isScrolled ? '56px' : '64px'})` }}
+            >
+              {/* Ambient glow (rules/ambient-glow-bloom.md): restrained, ≤0.45 opacity */}
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-48 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse, rgba(245,158,11,0.18) 0%, transparent 72%)' }}
+                aria-hidden="true"
+              />
+
+              {/* Nav links — waterfall-entry stagger (rules/waterfall-entry.md) */}
+              <div className="flex-1 flex flex-col justify-center px-7 py-8 space-y-1">
+                {navLinks.map((link, idx) => {
+                  const isActive = activeNav === link.id && currentView === 'public';
+                  return (
+                    <motion.button
+                      key={link.id}
+                      initial={{ opacity: 0, y: 24 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: idx * 0.045,
+                        duration: 0.32,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      onClick={() => handleNavClick(link.id)}
+                      className="flex items-center justify-between w-full py-3.5 border-b border-slate-800/60 text-left group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-[11px] font-mono text-slate-600 w-5 select-none">
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span
+                          className={`text-xl font-black tracking-tight transition-colors ${
+                            isActive ? 'text-amber-400' : 'text-slate-100 group-hover:text-amber-300'
+                          }`}
+                        >
+                          {link.label}
+                        </span>
+                        {isActive && (
+                          <motion.span
+                            layoutId="mobileActiveIndicator"
+                            className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"
+                          />
+                        )}
+                      </div>
+                      <ArrowUpRight
+                        className={`w-4 h-4 transition-all opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${
+                          isActive ? 'text-amber-400 opacity-100' : 'text-slate-600'
+                        }`}
+                      />
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Bottom action area — spring-pop-entrance (rules/spring-pop-entrance.md) */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: navLinks.length * 0.045 + 0.05, duration: 0.4, ease: 'easeOut' }}
+                className="px-7 pb-10 pt-5 border-t border-slate-800/60 space-y-3"
+              >
                 {isAdminLoggedIn ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCurrentView(currentView === 'admin' ? 'public' : 'admin');
-                        setMobileMenuOpen(false);
-                      }}
-                      className="min-h-[44px] flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-sm"
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      {currentView === 'admin' ? 'Buka Tampilan Publik' : 'Buka Dashboard Admin'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        logoutAdmin();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="min-h-[44px] w-full py-2 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-950/20"
-                    >
-                      Keluar dari Akun Admin
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentView(currentView === 'admin' ? 'public' : 'admin');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full py-3 px-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-400/20"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    {currentView === 'admin' ? 'Tinjau Web Publik' : 'Buka Dashboard Admin'}
+                  </button>
                 ) : (
                   <button
                     type="button"
@@ -256,15 +297,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                       setMobileMenuOpen(false);
                       onOpenLoginModal();
                     }}
-                    className="min-h-[44px] flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 font-bold text-sm"
+                    className="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-sm flex items-center justify-center gap-2 border border-slate-800 transition-colors"
                   >
-                    <Lock className="w-4 h-4" />
+                    <Lock className="w-4 h-4 text-amber-400" />
                     <span>Masuk ke Panel Pengurus</span>
                   </button>
                 )}
-              </div>
-            </div>
-          </motion.div>
+                {isAdminLoggedIn && (
+                  <button
+                    type="button"
+                    onClick={() => { logoutAdmin(); setMobileMenuOpen(false); }}
+                    className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-rose-400 transition-colors text-center"
+                  >
+                    Keluar dari Sesi Admin
+                  </button>
+                )}
+                <p className="text-[11px] text-slate-700 text-center font-subtitle pt-1">
+                  Karang Taruna Margabakti 07 · RW 07
+                </p>
+              </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>

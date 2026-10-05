@@ -4,6 +4,8 @@ import { Users, Mail, Phone, UserCheck, SearchX, ZoomIn, ZoomOut, RotateCcw } fr
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim } from '../../types';
 import { Modal } from '../common/Modal';
+import { TiltCard } from '../common/TiltCard';
+import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const Tim: React.FC = () => {
   const { timList } = useData();
@@ -109,9 +111,10 @@ export const Tim: React.FC = () => {
                   transition={{ duration: 0.45, delay: Math.min(displayedMembers.indexOf(member) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
                   whileHover={{ y: -6 }}
                   key={member.id}
-                  className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-all flex flex-col justify-between group"
+                  className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 hover:shadow-lg transition-all flex flex-col justify-between group"
                 >
-                  <div>
+                  <TiltCard maxTilt={8} glareOpacity={0.16} className="h-full flex flex-col justify-between">
+                    <div>
                     {/* Foto Pengurus */}
                     <button
                       type="button"
@@ -153,17 +156,22 @@ export const Tim: React.FC = () => {
                   </div>
 
                   {/* Tombol Detail / Kontak */}
-                  <div className="p-5 pt-0">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMember(member)}
-                      className="min-h-[44px] w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    >
-                      <UserCheck className="w-3.5 h-3.5" />
-                      <span>Lihat Profil Lengkap</span>
-                    </button>
-                  </div>
+                    <div className="p-5 pt-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 18 });
+                          setSelectedMember(member);
+                        }}
+                        className="min-h-[44px] w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-2xs hover:shadow-xs"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        <span>Lihat Profil Lengkap</span>
+                      </button>
+                    </div>
+                  </TiltCard>
                 </motion.div>
+
               ))}
             </AnimatePresence>
           </motion.div>

@@ -4,6 +4,8 @@ import { Newspaper, Calendar, User, Search, ArrowRight, SearchX, BookOpen, Chevr
 import { useData } from '../../context/DataContext';
 import type { Berita } from '../../types';
 import { Modal } from '../common/Modal';
+import { TiltCard } from '../common/TiltCard';
+import { triggerParticleBurst } from '../../utils/particleBurst';
 
 const formatTanggalPelaksanaan = (value?: string) => {
   if (!value) return '';
@@ -121,9 +123,10 @@ export const BeritaSection: React.FC = () => {
                   transition={{ duration: 0.45, delay: Math.min(filteredBerita.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
                   whileHover={{ y: -6 }}
                   key={item.id}
-                  className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-all flex flex-col justify-between group shadow-2xs hover:shadow-md"
+                  className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-all flex flex-col justify-between group shadow-2xs hover:shadow-xl"
                 >
-                  <div>
+                  <TiltCard maxTilt={6} glareOpacity={0.16} className="h-full flex flex-col justify-between">
+                    <div>
                     {/* Gambar Artikel */}
                     <div className="relative h-52 bg-slate-200 overflow-hidden">
                       <img
@@ -167,24 +170,27 @@ export const BeritaSection: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Tombol Baca */}
-                  <div className="p-6 pt-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReadingArticle(item);
-                        setActiveImageIndex(0);
-                      }}
-                      className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>Baca Warta Lengkap</span>
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                    {/* Tombol Baca */}
+                    <div className="p-6 pt-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 16 });
+                          setReadingArticle(item);
+                          setActiveImageIndex(0);
+                        }}
+                        className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-2xs"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Baca Warta Lengkap</span>
+                        </span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </TiltCard>
                 </motion.article>
+
               ))}
             </AnimatePresence>
           </motion.div>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Newspaper, Users, Camera, MessageSquare,
   ArrowLeft, LogOut, Menu, X, UserCog, Crown, User, ShieldCheck, ClipboardList
@@ -28,6 +29,18 @@ export const AdminLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Lock body scroll when mobile drawer is open so background never slips away
+  useEffect(() => {
+    if (mobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileSidebarOpen]);
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const isSuperAdmin = currentUser?.role === 'superadmin';
@@ -179,12 +192,123 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Admin Body */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col lg:flex-row gap-8 items-start">
-        {/* Sidebar Nav */}
-        <aside
-          className={`lg:w-64 w-full shrink-0 ${
-            mobileSidebarOpen ? 'block' : 'hidden lg:block'
-          }`}
-        >
+        {/* Mobile Floating Slide-over Glass Drawer (Fixed to viewport - ALWAYS FLOATS with user!) */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setMobileSidebarOpen(false)}
+                className="lg:hidden fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-50 pointer-events-auto"
+                aria-hidden="true"
+              />
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                className="lg:hidden fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-slate-900/98 backdrop-blur-2xl border-r border-slate-800 z-50 p-5 flex flex-col justify-between shadow-2xl overflow-y-auto"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div className="flex items-center gap-2.5">
+                      <Logo variant="white" className="h-7 w-auto" />
+                      <div>
+                        <span className="text-[11px] font-bold text-amber-400 block leading-tight">
+                          PANEL PENGURUS
+                        </span>
+                        <p className="text-[10px] text-slate-400 font-subtitle">
+                          Margabakti 07
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setMobileSidebarOpen(false)}
+                      className="p-1.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+                      aria-label="Tutup menu navigasi"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    {navItems.map((item) => {
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleSelectTab(item.id)}
+                          className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                            isActive
+                              ? 'bg-amber-400 text-slate-950 shadow-sm'
+                              : 'text-slate-200 hover:bg-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            {item.icon}
+                            <span>{item.label}</span>
+                          </div>
+                          {item.badge !== undefined && (
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                item.badgeColor || (isActive ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-300')
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Role Status Card in Drawer */}
+                  <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs space-y-1.5">
+                    <div className="flex items-center gap-2 text-slate-200 font-bold">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Hak Akses: {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Administrator' : 'Pengurus'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed font-subtitle">
+                      {currentUser?.namaLengkap || 'Pengurus Aktif'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileSidebarOpen(false);
+                      setCurrentView('public');
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Kembali ke Web Publik</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileSidebarOpen(false);
+                      logoutAdmin();
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-bold flex items-center justify-center gap-2 border border-rose-800/40"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Keluar dari Akun</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Desktop Sidebar (Only visible on lg screens) */}
+        <aside className="hidden lg:block lg:w-64 shrink-0 sticky top-20">
           <div className="bg-white rounded-2xl border border-stone-200 p-3 shadow-2xs space-y-1">
             <div className="px-3 py-2 text-[11px] font-black uppercase tracking-wider text-slate-400">
               Menu Pengurus
@@ -218,10 +342,9 @@ export const AdminLayout: React.FC = () => {
                 </button>
               );
             })}
-
           </div>
 
-          {/* Role Status Card */}
+          {/* Role Status Card Desktop */}
           <div className="mt-4 p-4 rounded-2xl bg-white border border-stone-200 text-xs shadow-2xs space-y-2">
             <div className="flex items-center gap-2 text-slate-900 font-bold">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />

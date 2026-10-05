@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Users, HeartHandshake, Sparkles, Award, Target, BookOpen, Compass } from 'lucide-react';
 import { TENTANG_DATA } from '../../data/initialData';
 import { Logo } from '../common/Logo';
+import { TiltCard } from '../common/TiltCard';
+import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const Tentang: React.FC = () => {
   const valueIcons: Record<string, React.ReactNode> = {
@@ -103,25 +105,33 @@ export const Tentang: React.FC = () => {
 
         {/* Visi & Misi */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Visi (5 cols) */}
-          <div className="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-8 shadow-sm flex flex-col justify-between">
-            <div className="space-y-4">
+          {/* Visi (5 cols) with subtle ambient glow */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-5 relative bg-slate-900 text-white rounded-3xl p-8 shadow-xl flex flex-col justify-between overflow-hidden group border border-slate-800"
+          >
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+            <div className="space-y-4 relative z-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
                 <Target className="w-3.5 h-3.5" />
                 <span>Visi Organisasi</span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold leading-snug text-white">
+              <h3 className="text-xl sm:text-2xl font-black leading-snug text-white">
                 Mewujudkan Pemuda Berkarakter, Berdaya Sosial, dan Mandiri
               </h3>
-              <p className="text-slate-300 text-sm leading-relaxed">
+              <p className="text-slate-300 text-sm leading-relaxed font-subtitle italic">
                 "{TENTANG_DATA.visi}"
               </p>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-slate-800 text-xs text-amber-400 font-medium">
-              Landasan Rencana Kerja Periode 2024 - 2027
+            <div className="mt-8 pt-4 border-t border-slate-800 text-xs text-amber-400 font-semibold flex items-center justify-between relative z-10">
+              <span>Landasan Rencana Kerja Periode 2024 - 2027</span>
+              <Sparkles className="w-3.5 h-3.5" />
             </div>
-          </div>
+          </motion.div>
 
           {/* Misi (7 cols) */}
           <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-stone-200 shadow-sm space-y-4">
@@ -161,24 +171,31 @@ export const Tentang: React.FC = () => {
             {TENTANG_DATA.nilai.map((item, idx) => (
               <motion.div
                 key={idx}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white rounded-2xl p-6 border border-stone-200 shadow-xs hover:border-amber-400 transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
               >
-                <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center mb-4">
-                  {valueIcons[item.ikon] || <Sparkles className="w-5 h-5 text-amber-600" />}
-                </div>
-                <h4 className="text-base font-bold text-slate-900 mb-2">
-                  {item.judul}
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {item.deskripsi}
-                </p>
+                <TiltCard maxTilt={10} glareOpacity={0.15} className="h-full rounded-2xl">
+                  <div
+                    className="bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm hover:shadow-md hover:border-amber-400/80 transition-all h-full cursor-pointer"
+                    onClick={(e) => triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 16 })}
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center mb-4 text-amber-600 shadow-2xs">
+                      {valueIcons[item.ikon] || <Sparkles className="w-5 h-5 text-amber-600" />}
+                    </div>
+                    <h4 className="text-base font-black text-slate-900 mb-2">
+                      {item.judul}
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed font-subtitle">
+                      {item.deskripsi}
+                    </p>
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </div>
         </div>
-
         {/* 4 Bidang Kerja */}
         <div className="mt-14 bg-amber-50/60 rounded-3xl p-8 sm:p-10 border border-amber-200/80">
           <h3 className="text-xl font-bold text-slate-900 mb-6 text-center">
@@ -186,9 +203,14 @@ export const Tentang: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-5 lg:[&>*]:col-span-3 lg:[&>*:nth-child(5)]:col-start-2">
             {bidangKerja.map((bidang, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-5 border border-amber-200/60 shadow-2xs">
+              <motion.div
+                key={idx}
+                whileHover={{ y: -6, scale: 1.02 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+                className="bg-white rounded-2xl p-5 border border-amber-200/70 shadow-xs hover:border-amber-500 hover:shadow-md transition-all cursor-default"
+              >
                 <span className="text-[11px] font-black uppercase text-amber-700 tracking-wider block mb-1">
-                  Bidang 0{idx + 1}
+                  Divisi 0{idx + 1}
                 </span>
                 <h4 className="text-sm font-bold text-slate-900 mb-2">
                   {bidang.nama}
@@ -196,7 +218,7 @@ export const Tentang: React.FC = () => {
                 <p className="text-xs text-slate-600 leading-relaxed">
                   {bidang.peran}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
