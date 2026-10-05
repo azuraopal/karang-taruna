@@ -95,7 +95,7 @@ export const Hero: React.FC = () => {
                 className="py-1 cursor-pointer"
                 onClick={(e) => triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 20 })}
               >
-                <Logo variant="white" size="xl" className="h-11 sm:h-14 md:h-16 lg:h-20 w-auto drop-shadow-[0_10px_20px_rgba(245,158,11,0.2)]" />
+                <Logo variant="white" size="xl" className="h-16 sm:h-16 md:h-18 lg:h-20 w-auto drop-shadow-[0_10px_20px_rgba(245,158,11,0.2)]" />
               </motion.div>
             </motion.div>
 
@@ -110,7 +110,7 @@ export const Hero: React.FC = () => {
               <GradientTextSweep className="mt-1">
                 Berdiri Sebagai
               </GradientTextSweep>{' '}
-              <div className="relative inline-block min-w-[260px] sm:min-w-[340px] text-left">
+              <div className="relative inline-block min-w-[260px] sm:min-w-[340px] text-center lg:text-left">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={wordIndex}
