@@ -25,8 +25,21 @@ export const Tim: React.FC = () => {
     'Ekonomi & Kewirausahaan',
   ];
 
+  const getPositionPriority = (jabatan: string): number => {
+    const normalizedPosition = jabatan.toLowerCase();
+    if (normalizedPosition.includes('ketua') && !normalizedPosition.includes('wakil')) return 1;
+    if (normalizedPosition.includes('wakil ketua')) return 2;
+    if (normalizedPosition.includes('sekretaris')) return 3;
+    if (normalizedPosition.includes('bendahara')) return 4;
+    if (normalizedPosition.includes('koordinator')) return 5;
+    return 6;
+  };
+
   const filteredMembers = selectedDivisi === 'Semua'
     ? [...timList].sort((firstMember, secondMember) => {
+        const positionPriorityDifference = getPositionPriority(firstMember.jabatan) - getPositionPriority(secondMember.jabatan);
+        if (positionPriorityDifference !== 0) return positionPriorityDifference;
+
         const firstHasPhoto = Boolean(firstMember.fotoUrl && !firstMember.fotoUrl.includes('default-avatar.svg'));
         const secondHasPhoto = Boolean(secondMember.fotoUrl && !secondMember.fotoUrl.includes('default-avatar.svg'));
         return Number(secondHasPhoto) - Number(firstHasPhoto);
