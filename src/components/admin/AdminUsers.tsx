@@ -134,17 +134,17 @@ export const AdminUsers: React.FC = () => {
 
   const roleBadge = (r: UserRole) =>
     r === 'superadmin' ? (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-900 border border-violet-300">
+      <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-900 border border-violet-300">
         <ShieldCheck className="w-3 h-3" />
         Super Admin
       </span>
     ) : r === 'admin' ? (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
+      <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
         <Crown className="w-3 h-3" />
         Administrator
       </span>
     ) : (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-300">
+      <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-300">
         <User className="w-3 h-3" />
         Pengurus
       </span>
