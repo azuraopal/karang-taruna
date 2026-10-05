@@ -22,8 +22,8 @@ for (const cat of ['profiles', 'galeri', 'berita']) {
   fs.mkdirSync(path.join(publicUploadsRoot, cat), { recursive: true });
 }
 
-apiApp.use('/uploads', express.static(uploadsRoot));
-apiApp.use('/uploads', express.static(publicUploadsRoot));
+apiApp.use('/uploads', express.static(uploadsRoot, { maxAge: '7d', immutable: true }));
+apiApp.use('/uploads', express.static(publicUploadsRoot, { maxAge: '7d', immutable: true }));
 
 const sseClients = new Set<Response>();
 

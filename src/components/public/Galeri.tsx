@@ -192,6 +192,14 @@ export const Galeri: React.FC = () => {
                     className="block w-auto max-w-full max-h-[70vh] object-contain"
                     loading="eager"
                     decoding="async"
+                    fetchPriority="high"
+                    onError={() => {
+                      const imageCount = getGalleryImages(activePhoto).length;
+                      if (activePhotoIndex < imageCount - 1) {
+                        setActivePhotoIndex((index) => index + 1);
+                        setPhotoZoom(1);
+                      }
+                    }}
                   />
                 </AnimatePresence>
                 {getGalleryImages(activePhoto).length > 1 && (
@@ -238,6 +246,9 @@ export const Galeri: React.FC = () => {
                         className="w-full h-full object-cover"
                         loading={index === activePhotoIndex ? 'eager' : 'lazy'}
                         decoding="async"
+                        onError={(event) => {
+                          event.currentTarget.style.visibility = 'hidden';
+                        }}
                       />
                     </button>
                   ))}
