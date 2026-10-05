@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Images } from 'lucide-react';
+import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Images, User } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
 import { Modal } from '../common/Modal';
@@ -121,9 +121,15 @@ export const Galeri: React.FC = () => {
                     </div>
 
                     <div className="p-5 space-y-2">
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-1">
-                        {item.judul}
-                      </h3>
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="min-w-0 text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
+                          {item.judul}
+                        </h3>
+                        <span className="flex max-w-[45%] shrink-0 items-center gap-1 truncate text-[11px] text-slate-400" title={item.dibuatOleh || 'Data lama'}>
+                          <User className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{item.dibuatOleh || 'Data lama'}</span>
+                        </span>
+                      </div>
                       <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                         {item.deskripsi}
                       </p>

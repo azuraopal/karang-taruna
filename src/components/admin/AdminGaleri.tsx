@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Edit, Trash2, Search, MapPin, Calendar, AlertTriangle, ImageOff, Images, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, MapPin, Calendar, AlertTriangle, ImageOff, Images, RefreshCw, User } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri, KategoriGaleri } from '../../types';
 import { Modal } from '../common/Modal';
@@ -7,7 +7,7 @@ import { ImagePicker } from '../common/ImagePicker';
 import { Pagination } from '../common/Pagination';
 
 export const AdminGaleri: React.FC = () => {
-  const { galeriList, addGaleri, updateGaleri, deleteGaleri, currentUser } = useData();
+  const { galeriList, addGaleri, updateGaleri, deleteGaleri } = useData();
 
   const [search, setSearch] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua');
@@ -234,9 +234,15 @@ export const AdminGaleri: React.FC = () => {
                 </div>
 
                 <div className="p-4 space-y-1.5">
-                  <h3 className="text-sm font-bold text-slate-900 line-clamp-1">
-                    {item.judul}
-                  </h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="min-w-0 text-sm font-bold text-slate-900 truncate">
+                      {item.judul}
+                    </h3>
+                    <span className="flex max-w-[45%] shrink-0 items-center gap-1 truncate text-[11px] text-slate-400" title={item.dibuatOleh || 'Data lama'}>
+                      <User className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{item.dibuatOleh || 'Data lama'}</span>
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-500 line-clamp-2">
                     {item.deskripsi}
                   </p>
@@ -250,11 +256,6 @@ export const AdminGaleri: React.FC = () => {
                       {item.lokasi}
                     </span>
                   </div>
-                  {(currentUser?.role === 'admin' || currentUser?.role === 'superadmin') && (
-                    <p className="text-[11px] text-slate-400 truncate pt-1">
-                      Ditambahkan oleh {item.dibuatOleh || 'Data lama'}
-                    </p>
-                  )}
                 </div>
               </div>
 
