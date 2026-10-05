@@ -107,6 +107,7 @@ export const Galeri: React.FC = () => {
                         alt={item.judul}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                         loading="lazy"
+                        decoding="async"
                       />
                       <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-colors flex items-center justify-center">
                         <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white p-2.5 rounded-full backdrop-blur-xs">
@@ -189,6 +190,8 @@ export const Galeri: React.FC = () => {
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.3 }}
                     className="block w-auto max-w-full max-h-[70vh] object-contain"
+                    loading="eager"
+                    decoding="async"
                   />
                 </AnimatePresence>
                 {getGalleryImages(activePhoto).length > 1 && (
@@ -229,7 +232,13 @@ export const Galeri: React.FC = () => {
                       className={`relative shrink-0 snap-start w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhotoIndex === index ? 'border-amber-500 ring-2 ring-amber-200' : 'border-transparent opacity-65 hover:opacity-100'}`}
                       aria-label={`Tampilkan foto ${index + 1}`}
                     >
-                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading={index === activePhotoIndex ? 'eager' : 'lazy'}
+                        decoding="async"
+                      />
                     </button>
                   ))}
                   <div className="flex items-center gap-1 text-[11px] text-slate-500 px-1 shrink-0">
