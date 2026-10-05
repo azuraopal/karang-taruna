@@ -37,12 +37,12 @@ export const Tim: React.FC = () => {
 
   const filteredMembers = selectedDivisi === 'Semua'
     ? [...timList].sort((firstMember, secondMember) => {
-        const positionPriorityDifference = getPositionPriority(firstMember.jabatan) - getPositionPriority(secondMember.jabatan);
-        if (positionPriorityDifference !== 0) return positionPriorityDifference;
-
         const firstHasPhoto = Boolean(firstMember.fotoUrl && !firstMember.fotoUrl.includes('default-avatar.svg'));
         const secondHasPhoto = Boolean(secondMember.fotoUrl && !secondMember.fotoUrl.includes('default-avatar.svg'));
-        return Number(secondHasPhoto) - Number(firstHasPhoto);
+        const photoPriorityDifference = Number(secondHasPhoto) - Number(firstHasPhoto);
+        if (photoPriorityDifference !== 0) return photoPriorityDifference;
+
+        return getPositionPriority(firstMember.jabatan) - getPositionPriority(secondMember.jabatan);
       })
     : timList.filter((m) => m.divisi === selectedDivisi);
   const displayedMembers = selectedDivisi === 'Semua'
