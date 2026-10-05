@@ -110,7 +110,7 @@ export const AdminTim: React.FC = () => {
       m.jabatan.toLowerCase().includes(search.toLowerCase());
     return matchDivisi && matchSearch;
   });
-  const paginated = filtered.slice((currentPage - 1) * 5, currentPage * 5);
+  const paginated = filtered.slice((currentPage - 1) * 6, currentPage * 6);
 
   useEffect(() => {
     setCurrentPage(1);
