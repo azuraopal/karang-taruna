@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+.space-companions { width: min(100%, 24rem); height: 12rem; margin: 0 auto; }
+.space-companions canvas { display: block; width: 100%; height: 100%; }
+@media (max-width: 639px) {
+  .space-companions { height: 10rem; width: min(100%, 20rem); }
+}
+
 @layer base {
   :root {
     --color-primary: #0f2744;

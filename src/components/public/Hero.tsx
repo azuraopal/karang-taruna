@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowDown, Sparkles, ArrowRight } from 'lucide-react';
 import { useData } from '../../context/DataContext';
@@ -16,6 +16,8 @@ const ROTATING_WORDS = [
   'Pilar Gotong Royong',
   'Inspirasi Margabakti',
 ];
+
+const SpaceCompanions = lazy(() => import('../common/SpaceCompanions').then((module) => ({ default: module.SpaceCompanions })));
 
 export const Hero: React.FC = () => {
   const { beritaList, timList, galeriList } = useData();
@@ -212,6 +214,9 @@ export const Hero: React.FC = () => {
               title={featuredBerita?.judul || 'Kerja Bakti Bersih Saluran Air dan Penghijauan Lingkungan'}
               date={featuredBerita?.tanggal || 'Oktober 2026'}
             />
+            <Suspense fallback={<div className="space-companions" />}>
+              <SpaceCompanions />
+            </Suspense>
           </div>
         </div>
 
