@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Edit, Trash2, Search, Eye, EyeOff, AlertTriangle, Newspaper, Images, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, AlertTriangle, Newspaper, Images, RefreshCw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita, KategoriBerita } from '../../types';
 import { Modal } from '../common/Modal';
 import { ImagePicker } from '../common/ImagePicker';
 import { Pagination } from '../common/Pagination';
+import { AdminListToolbar, AdminToolbarSelect } from '../common/AdminListToolbar';
 
 export const AdminBerita: React.FC = () => {
   const { beritaList, addBerita, updateBerita, deleteBerita, currentUser } = useData();
@@ -210,37 +211,16 @@ export const AdminBerita: React.FC = () => {
         </button>
       </div>
 
-      {/* Filter & Pencarian Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs">
-        <div className="relative w-full sm:max-w-xs">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-4 h-4" />
-          </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari judul berita..."
-            className="w-full pl-10 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:outline-none"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-slate-500 whitespace-nowrap">Kategori:</span>
-          <select
-            value={selectedKategori}
-            onChange={(e) => setSelectedKategori(e.target.value)}
-            className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none w-full sm:w-auto"
-          >
+      <AdminListToolbar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Cari judul warta..." searchLabel="Cari warta">
+        <AdminToolbarSelect label="Kategori" value={selectedKategori} onChange={setSelectedKategori}>
             <option value="Semua">Semua Kategori</option>
             {kategoriOptions.map((k) => (
               <option key={k} value={k}>
                 {k}
               </option>
             ))}
-          </select>
-        </div>
-      </div>
+        </AdminToolbarSelect>
+      </AdminListToolbar>
 
       {/* List / Tabel Berita */}
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">

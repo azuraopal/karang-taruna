@@ -7,6 +7,7 @@ import { useData } from '../../context/DataContext';
 import type { UserAccount, UserRole } from '../../types';
 import { Modal } from '../common/Modal';
 import { Pagination } from '../common/Pagination';
+import { AdminListToolbar, AdminToolbarSelect } from '../common/AdminListToolbar';
 
 export const AdminUsers: React.FC = () => {
   const { userList, addUser, updateUser, deleteUser, currentUser, showToast } = useData();
@@ -23,11 +24,17 @@ export const AdminUsers: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const paginatedUsers = userList.slice((currentPage - 1) * 5, currentPage * 5);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'Semua' | UserRole>('Semua');
+  const filteredUsers = userList.filter((item) => {
+    const matchesSearch = item.namaLengkap.toLowerCase().includes(search.toLowerCase()) || item.username.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch && (roleFilter === 'Semua' || item.role === roleFilter);
+  });
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * 5, currentPage * 5);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [userList.length]);
+  }, [search, roleFilter, filteredUsers.length]);
 
   const resetForm = () => {
     setEditingId(null);
@@ -201,6 +208,15 @@ export const AdminUsers: React.FC = () => {
         </div>
       </div>
 
+      <AdminListToolbar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Cari nama atau username..." searchLabel="Cari akun anggota">
+        <AdminToolbarSelect label="Filter peran" value={roleFilter} onChange={(value) => setRoleFilter(value as 'Semua' | UserRole)}>
+          <option value="Semua">Semua Peran</option>
+          <option value="superadmin">Super Admin</option>
+          <option value="admin">Administrator</option>
+          <option value="pengurus">Pengurus</option>
+        </AdminToolbarSelect>
+      </AdminListToolbar>
+
       {/* Tabel Pengguna */}
       <div className="bg-white rounded-2xl border border-stone-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto overscroll-x-contain" tabIndex={0} aria-label="Tabel daftar pengguna">
@@ -228,7 +244,7 @@ export const AdminUsers: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
-              {userList.length > 0 ? (
+              {filteredUsers.length > 0 ? (
                 paginatedUsers.map((item) => {
                   const isSelf = item.id === currentUser?.id;
                   return (
@@ -314,8 +330,8 @@ export const AdminUsers: React.FC = () => {
                       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-slate-400">
                         <Users className="h-7 w-7" />
                       </div>
-                      <h3 className="text-lg font-black text-slate-800">Data Tidak Tersedia</h3>
-                      <p className="mt-2 text-sm text-slate-500">Belum ada data pengguna yang tersedia.</p>
+                      <h3 className="text-lg font-black text-slate-800">{userList.length === 0 ? 'Data Tidak Tersedia' : 'Tidak Ada Hasil'}</h3>
+                      <p className="mt-2 text-sm text-slate-500">{userList.length === 0 ? 'Belum ada data pengguna yang tersedia.' : 'Tidak ada akun yang sesuai dengan pencarian atau filter peran.'}</p>
                     </div>
                   </td>
                 </tr>
@@ -323,7 +339,7 @@ export const AdminUsers: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <Pagination currentPage={currentPage} totalItems={userList.length} onPageChange={setCurrentPage} />
+        <Pagination currentPage={currentPage} totalItems={filteredUsers.length} onPageChange={setCurrentPage} />
       </div>
 
       {/* Modal Tambah / Edit */}

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, Filter } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ActivityAction } from '../../types';
 import { Pagination } from '../common/Pagination';
+import { AdminListToolbar, AdminToolbarSelect } from '../common/AdminListToolbar';
 
 const actionLabels: Record<ActivityAction, string> = {
   login: 'Login',
@@ -48,28 +49,21 @@ export const AdminLogs: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Log Aktivitas</h2>
           <p className="text-xs text-slate-500 mt-0.5">Riwayat tindakan pengguna di panel pengurus.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-bold text-slate-600">
-            <Filter className="w-3.5 h-3.5" />
-            <span className="sr-only">Filter aksi</span>
-            <select
-              value={actionFilter}
-              onChange={(event) => setActionFilter(event.target.value as 'semua' | ActivityAction)}
-              className="bg-transparent focus:outline-none"
-            >
-              <option value="semua">Semua aksi</option>
-              {Object.entries(actionLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </label>
-        </div>
       </div>
+
+      <AdminListToolbar>
+        <AdminToolbarSelect label="Aksi" value={actionFilter} onChange={(value) => setActionFilter(value as 'semua' | ActivityAction)}>
+            <option value="semua">Semua aksi</option>
+            {Object.entries(actionLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+        </AdminToolbarSelect>
+      </AdminListToolbar>
 
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         {filteredLogs.length === 0 ? (

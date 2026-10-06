@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, Mail, Phone, Search, Inbox } from 'lucide-react';
+import { Trash2, Mail, Phone, Inbox } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Aspirasi } from '../../types';
 import { Modal } from '../common/Modal';
 import { Pagination } from '../common/Pagination';
+import { AdminListToolbar, AdminToolbarSelect } from '../common/AdminListToolbar';
 
 export const AdminAspirasi: React.FC = () => {
   const { aspirasiList, updateStatusAspirasi, deleteAspirasi, currentUser } = useData();
@@ -47,41 +48,14 @@ export const AdminAspirasi: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs">
-        <div className="relative w-full sm:max-w-xs">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-4 h-4" />
-          </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari aspirasi / nama warga..."
-            className="w-full pl-10 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:outline-none"
-          />
-        </div>
-
-        {/* Status Filter Buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-          {(['Semua', 'baru', 'dibaca', 'selesai'] as const).map((st) => {
-            const isActive = statusFilter === st;
-            return (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-slate-900 text-amber-400'
-                    : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
-                }`}
-              >
-                {st === 'Semua' ? 'Semua' : st === 'baru' ? 'Baru' : st === 'dibaca' ? 'Dibaca' : 'Ditindaklanjuti'}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <AdminListToolbar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Cari aspirasi atau nama warga..." searchLabel="Cari aspirasi">
+        <AdminToolbarSelect label="Status aspirasi" value={statusFilter} onChange={(value) => setStatusFilter(value as 'Semua' | Aspirasi['status'])}>
+          <option value="Semua">Semua Status</option>
+          <option value="baru">Baru</option>
+          <option value="dibaca">Dibaca</option>
+          <option value="selesai">Ditindaklanjuti</option>
+        </AdminToolbarSelect>
+      </AdminListToolbar>
 
       {/* List Aspirasi */}
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs divide-y divide-stone-100">
