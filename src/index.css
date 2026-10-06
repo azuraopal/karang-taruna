@@ -455,6 +455,13 @@
 
 .section-scene--still *, .hero-scene--still * { animation-play-state: paused !important; }
 
+.login-gateway { isolation: isolate; }
+.login-gateway__grid { position: absolute; inset: 0; z-index: -3; opacity: 0.3; background-image: linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.2) 1px, transparent 1px); background-size: 2.4rem 2.4rem; mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
+.login-gateway__orbit { position: absolute; z-index: -2; width: 20rem; height: 8rem; border: 1px solid rgba(251, 191, 36, 0.42); border-radius: 50%; transform: rotate(-20deg); animation: login-gateway-orbit 9s ease-in-out infinite; }
+.login-gateway__orbit--one { right: -8rem; bottom: 1.5rem; }
+.login-gateway__orbit--two { right: -5rem; bottom: 4.5rem; width: 14rem; height: 6rem; border-color: rgba(56, 189, 248, 0.28); transform: rotate(28deg); animation-delay: -3.5s; }
+@keyframes login-gateway-orbit { 0%, 100% { translate: 0 0; } 50% { translate: -0.7rem -0.45rem; } }
+
 /* Admin command center: one visual field, with connected metric and activity rails. */
 .dashboard-workspace { display: grid; gap: 1.5rem; }
 .dashboard-command { position: relative; display: grid; min-height: 17rem; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 1.5rem; overflow: hidden; padding: clamp(1.4rem, 3vw, 2.5rem); border: 1px solid #1e293b; border-radius: 1.35rem 0.55rem 1.35rem 0.55rem; color: #f8fafc; background: #0f172a; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18); isolation: isolate; }

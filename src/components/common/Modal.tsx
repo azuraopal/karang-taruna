@@ -8,6 +8,7 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  contentClassName?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -16,6 +17,7 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   children,
   maxWidth = 'lg',
+  contentClassName,
 }) => {
   // ESC key listener for keyboard accessibility (R-32)
   useEffect(() => {
@@ -69,10 +71,10 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className={`relative w-full max-w-[calc(100vw-2rem)] ${widthClasses} bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-10 my-4 sm:my-8`}
+            className={`relative z-10 my-4 flex max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:my-8 sm:max-h-[calc(100vh-4rem)] ${widthClasses}`}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-4 py-4.5 sm:px-6 border-b border-slate-100 bg-slate-50/70">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/70 px-4 py-4.5 sm:px-6">
               <h2
                 id="modal-title"
                 className="text-lg font-bold text-slate-900 tracking-tight"
@@ -90,7 +92,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
 
             {/* Modal Content */}
-            <div className="p-4 sm:p-6 max-h-[calc(100vh-7rem)] sm:max-h-[calc(85vh-120px)] overflow-y-auto">
+            <div className={`min-h-0 overflow-y-auto ${contentClassName || 'p-4 sm:p-6'}`}>
               {children}
             </div>
           </motion.div>
