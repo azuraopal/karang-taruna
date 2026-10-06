@@ -203,20 +203,20 @@ export const AdminUsers: React.FC = () => {
 
       {/* Tabel Pengguna */}
       <div className="bg-white rounded-2xl border border-stone-200 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto overscroll-x-contain" tabIndex={0} aria-label="Tabel daftar pengguna">
+          <table className="w-full min-w-[46rem] text-sm">
             <thead>
               <tr className="bg-stone-50 border-b border-stone-200 text-left">
-                <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                <th className="whitespace-nowrap px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                   Pengguna
                 </th>
-                <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                <th className="whitespace-nowrap px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                   Username
                 </th>
-                <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                <th className="whitespace-nowrap px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                   Peran
                 </th>
-                <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                <th className="whitespace-nowrap px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                   Status
                 </th>
                 <th className="px-5 py-3.5 text-[11px] font-black uppercase tracking-wider text-slate-500 hidden sm:table-cell">

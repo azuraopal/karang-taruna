@@ -245,7 +245,9 @@ export const AdminLayout: React.FC = () => {
                       return (
                         <button
                           key={item.id}
+                          type="button"
                           onClick={() => handleSelectTab(item.id)}
+                          aria-current={isActive ? 'page' : undefined}
                           className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 text-left transition-all ${
                             isActive
                               ? 'bg-amber-400 text-slate-950 shadow-sm'
@@ -323,7 +325,9 @@ export const AdminLayout: React.FC = () => {
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => handleSelectTab(item.id)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 text-left transition-all ${
                     isActive
                       ? 'bg-slate-900 text-amber-400 shadow-sm'

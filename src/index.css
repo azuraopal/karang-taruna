@@ -92,6 +92,34 @@
   animation: pulseGlow 5s ease-in-out infinite;
 }
 
+@keyframes skeletonShimmer {
+  0% { transform: translateX(-130%); }
+  100% { transform: translateX(130%); }
+}
+
+.loading-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e7edf4;
+}
+
+.loading-skeleton--dark {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.loading-skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(100deg, transparent 28%, rgba(255, 255, 255, 0.52) 50%, transparent 72%);
+  animation: skeletonShimmer 1.45s ease-in-out infinite;
+  will-change: transform;
+}
+
+.loading-skeleton--dark::after {
+  background: linear-gradient(100deg, transparent 28%, rgba(255, 255, 255, 0.16) 50%, transparent 72%);
+}
+
 @keyframes sheenTravel {
   0% {
     transform: translateX(-130%) skewX(-18deg);

@@ -3,6 +3,7 @@ import { DataProvider, useData } from './context/DataContext';
 import { ToastContainer } from './components/common/Toast';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import { AdminLoadingSkeleton, PublicLoadingSkeleton } from './components/common/LoadingSkeleton';
 import { getAdminRoute, getAllowedAdminTab, getDashboardPath, navigateTo } from './utils/appRoute';
 
 const AdminLoginModal = lazy(() => import('./components/admin/AdminLoginModal').then((module) => ({ default: module.AdminLoginModal })));
@@ -13,12 +14,6 @@ const Galeri = lazy(() => import('./components/public/Galeri').then((module) => 
 const BeritaSection = lazy(() => import('./components/public/Berita').then((module) => ({ default: module.BeritaSection })));
 const AspirasiSection = lazy(() => import('./components/public/Aspirasi').then((module) => ({ default: module.AspirasiSection })));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then((module) => ({ default: module.AdminLayout })));
-
-const LazyFallback: React.FC = () => (
-  <div className="flex min-h-32 items-center justify-center text-sm text-slate-500">
-    Memuat halaman...
-  </div>
-);
 
 const AppContent: React.FC = () => {
   const { currentView, setCurrentView, currentUser, isAdminLoggedIn } = useData();
@@ -73,7 +68,7 @@ const AppContent: React.FC = () => {
     return (
       <div className="min-h-screen bg-stone-100 text-slate-900 font-sans antialiased selection:bg-amber-400 selection:text-slate-950">
         <ToastContainer />
-        <Suspense fallback={<LazyFallback />}>
+        <Suspense fallback={<AdminLoadingSkeleton />}>
           <AdminLayout />
         </Suspense>
       </div>
@@ -89,7 +84,7 @@ const AppContent: React.FC = () => {
       <Navbar onOpenLoginModal={() => setIsLoginModalOpen(true)} />
 
       {/* Main Public Content */}
-      <Suspense fallback={<LazyFallback />}>
+      <Suspense fallback={<PublicLoadingSkeleton />}>
         <main className="flex-1">
           <Hero />
           <Tentang />
