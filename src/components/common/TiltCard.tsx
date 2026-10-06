@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
 interface TiltCardProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export const TiltCard: React.FC<TiltCardProps> = ({
   onClick,
 }) => {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
   const [transformStyle, setTransformStyle] = useState<string>('');
   const [glarePosition, setGlarePosition] = useState<{ x: number; y: number; opacity: number }>({
     x: 50,
@@ -27,6 +29,7 @@ export const TiltCard: React.FC<TiltCardProps> = ({
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      if (shouldReduceMotion) return;
       const card = cardRef.current;
       if (!card) return;
 
@@ -52,7 +55,7 @@ export const TiltCard: React.FC<TiltCardProps> = ({
         opacity: glareOpacity,
       });
     },
-    [maxTilt, scale, glareOpacity]
+    [maxTilt, scale, glareOpacity, shouldReduceMotion]
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -67,8 +70,8 @@ export const TiltCard: React.FC<TiltCardProps> = ({
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
       style={{
-        transform: transformStyle || 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-        transition: 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: shouldReduceMotion ? undefined : transformStyle || 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+        transition: shouldReduceMotion ? undefined : 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
         transformStyle: 'preserve-3d',
       }}
       className={`relative will-change-transform ${className}`}

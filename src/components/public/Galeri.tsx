@@ -5,6 +5,7 @@ import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
 import { Modal } from '../common/Modal';
 import { TiltCard } from '../common/TiltCard';
+import { Section3DShowcase } from '../common/Section3DShowcase';
 const getGalleryImages = (item: ItemGaleri) => [item.gambarUrl, ...(item.gambarUrls || [])].filter(Boolean);
 
 export const Galeri: React.FC = () => {
@@ -29,33 +30,45 @@ export const Galeri: React.FC = () => {
       : galeriList.filter((g) => g.kategori === selectedKategori);
 
   return (
-    <section id="galeri" className="py-24 bg-stone-50 border-t border-stone-200">
+    <section id="galeri" className="relative py-18 sm:py-24 bg-stone-50 border-t border-stone-200 overflow-hidden">
+      <div className="soft-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
-            <Camera className="w-3.5 h-3.5 text-amber-700" />
-            <span>Dokumentasi Warga</span>
+        <div className="relative grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
+              <Camera className="w-3.5 h-3.5 text-amber-700" />
+              <span>Dokumentasi Warga</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Galeri Kegiatan Pemuda
+            </h2>
+
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
+              Rekam jejak kebersamaan, aksi sosial, kompetisi olahraga, serta festival kebudayaan yang diselenggarakan bersama masyarakat.
+            </p>
+          </motion.div>
+          <div className="lg:col-span-5">
+            <Section3DShowcase kind="galeri" />
           </div>
-
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Galeri Kegiatan Pemuda
-          </h2>
-
-          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-            Rekam jejak kebersamaan, aksi sosial, kompetisi olahraga, serta festival kebudayaan yang diselenggarakan bersama masyarakat.
-          </p>
         </div>
 
         {/* Filter Kategori */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+        <div className="mobile-chip-scroll no-scrollbar -mx-4 mt-8 sm:mt-10 flex w-[calc(100%+2rem)] snap-x items-center justify-start gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:w-auto md:flex-wrap md:justify-center md:overflow-visible md:px-0 md:pb-0">
           {kategoriList.map((kat) => {
             const isActive = selectedKategori === kat;
             return (
               <button
                 key={kat}
                 onClick={() => setSelectedKategori(kat)}
-                className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                className={`min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                   isActive
                     ? 'bg-slate-900 text-amber-400 shadow-sm'
                     : 'bg-white hover:bg-stone-200 text-slate-700 border border-stone-200'
@@ -71,7 +84,7 @@ export const Galeri: React.FC = () => {
         {filteredGaleri.length > 0 ? (
           <motion.div
             layout
-            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="relative mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
           >
             <AnimatePresence>
               {filteredGaleri.map((item) => (
@@ -101,7 +114,7 @@ export const Galeri: React.FC = () => {
                   aria-label={`Buka foto ${item.judul}`}
                 >
                   <TiltCard maxTilt={8} glareOpacity={0.22} className="h-full flex flex-col justify-between">
-                    <div className="relative h-60 bg-slate-100 overflow-hidden">
+                    <div className="relative h-56 sm:h-60 bg-slate-100 overflow-hidden">
                       <img
                         src={item.gambarUrl}
                         alt={item.judul}
@@ -121,7 +134,7 @@ export const Galeri: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-5 space-y-2">
+                    <div className="p-4 sm:p-5 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <h3 className="min-w-0 text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
                           {item.judul}

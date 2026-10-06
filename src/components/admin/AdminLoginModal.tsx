@@ -3,6 +3,7 @@ import { Lock, User, KeyRound, AlertCircle, Sparkles } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useData } from '../../context/DataContext';
 import { Logo } from '../common/Logo';
+import { getDashboardPath, navigateTo } from '../../utils/appRoute';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -30,6 +31,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
     setIsLoading(false);
 
     if (result.success) {
+      if (result.user) {
+        navigateTo(getDashboardPath(result.user.role));
+      }
       setCurrentView('admin');
       setUsername('');
       setPassword('');

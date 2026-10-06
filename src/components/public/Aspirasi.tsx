@@ -4,6 +4,7 @@ import { MessageSquare, Send, CheckCircle2, MapPin, Mail, Phone, Clock, AlertCir
 import { useData } from '../../context/DataContext';
 import type { Aspirasi } from '../../types';
 import { TENTANG_DATA } from '../../data/initialData';
+import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const AspirasiSection: React.FC = () => {
@@ -44,25 +45,36 @@ export const AspirasiSection: React.FC = () => {
     setPesan('');
   };
   return (
-    <section id="aspirasi" className="py-24 bg-stone-50 border-t border-stone-200">
+    <section id="aspirasi" className="relative py-18 sm:py-24 bg-stone-50 border-t border-stone-200 overflow-visible">
+      <div className="soft-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
           {/* Kolom Informasi & Sekretariat (5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
-              <MessageSquare className="w-3.5 h-3.5 text-amber-700" />
-              <span>Suara Warga & Pemuda</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-5 space-y-5 sm:space-y-6"
+          >
+            <div className="space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
+                <MessageSquare className="w-3.5 h-3.5 text-amber-700" />
+                <span>Suara Warga & Pemuda</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                Kirim Aspirasi & Ide Positif untuk Kemajuan Margabakti 07
+              </h2>
+
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-subtitle">
+                Punya usulan kegiatan pemuda, ide lomba baru, aduan fasilitas umum, atau ingin mengajak kolaborasi? Sampaikan langsung kepada pengurus melalui formulir ini.
+              </p>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Kirim Aspirasi & Ide Positif untuk Kemajuan Margabakti 07
-            </h2>
+            <Section3DShowcase kind="aspirasi" />
 
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-subtitle">
-              Punya usulan kegiatan pemuda, ide lomba baru, aduan fasilitas umum, atau ingin mengajak kolaborasi? Sampaikan langsung kepada pengurus melalui formulir ini.
-            </p>
-
-            <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-2xs space-y-4">
+            <div className="surface-sheen bg-white rounded-2xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-slate-900 border-b border-stone-100 pb-2">
                 Kontak
               </h3>
@@ -91,10 +103,34 @@ export const AspirasiSection: React.FC = () => {
               <span className="font-bold block mb-0.5">Komitmen Respon Cepat:</span>
               Setiap aspirasi akan dibahas dalam agenda koordinasi mingguan pengurus dan ditindaklanjuti bersama ketua RT/RW.
             </div>
-          </div>
+
+            <div className="border-t border-stone-200 pt-5">
+              <p className="text-[11px] font-black tracking-wider uppercase text-amber-700">Alur tindak lanjut</p>
+              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                <div className="min-w-0">
+                  <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-amber-400">1</span>
+                  <p className="mt-2 text-[11px] font-bold leading-snug text-slate-800">Pesan diterima</p>
+                </div>
+                <div className="min-w-0">
+                  <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-xs font-black text-amber-800">2</span>
+                  <p className="mt-2 text-[11px] font-bold leading-snug text-slate-800">Dibahas pengurus</p>
+                </div>
+                <div className="min-w-0">
+                  <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-800">3</span>
+                  <p className="mt-2 text-[11px] font-bold leading-snug text-slate-800">Ditindaklanjuti</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
           {/* Kolom Formulir Aspirasi (7 cols) */}
-          <div className="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-7 lg:sticky lg:top-24 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
+          >
             {isSubmitted ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 15 }}
@@ -227,7 +263,7 @@ export const AspirasiSection: React.FC = () => {
                 </div>
               </form>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

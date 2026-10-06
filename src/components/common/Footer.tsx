@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Mail, Phone, Clock, ArrowUpRight, Lock } from 'lucide-react';
 import { TENTANG_DATA } from '../../data/initialData';
 import { useData } from '../../context/DataContext';
+import { getDashboardPath, navigateTo } from '../../utils/appRoute';
 import { Logo } from './Logo';
 
 interface FooterProps {
@@ -9,10 +10,11 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
-  const { setCurrentView, isAdminLoggedIn } = useData();
+  const { setCurrentView, currentUser, isAdminLoggedIn } = useData();
 
   const handleScrollTo = (id: string) => {
     setCurrentView('public');
+    navigateTo('/');
     setTimeout(() => {
       const el = document.getElementById(id);
       if (el) {
@@ -128,6 +130,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
                 type="button"
                 onClick={() => {
                   if (isAdminLoggedIn) {
+                    if (currentUser) navigateTo(getDashboardPath(currentUser.role));
                     setCurrentView('admin');
                   } else {
                     onOpenLoginModal();

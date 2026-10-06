@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
 
 interface CountingNumberProps {
   value: number;
@@ -18,11 +18,13 @@ export const CountingNumber: React.FC<CountingNumberProps> = ({
 }) => {
   const ref = useRef<HTMLSpanElement | null>(null);
   const isInView = useInView(ref, { once: true, margin: '-40px' });
+  const shouldReduceMotion = useReducedMotion();
   const [displayValue, setDisplayValue] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const renderedValue = shouldReduceMotion && isInView ? value : displayValue;
 
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || shouldReduceMotion) return;
 
     let startTime: number | null = null;
     let animId: number;
@@ -48,17 +50,17 @@ export const CountingNumber: React.FC<CountingNumberProps> = ({
 
     animId = requestAnimationFrame(animateCount);
     return () => cancelAnimationFrame(animId);
-  }, [isInView, value, duration]);
+  }, [isInView, value, duration, shouldReduceMotion]);
 
   return (
     <motion.span
       ref={ref}
-      animate={isCompleted ? { scale: [1, 1.14, 1] } : {}}
+      animate={isCompleted && !shouldReduceMotion ? { scale: [1, 1.14, 1] } : {}}
       transition={{ duration: 0.35, ease: 'backOut' }}
       className={`tabular-nums inline-block font-bold ${className}`}
     >
       {prefix}
-      {displayValue}
+      {renderedValue}
       {suffix}
     </motion.span>
   );

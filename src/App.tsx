@@ -1,9 +1,10 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useLayoutEffect, useState } from 'react';
 import { DataProvider, useData } from './context/DataContext';
 import { ToastContainer } from './components/common/Toast';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { CelebrationWidget } from './components/common/CelebrationWidget';
+import { getAdminRoute, getAllowedAdminTab, getDashboardPath, navigateTo } from './utils/appRoute';
 
 const AdminLoginModal = lazy(() => import('./components/admin/AdminLoginModal').then((module) => ({ default: module.AdminLoginModal })));
 const Hero = lazy(() => import('./components/public/Hero').then((module) => ({ default: module.Hero })));
@@ -21,8 +22,52 @@ const LazyFallback: React.FC = () => (
 );
 
 const AppContent: React.FC = () => {
-  const { currentView, isAdminLoggedIn } = useData();
+  const { currentView, setCurrentView, currentUser, isAdminLoggedIn } = useData();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+
+  useLayoutEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+
+    if (!window.location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => setCurrentPath(window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const requestedRoute = getAdminRoute(currentPath);
+
+    if (requestedRoute) {
+      if (!isAdminLoggedIn || !currentUser) {
+        if (currentView !== 'public') setCurrentView('public');
+        navigateTo('/', { replace: true });
+        return;
+      }
+
+      const expectedPath = getDashboardPath(
+        currentUser.role,
+        getAllowedAdminTab(currentUser.role, requestedRoute.tab),
+      );
+
+      if (currentPath !== expectedPath) {
+        navigateTo(expectedPath, { replace: true });
+      }
+      if (currentView !== 'admin') setCurrentView('admin');
+      return;
+    }
+
+  }, [currentPath, currentUser, currentView, isAdminLoggedIn, setCurrentView]);
 
   // If in admin mode and authenticated, display the Admin Panel
   if (currentView === 'admin' && isAdminLoggedIn) {

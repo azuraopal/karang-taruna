@@ -5,6 +5,7 @@ import { useData } from '../../context/DataContext';
 import type { AnggotaTim } from '../../types';
 import { Modal } from '../common/Modal';
 import { TiltCard } from '../common/TiltCard';
+import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const Tim: React.FC = () => {
@@ -56,33 +57,38 @@ export const Tim: React.FC = () => {
   }, [selectedDivisi]);
 
   return (
-    <section id="tim" className="py-24 bg-white border-t border-stone-200">
+    <section id="tim" className="py-18 sm:py-24 bg-white border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold tracking-wide uppercase">
-            <Users className="w-3.5 h-3.5 text-amber-600" />
-            <span>Struktur Organisasi</span>
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+          <div className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold tracking-wide uppercase">
+              <Users className="w-3.5 h-3.5 text-amber-600" />
+              <span>Struktur Organisasi</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Susunan Pengurus Karang Taruna
+            </h2>
+
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
+              Digerakkan oleh pemuda-pemudi berdedikasi yang siap mengabdi dan mendampingi kemajuan warga Margabakti 07.
+            </p>
           </div>
-
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Susunan Pengurus Karang Taruna
-          </h2>
-
-          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-            Digerakkan oleh pemuda-pemudi berdedikasi yang siap mengabdi dan mendampingi kemajuan warga Margabakti 07.
-          </p>
+          <div className="lg:col-span-5">
+            <Section3DShowcase kind="tim" />
+          </div>
         </div>
 
         {/* Filter Divisi */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+        <div className="mobile-chip-scroll no-scrollbar -mx-4 mt-8 sm:mt-10 flex w-[calc(100%+2rem)] snap-x items-center justify-start gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:w-auto md:flex-wrap md:justify-center md:overflow-visible md:px-0 md:pb-0">
           {divisiList.map((divisi) => {
             const isActive = selectedDivisi === divisi;
             return (
               <button
                 key={divisi}
                 onClick={() => setSelectedDivisi(divisi)}
-                className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                className={`min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                   isActive
                     ? 'bg-slate-900 text-amber-400 shadow-sm'
                     : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
@@ -122,7 +128,7 @@ export const Tim: React.FC = () => {
                         setActivePhotoMember(member);
                         setMemberPhotoZoom(1);
                       }}
-                      className="relative block w-full h-64 bg-slate-100 overflow-hidden flex items-center justify-center cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"
+                      className="relative block w-full h-56 sm:h-64 bg-slate-100 overflow-hidden flex items-center justify-center cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"
                       aria-label={`Lihat foto ${member.nama}`}
                     >
                       <img
@@ -142,7 +148,7 @@ export const Tim: React.FC = () => {
                     </button>
 
                     {/* Informasi Pengurus */}
-                    <div className="p-5 space-y-2">
+                    <div className="p-4 sm:p-5 space-y-2">
                       <h3 className="text-base font-bold text-slate-900 leading-snug">
                         {member.nama}
                       </h3>
@@ -156,7 +162,7 @@ export const Tim: React.FC = () => {
                   </div>
 
                   {/* Tombol Detail / Kontak */}
-                    <div className="p-5 pt-0">
+                    <div className="p-4 pt-0 sm:p-5 sm:pt-0">
                       <button
                         type="button"
                         onClick={(e) => {

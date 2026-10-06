@@ -13,6 +13,7 @@ import { AdminGaleri } from './AdminGaleri';
 import { AdminAspirasi } from './AdminAspirasi';
 import { AdminUsers } from './AdminUsers';
 import { AdminLogs } from './AdminLogs';
+import { getAdminRoute, getAllowedAdminTab, getDashboardPath, navigateTo, type AdminTab } from '../../utils/appRoute';
 
 export const AdminLayout: React.FC = () => {
   const {
@@ -24,10 +25,9 @@ export const AdminLayout: React.FC = () => {
     aspirasiList,
     userList,
     currentUser,
-    isRealtimeConnected
   } = useData();
 
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Lock body scroll when mobile drawer is open so background never slips away
@@ -44,7 +44,26 @@ export const AdminLayout: React.FC = () => {
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const isSuperAdmin = currentUser?.role === 'superadmin';
+  const roleLabel = isSuperAdmin ? 'Super Admin' : isAdmin ? 'Administrator' : 'Pengurus';
   const aspirasiBaru = aspirasiList.filter((a) => a.status === 'baru').length;
+
+  const handleOpenPublicWebsite = () => {
+    setCurrentView('public');
+    navigateTo('/');
+  };
+
+  useEffect(() => {
+    const syncTabWithRoute = () => {
+      const route = getAdminRoute();
+      const requestedTab = route?.tab || 'dashboard';
+      const role = currentUser?.role || 'pengurus';
+      setActiveTab(getAllowedAdminTab(role, requestedTab));
+    };
+
+    syncTabWithRoute();
+    window.addEventListener('popstate', syncTabWithRoute);
+    return () => window.removeEventListener('popstate', syncTabWithRoute);
+  }, [currentUser?.role]);
 
   const navItems = [
     {
@@ -97,12 +116,10 @@ export const AdminLayout: React.FC = () => {
   ];
 
   const handleSelectTab = (tabId: string) => {
-    // Pengurus tidak boleh membuka tab users
-    if (tabId === 'users' && !isAdmin) {
-      setActiveTab('dashboard');
-      return;
-    }
-    setActiveTab(tabId);
+    const role = currentUser?.role || 'pengurus';
+    const nextTab = getAllowedAdminTab(role, tabId as AdminTab);
+    setActiveTab(nextTab);
+    navigateTo(getDashboardPath(role, nextTab));
     setMobileSidebarOpen(false);
   };
 
@@ -125,7 +142,7 @@ export const AdminLayout: React.FC = () => {
               <Logo variant="white" className="h-7 sm:h-8 w-auto" />
               <div className="hidden sm:block pl-2.5 border-l border-slate-700">
                 <span className="text-[11px] font-bold text-amber-400 block leading-tight">
-                  PANEL PENGURUS
+                  Panel {roleLabel}
                 </span>
                 <p className="text-[10px] text-slate-400 font-medium font-subtitle">
                   Muda Berkarya, Nyata Berdaya
@@ -135,19 +152,6 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Realtime Status Indicator */}
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700/80 text-[11px]">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isRealtimeConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-                }`}
-                title={isRealtimeConnected ? 'Sinkronisasi Realtime Aktif' : 'Menghubungkan Realtime'}
-              />
-              <span className="text-slate-300 font-medium">
-                {isRealtimeConnected ? 'Realtime Aktif' : 'Sinkronisasi...'}
-              </span>
-            </div>
-
             {/* User Profile Badge */}
             <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700/80">
               <div
@@ -162,14 +166,14 @@ export const AdminLayout: React.FC = () => {
                   {currentUser?.namaLengkap || (isAdmin ? 'Administrator' : 'Pengurus')}
                 </div>
                 <div className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
-                  {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Administrator' : 'Pengurus'}
+                  {roleLabel}
                 </div>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={() => setCurrentView('public')}
+              onClick={handleOpenPublicWebsite}
               className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 text-xs font-bold transition-colors flex items-center gap-1.5 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -218,7 +222,7 @@ export const AdminLayout: React.FC = () => {
                       <Logo variant="white" className="h-7 w-auto" />
                       <div>
                         <span className="text-[11px] font-bold text-amber-400 block leading-tight">
-                          PANEL PENGURUS
+                          Panel {roleLabel}
                         </span>
                         <p className="text-[10px] text-slate-400 font-subtitle">
                           Margabakti 07
@@ -242,19 +246,19 @@ export const AdminLayout: React.FC = () => {
                         <button
                           key={item.id}
                           onClick={() => handleSelectTab(item.id)}
-                          className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                          className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 text-left transition-all ${
                             isActive
                               ? 'bg-amber-400 text-slate-950 shadow-sm'
                               : 'text-slate-200 hover:bg-slate-800'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5">
-                            {item.icon}
-                            <span>{item.label}</span>
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <span className="shrink-0">{item.icon}</span>
+                            <span className="min-w-0 leading-snug">{item.label}</span>
                           </div>
                           {item.badge !== undefined && (
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              className={`shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 item.badgeColor || (isActive ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-300')
                               }`}
                             >
@@ -270,7 +274,7 @@ export const AdminLayout: React.FC = () => {
                   <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs space-y-1.5">
                     <div className="flex items-center gap-2 text-slate-200 font-bold">
                       <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      <span>Hak Akses: {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Administrator' : 'Pengurus'}</span>
+                      <span>Hak Akses: {roleLabel}</span>
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed font-subtitle">
                       {currentUser?.namaLengkap || 'Pengurus Aktif'}
@@ -283,7 +287,7 @@ export const AdminLayout: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setMobileSidebarOpen(false);
-                      setCurrentView('public');
+                      handleOpenPublicWebsite();
                     }}
                     className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold flex items-center justify-center gap-2"
                   >
@@ -320,19 +324,19 @@ export const AdminLayout: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => handleSelectTab(item.id)}
-                  className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                  className={`min-h-[44px] w-full px-3.5 py-2.5 rounded-xl text-xs font-bold grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 text-left transition-all ${
                     isActive
                       ? 'bg-slate-900 text-amber-400 shadow-sm'
                       : 'text-slate-700 hover:bg-stone-100'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    {item.icon}
-                    <span>{item.label}</span>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="shrink-0">{item.icon}</span>
+                    <span className="min-w-0 leading-snug">{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         item.badgeColor || (isActive ? 'bg-amber-400/20 text-amber-300' : 'bg-stone-200 text-slate-700')
                       }`}
                     >

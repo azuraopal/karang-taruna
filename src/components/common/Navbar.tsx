@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Lock, LayoutDashboard, ArrowUpRight } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Logo } from './Logo';
+import { getDashboardPath, navigateTo } from '../../utils/appRoute';
 
 interface NavbarProps {
   onOpenLoginModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
-  const { currentView, setCurrentView, isAdminLoggedIn, logoutAdmin } = useData();
+  const { currentView, setCurrentView, currentUser, isAdminLoggedIn, logoutAdmin } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState('beranda');
@@ -56,6 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
     setMobileMenuOpen(false);
     if (currentView === 'admin') {
       setCurrentView('public');
+      navigateTo('/');
       setTimeout(() => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -63,6 +65,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
     }
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }, [currentView, setCurrentView]);
+
+  const handleDashboardToggle = () => {
+    if (currentView === 'admin') {
+      setCurrentView('public');
+      navigateTo('/');
+      return;
+    }
+
+    if (currentUser) {
+      navigateTo(getDashboardPath(currentUser.role));
+      setCurrentView('admin');
+    }
+  };
 
   return (
     <header
@@ -120,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setCurrentView(currentView === 'admin' ? 'public' : 'admin')}
+                  onClick={handleDashboardToggle}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                     currentView === 'admin'
                       ? 'bg-amber-400 text-slate-950 hover:bg-amber-300'
@@ -282,7 +297,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                   <button
                     type="button"
                     onClick={() => {
-                      setCurrentView(currentView === 'admin' ? 'public' : 'admin');
+                      handleDashboardToggle();
                       setMobileMenuOpen(false);
                     }}
                     className="w-full py-3 px-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-400/20"

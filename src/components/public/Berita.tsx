@@ -5,6 +5,7 @@ import { useData } from '../../context/DataContext';
 import type { Berita } from '../../types';
 import { Modal } from '../common/Modal';
 import { TiltCard } from '../common/TiltCard';
+import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
 
 const formatTanggalPelaksanaan = (value?: string) => {
@@ -51,26 +52,37 @@ export const BeritaSection: React.FC = () => {
   });
 
   return (
-    <section id="berita" className="py-24 bg-white border-t border-stone-200">
+    <section id="berita" className="py-18 sm:py-24 bg-white border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold tracking-wide uppercase">
-            <Newspaper className="w-3.5 h-3.5 text-amber-600" />
-            <span>Kabar & Informasi Terkini</span>
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold tracking-wide uppercase">
+              <Newspaper className="w-3.5 h-3.5 text-amber-600" />
+              <span>Kabar & Informasi Terkini</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Warta Kegiatan & Pengumuman
+            </h2>
+
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
+              Ikuti laporan pelaksanaan program kerja, pengumuman agenda rapat, turnamen, dan aksi sosial kemasyarakatan.
+            </p>
+          </motion.div>
+          <div className="lg:col-span-5">
+            <Section3DShowcase kind="berita" />
           </div>
-
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Warta Kegiatan & Pengumuman
-          </h2>
-
-          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-            Ikuti laporan pelaksanaan program kerja, pengumuman agenda rapat, turnamen, dan aksi sosial kemasyarakatan.
-          </p>
         </div>
 
         {/* Baris Pencarian & Filter */}
-        <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-8 sm:mt-10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Search Bar */}
           <div className="relative w-full md:max-w-xs">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -86,14 +98,14 @@ export const BeritaSection: React.FC = () => {
           </div>
 
           {/* Filter Kategori */}
-          <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+          <div className="mobile-chip-scroll no-scrollbar -mx-4 flex w-[calc(100%+2rem)] snap-x items-center gap-1.5 overflow-x-auto px-4 pb-2 md:mx-0 md:w-auto md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
             {kategoriList.map((kat) => {
               const isActive = selectedKategori === kat;
               return (
                 <button
                   key={kat}
                   onClick={() => setSelectedKategori(kat)}
-                  className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                  className={`min-h-[44px] shrink-0 snap-start px-3.5 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                     isActive
                       ? 'bg-slate-900 text-amber-400 shadow-sm'
                       : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
@@ -110,7 +122,7 @@ export const BeritaSection: React.FC = () => {
         {filteredBerita.length > 0 ? (
           <motion.div
             layout
-            className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"
+            className="mt-10 sm:mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7"
           >
             <AnimatePresence>
               {filteredBerita.map((item) => (
@@ -128,7 +140,7 @@ export const BeritaSection: React.FC = () => {
                   <TiltCard maxTilt={6} glareOpacity={0.16} className="h-full flex flex-col justify-between">
                     <div>
                     {/* Gambar Artikel */}
-                    <div className="relative h-52 bg-slate-200 overflow-hidden">
+                    <div className="relative h-48 sm:h-52 bg-slate-200 overflow-hidden">
                       <img
                         src={item.gambarUrl}
                         alt={item.judul}
@@ -143,7 +155,7 @@ export const BeritaSection: React.FC = () => {
                     </div>
 
                     {/* Konten Artikel */}
-                    <div className="p-6 space-y-2.5">
+                    <div className="p-4 sm:p-6 space-y-2.5">
                       <div className="flex items-center gap-3 text-[11px] text-slate-500">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5 text-amber-600" />
@@ -171,7 +183,7 @@ export const BeritaSection: React.FC = () => {
                   </div>
 
                     {/* Tombol Baca */}
-                    <div className="p-6 pt-0">
+                    <div className="p-4 pt-0 sm:p-6 sm:pt-0">
                       <button
                         type="button"
                         onClick={(e) => {

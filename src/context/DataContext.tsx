@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ActivityAction, ActivityEntity, ActivityLog, AnggotaTim, Berita, ItemGaleri, Aspirasi, ToastMessage, UserAccount } from '../types';
+import { navigateTo } from '../utils/appRoute';
 
 interface DataContextType {
   // Public vs Admin Navigation
@@ -15,7 +16,7 @@ interface DataContextType {
   // Auth & Roles
   currentUser: UserAccount | null;
   isAdminLoggedIn: boolean;
-  loginAdmin: (user: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  loginAdmin: (user: string, pass: string) => Promise<{ success: boolean; error?: string; user?: UserAccount }>;
   logoutAdmin: () => void;
 
   // User Management (Admin Only)
@@ -370,7 +371,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [fetchCategory]);
 
   // Auth Handlers
-  const loginAdmin = async (user: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+  const loginAdmin = async (user: string, pass: string): Promise<{ success: boolean; error?: string; user?: UserAccount }> => {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -392,7 +393,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
           // Fetch users list if admin
           if (data.user.role === 'admin' || data.user.role === 'superadmin') fetchCategory('users');
-          return { success: true };
+          return { success: true, user: data.user };
         }
       }
       if (res.status === 403) {
@@ -415,7 +416,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Super Admin', demoSuperAdmin);
       showToast('Berhasil masuk sebagai Super Admin (Demo)', 'success');
-      return { success: true };
+      return { success: true, user: demoSuperAdmin };
     }
     if (user.trim() === 'admin' && pass.trim() === 'katar2026') {
       const demoAdmin = DEFAULT_USERS[1];
@@ -423,7 +424,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Administrator', demoAdmin);
       showToast('Berhasil masuk sebagai Administrator (Demo)', 'success');
-      return { success: true };
+      return { success: true, user: demoAdmin };
     }
     if (user.trim() === 'pengurus' && pass.trim() === 'pengurus2026') {
       const demoPengurus = DEFAULT_USERS[2];
@@ -431,7 +432,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdminLoggedIn(true);
       addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Pengurus', demoPengurus);
       showToast('Berhasil masuk sebagai Pengurus (Demo)', 'success');
-      return { success: true };
+      return { success: true, user: demoPengurus };
     }
 
     showToast('Username atau password salah!', 'error');
@@ -444,6 +445,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentView('public');
     localStorage.removeItem(STORAGE_KEYS.AUTH);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    navigateTo('/');
     showToast('Anda telah keluar dari Panel Pengurus', 'info');
   };
 

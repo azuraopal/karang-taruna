@@ -4,6 +4,7 @@ import { Users, HeartHandshake, Sparkles, Award, Target, BookOpen, Compass } fro
 import { TENTANG_DATA } from '../../data/initialData';
 import { Logo } from '../common/Logo';
 import { TiltCard } from '../common/TiltCard';
+import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const Tentang: React.FC = () => {
@@ -46,32 +47,51 @@ export const Tentang: React.FC = () => {
   ];
 
   return (
-    <section id="tentang" className="py-24 bg-stone-50 border-t border-stone-200">
+    <section id="tentang" className="relative py-18 sm:py-24 bg-stone-50 border-t border-stone-200 overflow-hidden">
+      <div className="soft-grid absolute inset-0 opacity-45" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
-            <Compass className="w-3.5 h-3.5 text-amber-700" />
-            <span>Profil & Landasan Gerak</span>
+        <div className="relative grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
+              <Compass className="w-3.5 h-3.5 text-amber-700" />
+              <span>Profil & Landasan Gerak</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Mengenal Karang Taruna Margabakti 07
+            </h2>
+
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
+              Organisasi sosial kepemudaan yang berdiri mandiri di tingkat rukun warga, berfungsi sebagai wadah untuk meningkatkan kepedulian sosial terhadap masyarakat dan lingkungan sekitar.
+            </p>
+          </motion.div>
+          <div className="lg:col-span-5">
+            <Section3DShowcase kind="tentang" />
           </div>
-
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Mengenal Karang Taruna Margabakti 07
-          </h2>
-
-          <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-            Organisasi sosial kepemudaan yang berdiri mandiri di tingkat rukun warga, berfungsi sebagai wadah untuk meningkatkan kepedulian sosial terhadap masyarakat dan lingkungan sekitar.
-          </p>
         </div>
 
         {/* Sejarah & Identitas Card */}
-        <div className="mt-14 bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mt-10 sm:mt-14 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
+        >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-4 space-y-4">
               <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 shadow-md inline-flex items-center justify-center">
                 <Logo variant="white" size="md" className="h-7 sm:h-9 w-auto" />
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+                Aditya Karya Mahatva Yodha
               </h3>
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-700">
                 Semboyan Resmi Karang Taruna Nasional
@@ -81,7 +101,7 @@ export const Tentang: React.FC = () => {
               </p>
             </div>
 
-            <div className="lg:col-span-8 bg-stone-50 rounded-2xl p-6 sm:p-8 border border-stone-200/80 space-y-4">
+            <div className="lg:col-span-8 bg-stone-50 rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-stone-200/80 space-y-4">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                 <BookOpen className="w-4 h-4 text-amber-600" />
                 <span>Sekilas Sejarah & Peran</span>
@@ -101,7 +121,7 @@ export const Tentang: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Visi & Misi */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -111,7 +131,7 @@ export const Tentang: React.FC = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-5 relative bg-slate-900 text-white rounded-3xl p-8 shadow-xl flex flex-col justify-between overflow-hidden group border border-slate-800"
+            className="lg:col-span-5 relative bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col justify-between overflow-hidden group border border-slate-800"
           >
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
             <div className="space-y-4 relative z-10">
@@ -134,7 +154,13 @@ export const Tentang: React.FC = () => {
           </motion.div>
 
           {/* Misi (7 cols) */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-stone-200 shadow-sm space-y-4">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+            className="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4"
+          >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200">
               <Award className="w-3.5 h-3.5 text-amber-600" />
               <span>Misi Aksi Nyata</span>
@@ -153,7 +179,7 @@ export const Tentang: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* 4 Nilai Utama */}
@@ -197,7 +223,7 @@ export const Tentang: React.FC = () => {
           </div>
         </div>
         {/* 4 Bidang Kerja */}
-        <div className="mt-14 bg-amber-50/60 rounded-3xl p-8 sm:p-10 border border-amber-200/80">
+        <div className="mt-14 bg-amber-50/60 rounded-2xl p-5 sm:p-10 border border-amber-200/80">
           <h3 className="text-xl font-bold text-slate-900 mb-6 text-center">
             7 Divisi Bidang Kerja Pemuda
           </h3>
