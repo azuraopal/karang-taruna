@@ -8,6 +8,7 @@ import { useData } from '../../context/DataContext';
 import { Logo } from '../common/Logo';
 import { AdminDashboard } from './AdminDashboard';
 import { AdminBerita } from './AdminBerita';
+import { AdminAgenda } from './AdminAgenda';
 import { AdminTim } from './AdminTim';
 import { AdminGaleri } from './AdminGaleri';
 import { AdminAspirasi } from './AdminAspirasi';
@@ -71,6 +72,7 @@ export const AdminLayout: React.FC = () => {
       label: 'Dashboard Ringkasan',
       icon: <LayoutDashboard className="w-4 h-4" />,
     },
+    { id: 'absensi', label: 'Absensi', icon: <ClipboardList className="w-4 h-4" /> },
     {
       id: 'berita',
       label: 'Kelola Berita',
@@ -394,6 +396,7 @@ export const AdminLayout: React.FC = () => {
           {activeTab === 'berita' && <AdminBerita />}
 
           {activeTab === 'tim' && <AdminTim />}
+          {activeTab === 'absensi' && <AdminAgenda />}
 
           {activeTab === 'galeri' && <AdminGaleri />}
 

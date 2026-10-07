@@ -1,6 +1,6 @@
 import type { UserRole } from '../types';
 
-export const ADMIN_TABS = ['dashboard', 'berita', 'tim', 'galeri', 'aspirasi', 'users', 'logs'] as const;
+export const ADMIN_TABS = ['dashboard', 'absensi', 'berita', 'tim', 'galeri', 'aspirasi', 'users', 'logs'] as const;
 
 export type AdminTab = typeof ADMIN_TABS[number];
 

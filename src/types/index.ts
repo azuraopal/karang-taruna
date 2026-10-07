@@ -75,7 +75,7 @@ export interface Aspirasi {
 }
 
 export type ActivityAction = 'login' | 'tambah' | 'ubah' | 'hapus' | 'status';
-export type ActivityEntity = 'Pengguna' | 'Berita' | 'Tim Pengurus' | 'Galeri' | 'Aspirasi' | 'Sistem';
+export type ActivityEntity = 'Absensi' | 'Pengguna' | 'Berita' | 'Tim Pengurus' | 'Galeri' | 'Aspirasi' | 'Sistem';
 
 export interface ActivityLog {
   id: string;

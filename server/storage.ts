@@ -2,9 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { pool, checkDbConnection } from './db.js';
+import { createAgendaStorage, AgendaError, type Agenda, type AgendaJson } from './agendaStorage.js';
+import { createMeetingGroupStorage } from './meetingGroupStorage.js';
+import type { ActivityRecap } from '../src/utils/activityRecap.js';
 import type { ActivityLog, Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount } from '../src/types/index.js';
 
-const DB_FILE = path.join(process.cwd(), 'server', 'dev_db.json');
+import { isAttendanceDate, isAttendanceStatus, type AttendanceRecord, type AttendanceStatus } from '../src/utils/attendance.js';
+
+const DB_FILE = process.env.DEV_DB_FILE || path.join(process.cwd(), 'server', 'dev_db.json');
 
 export const DEFAULT_USERS: UserAccount[] = [
   { id: 'user-0', username: 'superadmin', namaLengkap: 'Super Administrator', role: 'superadmin', isActive: true, createdAt: 'September 2026' },
@@ -13,6 +18,10 @@ export const DEFAULT_USERS: UserAccount[] = [
 ];
 
 interface DevDbData {
+  [collection: string]: unknown;
+  agenda?: Agenda[];
+  absensi?: AttendanceRecord[];
+  meetingAttendance?: AttendanceRecord[];
   berita: Berita[];
   tim: AnggotaTim[];
   galeri: ItemGaleri[];
@@ -86,6 +95,27 @@ function saveDevDb(data: DevDbData) {
 
 // Global in-memory cache synchronized with disk
 let localDb = loadDevDb();
+
+// Agenda shares the same authoritative backend and live JSON cache as attendance.
+const agendaJson: AgendaJson = {
+    read: () => localDb,
+    update(change) {
+      const next = change(localDb) as DevDbData;
+      const temporary = DB_FILE + '.' + crypto.randomUUID() + '.tmp';
+      fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+      try {
+        fs.writeFileSync(temporary, JSON.stringify(next, null, 2), 'utf8');
+        fs.renameSync(temporary, DB_FILE);
+      } finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
+      localDb = next;
+    },
+};
+export const agendaStorage = createAgendaStorage({
+  usesPg: authoritativeUsesPg,
+  query: (sql, values) => pool.query(sql, values),
+  json: agendaJson,
+});
+export const meetingGroupStorage = createMeetingGroupStorage({ usesPg: authoritativeUsesPg, query: (sql, values) => pool.query(sql, values), json: agendaJson });
 
 function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -183,7 +213,7 @@ export async function deleteBerita(id: string): Promise<boolean> {
 
 // ---------------------- TIM ----------------------
 export async function getTim(): Promise<AnggotaTim[]> {
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     const res = await pool.query(
       'SELECT id, nama, jabatan, divisi, foto_url as "fotoUrl", bio, email, no_hp as "noHp", dibuat_oleh as "dibuatOleh" FROM anggota_tim ORDER BY urutan ASC, created_at ASC'
@@ -385,7 +415,7 @@ export async function deleteAspirasi(id: string): Promise<boolean> {
 
 // ---------------------- USERS ----------------------
 export async function getUsers(): Promise<UserAccount[]> {
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     const res = await pool.query(
       'SELECT id, username, nama_lengkap as "namaLengkap", role, is_active as "isActive", created_at as "createdAt", dibuat_oleh as "dibuatOleh" FROM admin_users ORDER BY created_at ASC'
@@ -400,7 +430,7 @@ export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAcc
   const createdAt = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
   const record: UserAccount = { ...item, id, isActive: item.isActive !== false, createdAt };
 
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     const res = await pool.query(
       `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role, is_active, dibuat_oleh)
@@ -417,7 +447,7 @@ export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAcc
 }
 
 export async function updateUser(id: string, item: Partial<UserAccount>): Promise<UserAccount | null> {
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     let query = 'UPDATE admin_users SET nama_lengkap = COALESCE($1, nama_lengkap), role = COALESCE($2, role), is_active = COALESCE($3, is_active)';
     const values: (string | boolean | null)[] = [item.namaLengkap?.trim() || null, item.role || null, item.isActive ?? null];
@@ -441,7 +471,7 @@ export async function updateUser(id: string, item: Partial<UserAccount>): Promis
 }
 
 export async function deleteUser(id: string): Promise<boolean> {
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     await pool.query('DELETE FROM admin_users WHERE id = $1', [id]);
     return true;
@@ -454,7 +484,7 @@ export async function deleteUser(id: string): Promise<boolean> {
 
 // ---------------------- AUTH ----------------------
 export async function getUserActiveStatus(username: string): Promise<boolean | null> {
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     const res = await pool.query(
       'SELECT is_active as "isActive" FROM admin_users WHERE LOWER(username) = LOWER($1)',
@@ -468,7 +498,7 @@ export async function getUserActiveStatus(username: string): Promise<boolean | n
 }
 
 export async function authenticate(username: string, pass: string): Promise<UserAccount | null> {
-  const isPg = await checkDbConnection();
+  const isPg = await authoritativeUsesPg();
   if (isPg) {
     const res = await pool.query(
       'SELECT id, username, password_hash, nama_lengkap as "namaLengkap", role, is_active as "isActive" FROM admin_users WHERE username = $1',
@@ -478,6 +508,7 @@ export async function authenticate(username: string, pass: string): Promise<User
       const { password_hash: _passwordHash, ...user } = res.rows[0];
       return user;
     }
+    return null;
   }
 
   // Check localDb
@@ -492,9 +523,134 @@ export async function authenticate(username: string, pass: string): Promise<User
     }
   }
 
-  if (username === 'admin' && pass === 'katar2026') return DEFAULT_USERS[0];
-  if (username === 'pengurus' && pass === 'pengurus2026') return DEFAULT_USERS[1];
-
   return null;
 }
 
+
+// Pin a successful backend selection; rejected probes may retry after recovery.
+let attendanceBackend: Promise<boolean> | undefined;
+async function authoritativeUsesPg() {
+  attendanceBackend ??= (async () => {
+    if (process.env.KATAR_STORAGE === 'json') return false;
+    const connected = await checkDbConnection();
+    if (!connected && (process.env.KATAR_STORAGE === 'postgres' || process.env.DATABASE_URL || process.env.NODE_ENV === 'production')) {
+      throw new Error('PostgreSQL unavailable');
+    }
+    return connected;
+  })().catch(error => {
+    attendanceBackend = undefined;
+    throw error;
+  });
+  return attendanceBackend;
+}
+export async function getActivityRecap(groupId: string): Promise<ActivityRecap> {
+  const group = groupId === 'ungrouped' ? { id: 'ungrouped', title: 'Rapat Tanpa Agenda Kegiatan' } : (await meetingGroupStorage.list()).find(item => item.id === groupId);
+  if (!group) throw new AgendaError('Agenda Kegiatan Tidak Ditemukan.', 404);
+  const meetings = (await agendaStorage.list()).filter(meeting => groupId === 'ungrouped' ? !meeting.groupId : meeting.groupId === groupId);
+  const members = await getTim();
+  const dates = new Map(meetings.map(meeting => [meeting.id, meeting.date]));
+  let records: AttendanceRecord[];
+  if (await authoritativeUsesPg()) {
+    const result = await pool.query('SELECT rapat_id AS "rapatId", anggota_id AS "anggotaId", status FROM meeting_attendance WHERE rapat_id = ANY($1::varchar[]) ORDER BY rapat_id, anggota_id', [meetings.map(meeting => meeting.id)]);
+    records = result.rows.map(record => ({ ...record, tanggal: dates.get(record.rapatId)! }));
+  } else records = (localDb.meetingAttendance || []).filter(record => !!record.rapatId && dates.has(record.rapatId)).map(record => ({ ...record, tanggal: dates.get(record.rapatId!)! }));
+  const memberIds = new Set(members.map(member => member.id));
+  return { group, meetings, members, records: records.filter(record => memberIds.has(record.anggotaId)) };
+}
+
+export async function getMeetingAttendance(rapatId: string): Promise<AttendanceRecord[]> {
+  const meeting = await agendaStorage.get(rapatId);
+  if (await authoritativeUsesPg()) {
+    const result = await pool.query('SELECT rapat_id AS "rapatId", anggota_id AS "anggotaId", status FROM meeting_attendance WHERE rapat_id = $1 ORDER BY anggota_id', [rapatId]);
+    return result.rows.map(record => ({ ...record, tanggal: meeting.date }));
+  }
+  return (localDb.meetingAttendance || []).filter(record => record.rapatId === rapatId).map(record => ({ ...record, tanggal: meeting.date }));
+}
+
+export async function saveMeetingAttendance(rapatId: string, anggotaId: string, status: AttendanceStatus | null, actor: UserAccount): Promise<AttendanceRecord> {
+  if (status !== null && !isAttendanceStatus(status)) throw new AgendaError('Status Tidak Valid.', 400);
+  const meeting = await agendaStorage.get(rapatId);
+  const record: AttendanceRecord = { rapatId, anggotaId, tanggal: meeting.date, status: status! };
+  const log: ActivityLog = {
+    id: 'log-' + crypto.randomUUID(), action: status === null ? 'hapus' : 'status', entity: 'Absensi',
+    description: `${status === null ? 'Hapus' : 'Simpan'} kehadiran ${anggotaId} pada rapat ${meeting.title} (${meeting.id})`,
+    actorName: actor.namaLengkap, actorRole: actor.role, createdAt: new Date().toISOString(),
+  };
+  if (await authoritativeUsesPg()) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const member = await client.query('SELECT id FROM anggota_tim WHERE id = $1 FOR KEY SHARE', [anggotaId]);
+      if (!member.rows.length) throw new AgendaError('Anggota Tidak Ditemukan.', 404);
+      if (status === null) {
+        const deleted = await client.query('DELETE FROM meeting_attendance WHERE rapat_id = $1 AND anggota_id = $2 RETURNING status', [rapatId, anggotaId]);
+        if (!deleted.rows.length) throw new AgendaError('Catatan Tidak Ditemukan.', 404);
+        record.status = deleted.rows[0].status;
+      } else await client.query('INSERT INTO meeting_attendance (rapat_id, anggota_id, status) VALUES ($1,$2,$3) ON CONFLICT (rapat_id, anggota_id) DO UPDATE SET status = EXCLUDED.status', [rapatId, anggotaId, status]);
+      await client.query('INSERT INTO activity_logs (id, action, entity, description, actor_name, actor_role, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)', [log.id, log.action, log.entity, log.description, log.actorName, log.actorRole, log.createdAt]);
+      await client.query('COMMIT');
+      return record;
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
+  }
+  agendaJson.update(current => {
+    if (!localDb.tim.some(member => member.id === anggotaId)) throw new AgendaError('Anggota Tidak Ditemukan.', 404);
+    const existing = (current.meetingAttendance || []) as AttendanceRecord[];
+    const previous = existing.find(r => r.rapatId === rapatId && r.anggotaId === anggotaId);
+    if (status === null && !previous) throw new AgendaError('Catatan Tidak Ditemukan.', 404);
+    if (status === null) record.status = previous!.status;
+    const remaining = existing.filter(r => r.rapatId !== rapatId || r.anggotaId !== anggotaId);
+    return { ...current, meetingAttendance: status === null ? remaining : [...remaining, record], activityLogs: [log, ...(current.activityLogs as ActivityLog[] || [])].slice(0, 300) };
+  });
+  return record;
+}
+
+export async function getAbsensi(tanggal: string): Promise<AttendanceRecord[]> {
+  if (!isAttendanceDate(tanggal)) throw new Error('Invalid date');
+  if (await authoritativeUsesPg()) {
+    const result = await pool.query('SELECT tanggal::text, anggota_id AS "anggotaId", status FROM absensi WHERE tanggal = $1 ORDER BY anggota_id', [tanggal]);
+    return result.rows;
+  }
+  return (localDb.absensi || []).filter(item => item.tanggal === tanggal);
+}
+export async function saveAbsensi(tanggal: string, anggotaId: string, status: AttendanceStatus | null, actor: UserAccount): Promise<AttendanceRecord | null> {
+  if (!isAttendanceDate(tanggal) || (status !== null && !isAttendanceStatus(status))) throw new Error('Invalid attendance');
+  const record = { tanggal, anggotaId, status: status! };
+  const makeLog = (exists: boolean): ActivityLog => ({
+    id: 'log-' + crypto.randomUUID(), action: status === null ? 'hapus' : exists ? 'ubah' : 'tambah', entity: 'Absensi',
+    description: `${status === null ? 'Hapus' : 'Simpan'} absensi ${anggotaId} tanggal ${tanggal}${status ? ': ' + status : ''}`,
+    actorName: actor.namaLengkap, actorRole: actor.role, createdAt: new Date().toISOString(),
+  });
+  if (await authoritativeUsesPg()) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const member = await client.query('SELECT id FROM anggota_tim WHERE id = $1 FOR KEY SHARE', [anggotaId]);
+      if (!member.rows.length) { await client.query('ROLLBACK'); return null; }
+      const previous = await client.query('SELECT status FROM absensi WHERE tanggal = $1 AND anggota_id = $2 FOR UPDATE', [tanggal, anggotaId]);
+      if (status === null && !previous.rows.length) { await client.query('ROLLBACK'); return null; }
+      if (status === null) await client.query('DELETE FROM absensi WHERE tanggal = $1 AND anggota_id = $2', [tanggal, anggotaId]);
+      else await client.query(`INSERT INTO absensi (tanggal, anggota_id, status) VALUES ($1, $2, $3)
+        ON CONFLICT (tanggal, anggota_id) DO UPDATE SET status = EXCLUDED.status`, [tanggal, anggotaId, status]);
+      const log = makeLog(previous.rows.length > 0);
+      await client.query(`INSERT INTO activity_logs (id, action, entity, description, actor_name, actor_role, created_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`, [log.id, log.action, log.entity, log.description, log.actorName, log.actorRole, log.createdAt]);
+      await client.query('COMMIT');
+      return status === null ? { ...record, status: previous.rows[0].status } : record;
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
+  }
+  if (!localDb.tim.some(member => member.id === anggotaId)) return null;
+  const previous = (localDb.absensi || []).find(item => item.tanggal === tanggal && item.anggotaId === anggotaId);
+  if (status === null && !previous) return null;
+  const records = (localDb.absensi || []).filter(item => item.tanggal !== tanggal || item.anggotaId !== anggotaId);
+  const next = { ...localDb, absensi: status === null ? records : [...records, record], activityLogs: [makeLog(!!previous), ...(localDb.activityLogs || [])].slice(0, 300) };
+  // Atomic replacement; publish the new cache only after the durable write succeeds.
+  const temporary = DB_FILE + '.' + crypto.randomUUID() + '.tmp';
+  try {
+    fs.writeFileSync(temporary, JSON.stringify(next, null, 2), 'utf8');
+    fs.renameSync(temporary, DB_FILE);
+  } finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
+  localDb = next;
+  return status === null ? previous! : record;
+}

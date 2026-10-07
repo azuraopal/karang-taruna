@@ -1,15 +1,34 @@
 import express from 'express';
+import { agendaRouter } from './agendaRouter.js';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import type { Response } from 'express';
 import { checkDbConnection, initDb } from './db.js';
 import * as storage from './storage.js';
+import { startSession, endSession, requireAttendanceSession, requireUserManagementSession } from './session.js';
+import { isAttendanceDate, isAttendanceStatus } from '../src/utils/attendance.js';
 
 export const apiApp = express();
 
 apiApp.use(cors());
 apiApp.use(express.json({ limit: '20mb' }));
+// Cookie-authenticated mutations (including login/logout) must come from this host.
+apiApp.use(['/api/auth', '/api/users', '/api/absensi', '/api/agenda'], (req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const origin = req.get('origin');
+  let originAllowed = !origin;
+  if (origin) {
+    try {
+      const url = new URL(origin);
+      originAllowed = ['http:', 'https:'].includes(url.protocol) && url.host === req.get('host');
+    } catch { originAllowed = false; }
+  }
+  if (!originAllowed || req.get('sec-fetch-site') === 'cross-site') {
+    return res.status(403).json({ error: 'Permintaan lintas origin tidak diizinkan.' });
+  }
+  next();
+});
 apiApp.use(async (_req, _res, next) => {
   await initDb();
   next();
@@ -27,7 +46,7 @@ apiApp.use('/uploads', express.static(publicUploadsRoot, { maxAge: '7d', immutab
 
 const sseClients = new Set<Response>();
 
-export function broadcastUpdate(payload: { type: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'logs' | 'all'; action?: string }) {
+export function broadcastUpdate(payload: { type: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'logs' | 'absensi' | 'all'; action?: string }) {
   const message = `event: update\ndata: ${JSON.stringify({ ...payload, timestamp: Date.now() })}\n\n`;
   for (const client of sseClients) {
     try {
@@ -119,17 +138,20 @@ apiApp.post('/api/auth/login', async (req, res) => {
     return res.status(400).json({ error: 'Username dan password wajib diisi' });
   }
 
-  const accountIsActive = await storage.getUserActiveStatus(username);
-  if (accountIsActive === false) {
-    return res.status(403).json({ error: 'Akun Anda telah dinonaktifkan. Hubungi Administrator.' });
-  }
+  try {
+    const accountIsActive = await storage.getUserActiveStatus(username);
+    if (accountIsActive === false) {
+      return res.status(403).json({ error: 'Akun Anda telah dinonaktifkan. Hubungi Administrator.' });
+    }
 
-  const user = await storage.authenticate(username, password);
-  if (!user) {
-    return res.status(401).json({ error: 'Username atau kata sandi tidak cocok' });
-  }
+    const user = await storage.authenticate(username, password);
+    if (!user) {
+      return res.status(401).json({ error: 'Username atau kata sandi tidak cocok' });
+    }
 
-  res.json({ success: true, user: { id: user.id, username: user.username, namaLengkap: user.namaLengkap, role: user.role, isActive: user.isActive !== false } });
+    startSession(req, res, user);
+    res.json({ success: true, user: { id: user.id, username: user.username, namaLengkap: user.namaLengkap, role: user.role, isActive: user.isActive !== false } });
+  } catch { res.status(503).json({ error: 'Login tidak tersedia. Silakan coba lagi setelah server pulih.' }); }
 });
 
 // ---------------------- Users (Admin Only) ----------------------
@@ -138,11 +160,9 @@ apiApp.get('/api/users', async (_req, res) => {
   res.json(users);
 });
 
-apiApp.post('/api/users', async (req, res) => {
-  const { username, password, namaLengkap, role, dibuatOleh, actorRole } = req.body;
-  if (actorRole !== 'superadmin') {
-    return res.status(403).json({ error: 'Hanya Super Admin yang dapat mengelola akun pengguna' });
-  }
+apiApp.post('/api/users', requireUserManagementSession, async (req, res) => {
+  const { username, password, namaLengkap, role } = req.body;
+  const dibuatOleh = res.locals.attendanceActor.namaLengkap;
   if (!username || !password || !namaLengkap) {
     return res.status(400).json({ error: 'Seluruh kolom wajib diisi' });
   }
@@ -152,20 +172,15 @@ apiApp.post('/api/users', async (req, res) => {
   res.status(201).json(created);
 });
 
-apiApp.put('/api/users/:id', async (req, res) => {
-  if (req.body.actorRole !== 'superadmin') {
-    return res.status(403).json({ error: 'Hanya Super Admin yang dapat mengelola akun pengguna' });
-  }
+apiApp.put<{ id: string }>('/api/users/:id', requireUserManagementSession, async (req, res) => {
   const updated = await storage.updateUser(req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'User tidak ditemukan' });
   broadcastUpdate({ type: 'users', action: 'update' });
   res.json(updated);
 });
 
-apiApp.delete('/api/users/:id', async (req, res) => {
-  if (req.body.actorRole !== 'superadmin') {
-    return res.status(403).json({ error: 'Hanya Super Admin yang dapat mengelola akun pengguna' });
-  }
+apiApp.delete('/api/users/:id', requireUserManagementSession, async (req, res) => {
+  if (typeof req.params.id !== 'string') return res.status(400).json({ error: 'ID pengguna tidak valid.' });
   const success = await storage.deleteUser(req.params.id);
   broadcastUpdate({ type: 'users', action: 'delete' });
   res.json({ success });
@@ -298,4 +313,34 @@ apiApp.delete('/api/aspirasi/:id', async (req, res) => {
   await storage.deleteAspirasi(req.params.id);
   broadcastUpdate({ type: 'aspirasi', action: 'delete' });
   res.json({ success: true });
+});
+
+// Attendance is protected by a server-issued session, never a client-supplied role.
+apiApp.post('/api/auth/logout', (req, res) => {
+  endSession(req, res);
+  res.json({ success: true });
+});
+apiApp.use('/api/agenda', agendaRouter);
+apiApp.use('/api/absensi', requireAttendanceSession);
+apiApp.get('/api/absensi/:tanggal', async (req, res) => {
+  if (!isAttendanceDate(req.params.tanggal)) return res.status(400).json({ error: 'Tanggal harus valid (YYYY-MM-DD).' });
+  try {
+    const records = await storage.getAbsensi(req.params.tanggal);
+    const members = await storage.getTim();
+    res.json({ records, members });
+  } catch { res.status(500).json({ error: 'Gagal memuat absensi. Silakan coba lagi.' }); }
+});
+apiApp.all('/api/absensi/:tanggal/:anggotaId', async (req, res) => {
+  if (!['PUT', 'DELETE'].includes(req.method)) return res.status(405).json({ error: 'Metode tidak didukung.' });
+  if (!isAttendanceDate(req.params.tanggal) || (req.method === 'PUT' && !isAttendanceStatus(req.body?.status))) {
+    return res.status(400).json({ error: 'Tanggal dan status wajib valid: izin, hadir, sakit, alpa.' });
+  }
+  try {
+    const record = await storage.saveAbsensi(req.params.tanggal, req.params.anggotaId,
+      req.method === 'DELETE' ? null : req.body.status, res.locals.attendanceActor);
+    if (!record) return res.status(404).json({ error: 'Anggota atau catatan absensi tidak ditemukan.' });
+    broadcastUpdate({ type: 'absensi', action: req.method === 'DELETE' ? 'delete' : 'save' });
+    broadcastUpdate({ type: 'logs', action: 'create' });
+    res.json(record);
+  } catch { res.status(500).json({ error: 'Gagal menyimpan absensi. Perubahan belum tersimpan; silakan coba lagi.' }); }
 });

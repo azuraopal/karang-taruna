@@ -17,7 +17,7 @@ interface DataContextType {
   currentUser: UserAccount | null;
   isAdminLoggedIn: boolean;
   loginAdmin: (user: string, pass: string) => Promise<{ success: boolean; error?: string; user?: UserAccount }>;
-  logoutAdmin: () => void;
+  logoutAdmin: () => Promise<void>;
 
   // User Management (Admin Only)
   userList: UserAccount[];
@@ -370,83 +370,72 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [fetchCategory]);
 
+  // Serialize cookie-changing auth operations, even when callers do not await logout.
+  const authRequests = useRef<Promise<void>>(Promise.resolve());
   // Auth Handlers
-  const loginAdmin = async (user: string, pass: string): Promise<{ success: boolean; error?: string; user?: UserAccount }> => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: user.trim(), password: pass.trim() }),
-      });
+  const loginAdmin = (user: string, pass: string): Promise<{ success: boolean; error?: string; user?: UserAccount }> => {
+    const operation = authRequests.current.then(async () => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user.trim(), password: pass.trim() }),
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.user) {
-          setCurrentUser(data.user);
-          setIsAdminLoggedIn(true);
-          addActivityLog('login', 'Sistem', `Masuk ke panel sebagai ${data.user.role === 'admin' ? 'Administrator' : 'Pengurus'}`, data.user);
-          const roleLabel = data.user.role === 'superadmin'
-            ? 'Super Admin'
-            : data.user.role === 'admin'
-              ? 'Administrator'
-              : 'Pengurus';
-          showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
-          // Fetch users list if admin
-          if (data.user.role === 'admin' || data.user.role === 'superadmin') fetchCategory('users');
-          return { success: true, user: data.user };
+        if (res.ok) {
+          const data = await res.json();
+          const account = data?.user;
+          const validIdentity = account && typeof account === 'object'
+            && typeof account.id === 'string' && !!account.id.trim()
+            && typeof account.username === 'string' && !!account.username.trim()
+            && typeof account.namaLengkap === 'string' && !!account.namaLengkap.trim()
+            && ['superadmin', 'admin', 'pengurus'].includes(account.role)
+            && (account.isActive === undefined || account.isActive === true);
+          if (data?.success === true && validIdentity) {
+            setCurrentUser(data.user);
+            setIsAdminLoggedIn(true);
+            addActivityLog('login', 'Sistem', `Masuk ke panel sebagai ${data.user.role === 'admin' ? 'Administrator' : 'Pengurus'}`, data.user);
+            const roleLabel = data.user.role === 'superadmin'
+              ? 'Super Admin'
+              : data.user.role === 'admin'
+                ? 'Administrator'
+                : 'Pengurus';
+            showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
+            // Fetch users list if admin
+            if (data.user.role === 'admin' || data.user.role === 'superadmin') fetchCategory('users');
+            return { success: true, user: data.user };
+          }
         }
-      }
-      if (res.status === 403) {
         const data = await res.json().catch(() => ({}));
-        return { success: false, error: data.error || 'Akun Anda telah dinonaktifkan.' };
+        const error = typeof data.error === 'string' ? data.error
+          : res.status === 401 ? 'Username atau password salah!'
+          : res.status === 403 ? 'Akun Anda telah dinonaktifkan.'
+          : 'Tidak dapat masuk. Respons server tidak valid atau server sedang tidak tersedia.';
+        showToast(error, 'error');
+        return { success: false, error };
+      } catch {
+        const error = 'Tidak dapat terhubung ke server. Silakan coba lagi.';
+        showToast(error, 'error');
+        return { success: false, error };
       }
-    } catch {
-      // offline fallback
-    }
-
-    const cachedAccount = userList.find((account) => account.username.toLowerCase() === user.trim().toLowerCase());
-    if (cachedAccount?.isActive === false) {
-      return { success: false, error: 'Akun Anda telah dinonaktifkan. Hubungi Administrator.' };
-    }
-
-    // Offline Demo Fallbacks
-    if (user.trim() === 'superadmin' && pass.trim() === 'superadmin2026') {
-      const demoSuperAdmin = DEFAULT_USERS[0];
-      setCurrentUser(demoSuperAdmin);
-      setIsAdminLoggedIn(true);
-      addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Super Admin', demoSuperAdmin);
-      showToast('Berhasil masuk sebagai Super Admin (Demo)', 'success');
-      return { success: true, user: demoSuperAdmin };
-    }
-    if (user.trim() === 'admin' && pass.trim() === 'katar2026') {
-      const demoAdmin = DEFAULT_USERS[1];
-      setCurrentUser(demoAdmin);
-      setIsAdminLoggedIn(true);
-      addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Administrator', demoAdmin);
-      showToast('Berhasil masuk sebagai Administrator (Demo)', 'success');
-      return { success: true, user: demoAdmin };
-    }
-    if (user.trim() === 'pengurus' && pass.trim() === 'pengurus2026') {
-      const demoPengurus = DEFAULT_USERS[2];
-      setCurrentUser(demoPengurus);
-      setIsAdminLoggedIn(true);
-      addActivityLog('login', 'Sistem', 'Masuk ke panel sebagai Pengurus', demoPengurus);
-      showToast('Berhasil masuk sebagai Pengurus (Demo)', 'success');
-      return { success: true, user: demoPengurus };
-    }
-
-    showToast('Username atau password salah!', 'error');
-    return { success: false, error: 'Username atau password salah!' };
+    });
+    authRequests.current = operation.then(() => undefined, () => undefined);
+    return operation;
   };
 
-  const logoutAdmin = () => {
-    setIsAdminLoggedIn(false);
-    setCurrentUser(null);
-    setCurrentView('public');
-    localStorage.removeItem(STORAGE_KEYS.AUTH);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-    navigateTo('/');
-    showToast('Anda telah keluar dari Panel Pengurus', 'info');
+  const logoutAdmin = (): Promise<void> => {
+    const operation = authRequests.current.then(async () => {
+      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+      setIsAdminLoggedIn(false);
+      setCurrentUser(null);
+      setCurrentView('public');
+      localStorage.removeItem(STORAGE_KEYS.AUTH);
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      navigateTo('/');
+      showToast('Anda telah keluar dari Panel Pengurus', 'info');
+    });
+    authRequests.current = operation.then(() => undefined, () => undefined);
+    return operation;
   };
 
   // User Handlers (Admin Only)

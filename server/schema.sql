@@ -89,3 +89,41 @@ CREATE INDEX IF NOT EXISTS idx_tim_divisi ON anggota_tim(divisi);
 CREATE INDEX IF NOT EXISTS idx_galeri_kategori ON galeri(kategori);
 CREATE INDEX IF NOT EXISTS idx_aspirasi_status ON aspirasi(status);
 CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);
+
+-- Meetings own their attendance and minutes; dates need not be unique.
+CREATE TABLE IF NOT EXISTS agenda (
+  id VARCHAR(64) PRIMARY KEY,
+  title VARCHAR(160) NOT NULL CHECK (length(btrim(title)) BETWEEN 1 AND 160),
+  tanggal DATE NOT NULL
+);
+
+-- One explicit attendance status per team member and calendar date.
+CREATE TABLE IF NOT EXISTS absensi (
+  tanggal DATE NOT NULL,
+  anggota_id VARCHAR(64) NOT NULL REFERENCES anggota_tim(id) ON DELETE CASCADE,
+  status VARCHAR(5) NOT NULL CHECK (status IN ('izin', 'hadir', 'sakit', 'alpa')),
+  PRIMARY KEY (tanggal, anggota_id)
+);
+
+ALTER TABLE agenda ADD COLUMN IF NOT EXISTS details JSONB NOT NULL DEFAULT '{}';
+CREATE TABLE IF NOT EXISTS meeting_groups (
+  id VARCHAR(64) PRIMARY KEY,
+  title VARCHAR(160) NOT NULL CHECK (length(btrim(title)) BETWEEN 1 AND 160)
+);
+ALTER TABLE agenda ADD COLUMN IF NOT EXISTS group_id VARCHAR(64) REFERENCES meeting_groups(id);
+ALTER TABLE agenda ADD COLUMN IF NOT EXISTS attendance_version INTEGER NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS meeting_attendance (
+  rapat_id VARCHAR(64) NOT NULL REFERENCES agenda(id) ON DELETE CASCADE,
+  anggota_id VARCHAR(64) NOT NULL REFERENCES anggota_tim(id) ON DELETE CASCADE,
+  status VARCHAR(5) NOT NULL CHECK (status IN ('izin', 'hadir', 'sakit', 'alpa')),
+  PRIMARY KEY (rapat_id, anggota_id)
+);
+-- Copy only pre-migration meetings. Legacy daily records remain available.
+BEGIN;
+LOCK TABLE agenda IN SHARE ROW EXCLUSIVE MODE;
+INSERT INTO meeting_attendance (rapat_id, anggota_id, status)
+SELECT a.id, r.anggota_id, r.status FROM agenda a JOIN absensi r ON r.tanggal = a.tanggal
+WHERE a.attendance_version = 0 ON CONFLICT DO NOTHING;
+UPDATE agenda SET attendance_version = 2 WHERE attendance_version = 0;
+ALTER TABLE agenda DROP CONSTRAINT IF EXISTS agenda_tanggal_key;
+COMMIT;

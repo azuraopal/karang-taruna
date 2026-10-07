@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-dotenv.config();
+if (process.env.KATAR_STORAGE !== 'json') dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +28,7 @@ export const pool = new Pool({
 let schemaInitPromise: Promise<boolean> | null = null;
 
 export async function checkDbConnection(): Promise<boolean> {
+  if (process.env.KATAR_STORAGE === 'json') return false;
   try {
     const res = await pool.query('SELECT NOW()');
     return !!res.rows[0];
@@ -38,6 +39,7 @@ export async function checkDbConnection(): Promise<boolean> {
 }
 
 export function initDb(): Promise<boolean> {
+  if (process.env.KATAR_STORAGE === 'json') return Promise.resolve(false);
   if (schemaInitPromise) return schemaInitPromise;
 
   schemaInitPromise = (async () => {
@@ -67,7 +69,10 @@ export function initDb(): Promise<boolean> {
       console.error('Error initializing PostgreSQL schema:', err);
       return false;
     }
-  })();
+  })().then(initialized => {
+    if (!initialized) schemaInitPromise = null;
+    return initialized;
+  });
 
   return schemaInitPromise;
 }
