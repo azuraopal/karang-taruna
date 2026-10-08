@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ActivityAction, ActivityEntity, ActivityLog, AnggotaTim, Berita, ItemGaleri, Aspirasi, ToastMessage, UserAccount } from '../types';
 import { navigateTo } from '../utils/appRoute';
+import { createReadQueue, DATA_CATEGORIES, startDataSync, type DataCategory } from '../utils/dataSync';
 
 interface DataContextType {
   // Public vs Admin Navigation
@@ -229,10 +230,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [currentUser]);
 
-  // Central Fetch Function
-  const fetchCategory = useCallback(async (category: 'berita' | 'tim' | 'galeri' | 'aspirasi' | 'users' | 'logs' | 'all') => {
+  const readQueue = useRef(createReadQueue<DataCategory>());
+  // Central reads are shared across initial load, manual refresh and realtime events.
+  const fetchCategory = useCallback(async function fetchCategory(category: DataCategory | 'all', invalidate = false): Promise<void> {
+    if (category === 'all') {
+      await Promise.all(DATA_CATEGORIES.map(item => fetchCategory(item, invalidate)));
+      return;
+    }
+    if (category === 'users' && !isAdminLoggedIn) return;
+    return readQueue.current(category, async () => {
     try {
-      if (category === 'all' || category === 'berita') {
+      if (category === 'berita') {
         const res = await fetch('/api/berita');
         if (res.ok) {
           const data = await res.json();
@@ -242,28 +250,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       }
-      if (category === 'all' || category === 'tim') {
+      if (category === 'tim') {
         const res = await fetch('/api/tim');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setTimList(data);
         }
       }
-      if (category === 'all' || category === 'galeri') {
+      if (category === 'galeri') {
         const res = await fetch('/api/galeri');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setGaleriList(data);
         }
       }
-      if (category === 'all' || category === 'aspirasi') {
+      if (category === 'aspirasi') {
         const res = await fetch('/api/aspirasi');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setAspirasiList(data);
         }
       }
-      if (category === 'all' || category === 'users') {
+      if (category === 'users') {
         const res = await fetch('/api/users');
         if (res.ok) {
           const data = await res.json();
@@ -281,7 +289,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       }
-      if (category === 'all' || category === 'logs') {
+      if (category === 'logs') {
         const res = await fetch('/api/logs');
         if (res.ok) {
           const data = await res.json();
@@ -293,6 +301,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         showToast('Data server belum tersambung. Menampilkan cache lokal sementara.', 'error');
       }
     }
+    }, invalidate);
   }, [currentUser, isAdminLoggedIn, showToast]);
 
   const refreshAllData = useCallback(async () => {
@@ -300,73 +309,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [fetchCategory]);
 
   // ---------------------- Realtime SSE Integration ----------------------
-  const eventSourceRef = useRef<EventSource | null>(null);
-
   useEffect(() => {
-    // Initial fetch on mount
-    fetchCategory('all');
-
-    // Check health once
-    fetch('/api/health')
-      .then((r) => r.json())
-      .then((h) => {
-        setIsDatabaseConnected(h.database === 'connected');
-      })
-      .catch(() => {});
-
-    // Setup Server-Sent Events (SSE)
-    let sse: EventSource | null = null;
-    let reconnectTimeout: number | null = null;
-
-    const connectSSE = () => {
-      try {
-        sse = new EventSource('/api/events');
-        eventSourceRef.current = sse;
-
-        sse.onopen = () => {
-          setIsRealtimeConnected(true);
-        };
-
-        // Listen for realtime update broadcasts
-        sse.addEventListener('update', (event) => {
-          try {
-            const payload = JSON.parse(event.data);
-            if (payload.type) {
-              fetchCategory(payload.type);
-            }
-          } catch (e) {
-            console.error('Error handling SSE update:', e);
-          }
-        });
-
-        sse.onerror = () => {
-          setIsRealtimeConnected(false);
-          sse?.close();
-          reconnectTimeout = window.setTimeout(connectSSE, 3000);
-        };
-      } catch {
-        setIsRealtimeConnected(false);
-        reconnectTimeout = window.setTimeout(connectSSE, 4000);
-      }
-    };
-
-    connectSSE();
-
-    // Heartbeat safety net polling every 5s (syncs even if SSE sleep/wake on mobile)
-    const intervalId = setInterval(() => {
-      fetch('/api/health')
-        .then((r) => r.json())
-        .then((h) => {
-          setIsDatabaseConnected(h.database === 'connected');
-          fetchCategory('all');
-        })
-        .catch(() => {});
-    }, 5000);
-
+    const abort = new AbortController();
+    const stop = startDataSync({
+      refresh: fetchCategory,
+      connection: setIsRealtimeConnected,
+      health: () => {
+        void fetch('/api/health', { signal: abort.signal })
+          .then(r => r.json())
+          .then(h => { if (!abort.signal.aborted) setIsDatabaseConnected(h.database === 'connected'); })
+          .catch(() => {});
+      },
+    });
     return () => {
-      clearInterval(intervalId);
-      clearTimeout(reconnectTimeout as number);
-      sse?.close();
+      abort.abort();
+      stop();
     };
   }, [fetchCategory]);
 
@@ -402,7 +359,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 : 'Pengurus';
             showToast(`Berhasil masuk sebagai ${roleLabel} (${data.user.namaLengkap})`, 'success');
             // Fetch users list if admin
-            if (data.user.role === 'admin' || data.user.role === 'superadmin') fetchCategory('users');
             return { success: true, user: data.user };
           }
         }
