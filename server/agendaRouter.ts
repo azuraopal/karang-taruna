@@ -1,11 +1,33 @@
 import { Router } from 'express';
 import { requireAttendanceSession } from './session.js';
 import { AgendaError } from './agendaStorage.js';
-import { agendaStorage, meetingGroupStorage, getMeetingAttendance, saveMeetingAttendance, getTim, getActivityRecap } from './storage.js';
+import { agendaStorage, meetingGroupStorage, getMeetingAttendance, saveMeetingAttendance, getTim, getActivityRecap, attendanceVersion, importMeetingDocument } from './storage.js';
+import { detectMeetingDocument, documentAIConfigured } from './meetingDocumentAI.js';
 import { isAttendanceStatus } from '../src/utils/attendance.js';
 
 export const agendaRouter = Router();
 agendaRouter.use(requireAttendanceSession);
+agendaRouter.get('/document-ai', (_req, res) => res.json({ enabled: documentAIConfigured() }));
+const analysing = new Set<string>();
+agendaRouter.post('/:id/document-detect', async (req, res) => {
+  const actorId = res.locals.attendanceActor.id as string;
+  if (analysing.has(actorId) || analysing.size >= 3) return res.status(429).json({ error: 'Deteksi Dokumen Sedang Berjalan. Coba Lagi Setelah Selesai.' });
+  analysing.add(actorId);
+  try { await agendaStorage.get(req.params.id); res.json(await detectMeetingDocument(req.body?.pages)); }
+  catch (error) { res.status(error instanceof AgendaError ? error.status : 503).json({ error: error instanceof AgendaError ? error.message : 'Deteksi Dokumen Gagal. Tidak Ada Data yang Disimpan.' }); }
+  finally { analysing.delete(actorId); }
+});
+agendaRouter.get('/:id/import-context', async (req, res) => {
+  try {
+    const meeting = await agendaStorage.get(req.params.id);
+    const records = await getMeetingAttendance(req.params.id);
+    res.json({ meeting, members: await getTim(), attendanceVersion: attendanceVersion(records) });
+  } catch (error) { res.status(error instanceof AgendaError ? error.status : 503).json({ error: error instanceof AgendaError ? error.message : 'Gagal Memuat Rapat.' }); }
+});
+agendaRouter.post('/:id/document-import', async (req, res) => {
+  try { res.json(await importMeetingDocument(req.params.id, req.body, res.locals.attendanceActor)); }
+  catch (error) { res.status(error instanceof AgendaError ? error.status : 503).json({ error: error instanceof AgendaError ? error.message : 'Impor Gagal. Tidak Ada Perubahan yang Disimpan.' }); }
+});
 agendaRouter.get('/', async (_req, res) => {
   try { res.json(await agendaStorage.list()); }
   catch { res.status(503).json({ error: 'Gagal Memuat Agenda. Silakan Coba Lagi.' }); }

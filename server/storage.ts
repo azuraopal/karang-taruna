@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { pool, checkDbConnection } from './db.js';
-import { createAgendaStorage, AgendaError, type Agenda, type AgendaJson } from './agendaStorage.js';
+import { createAgendaStorage, AgendaError, validateMeetingDetails, type Agenda, type AgendaJson } from './agendaStorage.js';
+import { emptyMeetingDetails, type MeetingDetails } from '../src/utils/meeting.js';
 import { createMeetingGroupStorage } from './meetingGroupStorage.js';
 import type { ActivityRecap } from '../src/utils/activityRecap.js';
 import type { ActivityLog, Berita, AnggotaTim, ItemGaleri, Aspirasi, UserAccount } from '../src/types/index.js';
@@ -567,6 +568,58 @@ export async function getMeetingAttendance(rapatId: string): Promise<AttendanceR
   return (localDb.meetingAttendance || []).filter(record => record.rapatId === rapatId).map(record => ({ ...record, tanggal: meeting.date }));
 }
 
+export function attendanceVersion(records: AttendanceRecord[]) {
+  return crypto.createHash('sha256').update(JSON.stringify(records.map(r => [r.anggotaId, r.status]).sort((a, b) => a[0].localeCompare(b[0])))).digest('hex');
+}
+interface MeetingImportBody {
+  confirmed: true; date: string; revision: number; attendanceVersion: string;
+  details: MeetingDetails | null; attendance: { anggotaId: string; status: AttendanceStatus }[];
+}
+export async function importMeetingDocument(id: string, value: unknown, actor: UserAccount): Promise<Agenda> {
+  const body = value as MeetingImportBody;
+  if (!body || body.confirmed !== true || !isAttendanceDate(body.date) || !Number.isSafeInteger(body.revision) || body.revision < 0 || typeof body.attendanceVersion !== 'string' || !/^[a-f0-9]{64}$/.test(body.attendanceVersion) || !Array.isArray(body.attendance) || body.attendance.length > 2000) throw new AgendaError('Konfirmasi Impor Tidak Valid.', 400);
+  if (body.details !== null) { validateMeetingDetails(body.details); if (body.details.minutesStatus !== 'draft' || body.details.revision !== body.revision) throw new AgendaError('Notulensi Impor Harus Berupa Draft.', 400); }
+  const ids = new Set<string>();
+  for (const row of body.attendance) {
+    if (!row || typeof row.anggotaId !== 'string' || !row.anggotaId || ids.has(row.anggotaId) || !isAttendanceStatus(row.status)) throw new AgendaError('Pemetaan Anggota Atau Status Impor Tidak Valid.', 400);
+    ids.add(row.anggotaId);
+  }
+  if (!body.details && !body.attendance.length) throw new AgendaError('Tidak Ada Data Untuk Diimpor.', 400);
+  const check = (meeting: Agenda | undefined, members: { id: string }[], records: AttendanceRecord[]) => {
+    if (!meeting) throw new AgendaError('Rapat Tidak Ditemukan.', 404);
+    if (meeting.date !== body.date) throw new AgendaError('Tanggal Dokumen Berbeda Dengan Rapat Tujuan.', 409);
+    if ((meeting.details?.revision || 0) !== body.revision || attendanceVersion(records) !== body.attendanceVersion) throw new AgendaError('Data Rapat Berubah Sejak Pratinjau. Muat Ulang Dokumen Sebelum Mengimpor.', 409);
+    if (body.details && meeting.details?.minutesStatus === 'final') throw new AgendaError('Buka Notulensi Sebagai Draft Sebelum Mengimpor.', 409);
+    if (body.attendance.some(row => !members.some(member => member.id === row.anggotaId))) throw new AgendaError('Anggota Impor Tidak Ditemukan.', 400);
+    return { ...meeting, details: { ...(body.details || meeting.details || emptyMeetingDetails()), revision: body.revision + 1 } };
+  };
+  const log: ActivityLog = { id: `log-${crypto.randomUUID()}`, action: 'ubah', entity: 'Absensi', description: `Impor Dokumen Rapat ${id}: ${body.attendance.length} Absensi${body.details ? ' Dan Notulensi' : ''}`, actorName: actor.namaLengkap, actorRole: actor.role, createdAt: new Date().toISOString() };
+  if (await authoritativeUsesPg()) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const meetings = await client.query('SELECT id, title, tanggal::text AS date, group_id AS "groupId", details FROM agenda WHERE id = $1 FOR UPDATE', [id]);
+      const members = await client.query('SELECT id FROM anggota_tim WHERE id = ANY($1::varchar[]) FOR KEY SHARE', [[...ids]]);
+      const records = await client.query('SELECT anggota_id AS "anggotaId", status FROM meeting_attendance WHERE rapat_id = $1 FOR UPDATE', [id]);
+      const saved = check(meetings.rows[0], members.rows, records.rows);
+      await client.query('UPDATE agenda SET details = $2::jsonb WHERE id = $1', [id, JSON.stringify(saved.details)]);
+      for (const row of body.attendance) await client.query('INSERT INTO meeting_attendance (rapat_id, anggota_id, status) VALUES ($1,$2,$3) ON CONFLICT (rapat_id, anggota_id) DO UPDATE SET status = EXCLUDED.status', [id, row.anggotaId, row.status]);
+      await client.query('INSERT INTO activity_logs (id, action, entity, description, actor_name, actor_role, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)', [log.id, log.action, log.entity, log.description, log.actorName, log.actorRole, log.createdAt]);
+      await client.query('COMMIT'); return saved;
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
+  }
+  let saved!: Agenda;
+  agendaJson.update(current => {
+    const meetings = (current.agenda || []) as Agenda[];
+    const records = (current.meetingAttendance || []) as AttendanceRecord[];
+    saved = check(meetings.find(m => m.id === id), current.tim as AnggotaTim[], records.filter(r => r.rapatId === id));
+    const merged = [...records.filter(r => r.rapatId !== id || !ids.has(r.anggotaId)), ...body.attendance.map(row => ({ ...row, rapatId: id, tanggal: body.date }))];
+    return { ...current, agenda: meetings.map(m => m.id === id ? saved : m), meetingAttendance: merged, activityLogs: [log, ...((current.activityLogs || []) as ActivityLog[])].slice(0, 300) };
+  });
+  return saved;
+}
+
 export async function saveMeetingAttendance(rapatId: string, anggotaId: string, status: AttendanceStatus | null, actor: UserAccount): Promise<AttendanceRecord> {
   if (status !== null && !isAttendanceStatus(status)) throw new AgendaError('Status Tidak Valid.', 400);
   const meeting = await agendaStorage.get(rapatId);
@@ -580,6 +633,7 @@ export async function saveMeetingAttendance(rapatId: string, anggotaId: string, 
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+      await client.query('SELECT id FROM agenda WHERE id = $1 FOR UPDATE', [rapatId]);
       const member = await client.query('SELECT id FROM anggota_tim WHERE id = $1 FOR KEY SHARE', [anggotaId]);
       if (!member.rows.length) throw new AgendaError('Anggota Tidak Ditemukan.', 404);
       if (status === null) {

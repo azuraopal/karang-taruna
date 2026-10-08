@@ -8,6 +8,7 @@ import type { AttendanceRecord } from '../../utils/attendance';
 import type { PdfMember } from '../../utils/attendancePdf';
 
 const PdfPreviewDialog = lazy(() => import('../common/PdfPreviewDialog').then(module => ({ default: module.PdfPreviewDialog })));
+const MeetingDocumentImport = lazy(() => import('./MeetingDocumentImport').then(module => ({ default: module.MeetingDocumentImport })));
 
 const fieldClass = 'mt-1.5 min-h-11 w-full min-w-0 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-60';
 const tabs = [{ id: 'summary', label: 'Ringkasan', icon: LayoutList }, { id: 'attendance', label: 'Absensi', icon: ClipboardList }, { id: 'minutes', label: 'Notulensi', icon: FileText }] as const;
@@ -20,6 +21,7 @@ export function MeetingDetail({ meeting, onBack, onSaved }: { meeting: Meeting; 
   const [busy, setBusy] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [report, setReport] = useState<Uint8Array | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const lock = useRef(false);
@@ -86,9 +88,10 @@ export function MeetingDetail({ meeting, onBack, onSaved }: { meeting: Meeting; 
     <div role="tablist" aria-label="Detail Rapat" className="flex gap-1 border-b border-stone-200">{tabs.map(({ id, label, icon: Icon }) => <button type="button" key={id} id={`meeting-tab-${id}`} role="tab" aria-selected={tab === id} aria-controls={`meeting-panel-${id}`} onClick={() => setTab(id)} className={`relative inline-flex min-h-12 flex-1 items-center justify-center gap-2 px-2 text-xs font-semibold sm:flex-none sm:px-5 ${tab === id ? 'text-emerald-700' : 'text-slate-500 hover:text-slate-900'}`}><Icon className="h-4 w-4 shrink-0" />{label}{tab === id && <motion.span layoutId="meeting-tab-indicator" transition={{ duration: reduced ? 0 : 0.2 }} className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-600" />}</button>)}</div>
     {error && <p role="alert" className="rounded-lg bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
     {notice && <p role="status" className="flex items-center gap-2 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800"><CheckCircle2 className="h-4 w-4" />{notice}</p>}
+    <button type="button" disabled={dirty || busy || pdfBusy} title={dirty ? 'Simpan Perubahan Sebelum Mengimpor' : 'Impor Absensi Dan Notulensi Dari PDF'} onClick={() => setImportOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 disabled:opacity-40"><FileText className="h-4 w-4" />Impor Dokumen Rapat</button>
     <div className="flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-2 text-xs font-semibold text-slate-500"><FileText className="h-4 w-4" />Absensi &amp; Notulensi</span><button type="button" disabled={dirty || busy || pdfBusy} onClick={() => void exportPdf()} title={dirty ? 'Simpan Perubahan Sebelum Membuka Pratinjau' : 'Pratinjau Laporan Rapat'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-xs font-semibold text-slate-700 disabled:opacity-40">{pdfBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}{pdfBusy ? 'Menyiapkan PDF...' : 'Pratinjau PDF'}</button></div>
     <div id={`meeting-panel-${tab}`} role="tabpanel" aria-labelledby={`meeting-tab-${tab}`}>
-      {tab === 'attendance' ? <AdminAbsensi hidePdfExport agendaId={meeting.id} agendaTitle={meeting.title} agendaDate={meeting.date} /> : <div className="space-y-5">
+      {tab === 'attendance' ? <AdminAbsensi key={saved.revision} hidePdfExport agendaId={meeting.id} agendaTitle={meeting.title} agendaDate={meeting.date} /> : <div className="space-y-5">
         {tab === 'summary' && <fieldset disabled={frozen} className="grid gap-4 sm:grid-cols-2">{(['location', 'time', 'leader', 'noteTaker'] as const).map((key, index) => <label key={key} className="min-w-0 text-xs font-semibold text-slate-600">{['Lokasi', 'Waktu Rapat (WIB)', 'Pemimpin Rapat', 'Notulis'][index]}<input type={key === 'time' ? 'time' : 'text'} value={draft[key]} maxLength={200} onChange={e => update({ [key]: e.target.value })} className={fieldClass} /></label>)}</fieldset>}
         <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-bold text-slate-800">{tab === 'summary' ? 'Agenda Pembahasan' : 'Hasil Pembahasan'} <span className="ml-1 text-xs font-normal text-slate-400">{draft.topics.length} Topik</span></h3></div>
         {!draft.topics.length && <p className="rounded-lg border border-dashed border-stone-300 py-8 text-center text-sm text-slate-500">Belum Ada Topik Pembahasan.</p>}
@@ -100,5 +103,6 @@ export function MeetingDetail({ meeting, onBack, onSaved }: { meeting: Meeting; 
       </div>}
     </div>
     {report && <Suspense fallback={<p role="status" className="text-sm text-slate-500">Memuat Pratinjau...</p>}><PdfPreviewDialog bytes={report} filename={`laporan-rapat-${meeting.date}-${meeting.id}.pdf`} onClose={() => setReport(null)} /></Suspense>}
+    {importOpen && <Suspense fallback={<p role="status">Memuat Impor...</p>}><MeetingDocumentImport meeting={{ ...meeting, details: saved }} onClose={() => setImportOpen(false)} onImported={result => { setSaved(result.details!); setDraft(result.details!); onSaved(result); setImportOpen(false); setNotice('Dokumen Berhasil Diimpor Ke Rapat Ini.'); }} /></Suspense>}
   </section>;
 }
