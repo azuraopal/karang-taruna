@@ -53,7 +53,7 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="beranda"
-      className="relative min-h-[100svh] flex items-center justify-center pt-28 sm:pt-36 lg:pt-40 pb-14 sm:pb-20 bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden select-none"
+      className="hero-brand-surface relative min-h-[100svh] flex items-center justify-center pt-28 sm:pt-36 lg:pt-40 pb-14 sm:pb-20 text-white overflow-hidden select-none"
     >
       {/* 1. Procedural 2D Interactive Constellation Mesh (techniques.md #2) */}
       <InteractiveConstellationCanvas className="opacity-75 z-0" />
@@ -61,11 +61,11 @@ export const Hero: React.FC = () => {
       {/* 2. Ambient Glow Bloom Layer (rules/ambient-glow-bloom.md) */}
       <motion.div
         animate={shouldReduceMotion ? undefined : {
-          opacity: [0.28, 0.55, 0.28],
+          opacity: [0.2, 0.35, 0.2],
           scale: [1, 1.12, 1],
         }}
         transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-[24rem] sm:h-100 sm:w-140 bg-amber-500/15 rounded-full blur-[90px] sm:blur-[110px] pointer-events-none z-1"
+        className="hero-orbit-glow absolute pointer-events-none z-1"
         aria-hidden="true"
       />
       <div className="soft-grid absolute inset-0 z-1 opacity-[0.16]" aria-hidden="true" />
@@ -80,16 +80,13 @@ export const Hero: React.FC = () => {
               transition={{ duration: 0.55 }}
               className="flex flex-col items-center lg:items-start gap-3.5"
             >
-              {/* Badge with live beacon */}
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-amber-500/40 text-amber-300 text-xs font-bold tracking-wide shadow-lg shadow-amber-500/10 backdrop-blur-md">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              {/* Wrap naturally so the portal name and status remain readable. */}
+              <div className="portal-identity">
+                <span className="portal-identity__name">
+                  <span className="portal-identity__beacon" aria-hidden="true" />
+                  <span>Portal Resmi Karang Taruna <span className="whitespace-nowrap">Margabakti 07</span></span>
                 </span>
-                <span className="truncate">Portal Resmi Karang Taruna Margabakti 07</span>
-                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/30">
-                  AKTIF & BERDAYA
-                </span>
+                <span className="portal-identity__status">Aktif & Berdaya</span>
               </div>
 
               {/* Responsive Logotype Brand Centerpiece with subtle 3D hover */}
@@ -111,7 +108,7 @@ export const Hero: React.FC = () => {
               className="text-[2.45rem] sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.07] sm:leading-[1.14]"
             >
               Kumpulan Pemuda, <br />
-              <GradientTextSweep className="mt-1">
+              <GradientTextSweep className="mt-1" gradient="var(--orbit-text-gradient)" speed={8}>
                 Berdiri Sebagai
               </GradientTextSweep>{' '}
               <div className="relative block sm:inline-block min-h-[2.35em] sm:min-h-0 sm:min-w-[340px] text-center lg:text-left">
@@ -122,7 +119,7 @@ export const Hero: React.FC = () => {
                     animate={{ opacity: 1, y: 0, rotateX: 0 }}
                     exit={{ opacity: 0, y: -16, rotateX: -60 }}
                     transition={{ duration: 0.45, ease: 'easeOut' }}
-                    className="inline-block max-w-[11ch] sm:max-w-none text-amber-400 font-black drop-shadow-[0_2px_15px_rgba(251,191,36,0.35)]"
+                    className="orbit-headline-gradient inline-block max-w-[11ch] sm:max-w-none font-black"
                   >
                     {ROTATING_WORDS[wordIndex]}
                   </motion.span>
@@ -176,7 +173,7 @@ export const Hero: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="pt-5 sm:pt-6 border-t border-slate-800/90 grid grid-cols-3 gap-2.5 sm:gap-4 max-w-lg mx-auto lg:mx-0"
             >
-              <div className="text-center lg:text-left p-3 rounded-xl bg-slate-900/85 border border-slate-700/80 shadow-md backdrop-blur-md hover:border-amber-400/50 transition-all">
+              <div className="liquid-dark text-center lg:text-left p-3 rounded-xl">
                 <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
                   <CountingNumber value={timList.length || 24} />
                   <span className="text-amber-300 text-lg">+</span>
@@ -186,7 +183,7 @@ export const Hero: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-center lg:text-left p-3 rounded-xl bg-slate-900/85 border border-slate-700/80 shadow-md backdrop-blur-md hover:border-amber-400/50 transition-all">
+              <div className="liquid-dark text-center lg:text-left p-3 rounded-xl">
                 <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
                   <CountingNumber value={beritaList.length || 18} />
                 </div>
@@ -195,7 +192,7 @@ export const Hero: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-center lg:text-left p-3 rounded-xl bg-slate-900/85 border border-slate-700/80 shadow-md backdrop-blur-md hover:border-amber-400/50 transition-all">
+              <div className="liquid-dark text-center lg:text-left p-3 rounded-xl">
                 <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
                   <CountingNumber value={galeriList.length || 45} />
                   <span className="text-amber-300 text-lg">+</span>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Users, Mail, Phone, UserCheck, SearchX, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim } from '../../types';
@@ -10,6 +10,7 @@ import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const Tim: React.FC = () => {
   const { timList } = useData();
+  const shouldReduceMotion = useReducedMotion();
   const [selectedDivisi, setSelectedDivisi] = useState<string>('Semua');
   const [selectedMember, setSelectedMember] = useState<AnggotaTim | null>(null);
   const [activePhotoMember, setActivePhotoMember] = useState<AnggotaTim | null>(null);
@@ -57,7 +58,7 @@ export const Tim: React.FC = () => {
   }, [selectedDivisi]);
 
   return (
-    <section id="tim" className="py-18 sm:py-24 bg-white border-t border-stone-200">
+    <section id="tim" className="liquid-section py-18 sm:py-24 border-t border-slate-200/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
@@ -88,7 +89,8 @@ export const Tim: React.FC = () => {
               <button
                 key={divisi}
                 onClick={() => setSelectedDivisi(divisi)}
-                className={`min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                aria-pressed={isActive}
+                className={`liquid-chip min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                   isActive
                     ? 'bg-slate-900 text-amber-400 shadow-sm'
                     : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
@@ -104,22 +106,22 @@ export const Tim: React.FC = () => {
         {filteredMembers.length > 0 ? (
           <motion.div
             layout
-            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5"
           >
             <AnimatePresence>
               {displayedMembers.map((member) => (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 24, scale: 0.97 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.2 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.45, delay: Math.min(displayedMembers.indexOf(member) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ y: -6 }}
+                  exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.97 }}
+                  transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : Math.min(displayedMembers.indexOf(member) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={shouldReduceMotion ? undefined : { y: -4 }}
                   key={member.id}
-                  className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 hover:shadow-lg transition-all flex flex-col justify-between group"
+                  className="liquid-surface team-glass-card flex flex-col justify-between group"
                 >
-                  <TiltCard maxTilt={8} glareOpacity={0.16} className="h-full flex flex-col justify-between">
+                  <TiltCard maxTilt={3} scale={1} glareOpacity={0.25} className="team-glass-card__inner h-full flex flex-col justify-between">
                     <div>
                     {/* Foto Pengurus */}
                     <button
@@ -128,7 +130,7 @@ export const Tim: React.FC = () => {
                         setActivePhotoMember(member);
                         setMemberPhotoZoom(1);
                       }}
-                      className="relative block w-full h-56 sm:h-64 bg-slate-100 overflow-hidden flex items-center justify-center cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"
+                      className="team-glass-card__photo relative w-full aspect-[7/8] max-h-72 bg-slate-100 overflow-hidden flex items-center justify-center cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"
                       aria-label={`Lihat foto ${member.nama}`}
                     >
                       <img
@@ -137,39 +139,39 @@ export const Tim: React.FC = () => {
                         onError={(e) => {
                           e.currentTarget.src = '/default-avatar.svg';
                         }}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition-transform duration-700 ease-out"
                         loading="lazy"
                       />
-                      <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-900/90 text-amber-400 backdrop-blur-xs">
+                      <div className="absolute top-3 left-3 right-3 text-left">
+                        <span className="team-glass-card__badge inline-block px-2.5 py-1.5 rounded-full text-[10px] font-bold">
                           {member.divisi}
                         </span>
                       </div>
                     </button>
 
                     {/* Informasi Pengurus */}
-                    <div className="p-4 sm:p-5 space-y-2">
-                      <h3 className="text-base font-bold text-slate-900 leading-snug">
+                    <div className="team-glass-card__details p-4 sm:p-5 space-y-2">
+                      <h3 className="sm:min-h-[2.75em] text-base font-bold text-slate-900 leading-snug">
                         {member.nama}
                       </h3>
                       <p className="text-xs font-semibold text-amber-700">
                         {member.jabatan}
                       </p>
-                      <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed pt-1">
+                      <p className="sm:min-h-[3.25em] text-xs text-slate-600 line-clamp-2 leading-relaxed pt-1">
                         {member.bio}
                       </p>
                     </div>
                   </div>
 
                   {/* Tombol Detail / Kontak */}
-                    <div className="p-4 pt-0 sm:p-5 sm:pt-0">
+                    <div className="relative p-4 pt-0 sm:p-5 sm:pt-0">
                       <button
                         type="button"
                         onClick={(e) => {
                           triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 18 });
                           setSelectedMember(member);
                         }}
-                        className="min-h-[44px] w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-2xs hover:shadow-xs"
+                        className="liquid-control min-h-[44px] w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <UserCheck className="w-3.5 h-3.5" />
                         <span>Lihat Profil Lengkap</span>
@@ -183,7 +185,7 @@ export const Tim: React.FC = () => {
           </motion.div>
         ) : (
           /* Empty State (R-27) */
-          <div className="mt-12 p-12 text-center bg-stone-50 rounded-2xl border border-stone-200 max-w-md mx-auto">
+          <div className="liquid-surface mt-12 p-12 text-center bg-stone-50 rounded-2xl border border-stone-200 max-w-md mx-auto">
             <SearchX className="w-10 h-10 text-slate-400 mx-auto mb-3" />
             <h3 className="text-base font-bold text-slate-800">
               Belum Ada Pengurus di Divisi Ini

@@ -45,7 +45,7 @@ export const AspirasiSection: React.FC = () => {
     setPesan('');
   };
   return (
-    <section id="aspirasi" className="relative py-18 sm:py-24 bg-stone-50 border-t border-stone-200 overflow-visible">
+    <section id="aspirasi" className="relative py-18 sm:py-24 liquid-section border-t border-stone-200 overflow-visible">
       <div className="soft-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
@@ -74,7 +74,7 @@ export const AspirasiSection: React.FC = () => {
 
             <Section3DShowcase kind="aspirasi" />
 
-            <div className="surface-sheen bg-white rounded-2xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+            <div className="liquid-surface bg-white rounded-2xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-slate-900 border-b border-stone-100 pb-2">
                 Kontak
               </h3>
@@ -129,7 +129,7 @@ export const AspirasiSection: React.FC = () => {
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-7 lg:sticky lg:top-24 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
+            className="liquid-surface lg:col-span-7 lg:sticky lg:top-24 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
           >
             {isSubmitted ? (
               <motion.div
@@ -188,7 +188,7 @@ export const AspirasiSection: React.FC = () => {
                       value={nama}
                       onChange={(e) => setNama(e.target.value)}
                       placeholder="Contoh: Budi Prasetyo"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
                     />
                   </div>
 
@@ -201,7 +201,7 @@ export const AspirasiSection: React.FC = () => {
                       value={noHp}
                       onChange={(e) => setNoHp(e.target.value)}
                       placeholder="Contoh: 0812-xxxx-xxxx"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export const AspirasiSection: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="nama@email.com"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
                     />
                   </div>
 
@@ -227,7 +227,7 @@ export const AspirasiSection: React.FC = () => {
                     <select
                       value={kategori}
                       onChange={(e) => setKategori(e.target.value as Aspirasi['kategori'])}
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
                     >
                       <option value="Saran Kegiatan">Saran Kegiatan / Program</option>
                       <option value="Aduan Lingkungan">Aduan Kebersihan & Lingkungan</option>
@@ -246,7 +246,7 @@ export const AspirasiSection: React.FC = () => {
                     value={pesan}
                     onChange={(e) => setPesan(e.target.value)}
                     placeholder="Tuliskan aspirasi, ide, atau saran Anda secara rinci dan santun..."
-                    className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                    className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
                   />
                 </div>
 

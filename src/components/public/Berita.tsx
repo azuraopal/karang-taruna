@@ -52,7 +52,7 @@ export const BeritaSection: React.FC = () => {
   });
 
   return (
-    <section id="berita" className="py-18 sm:py-24 bg-white border-t border-stone-200">
+    <section id="berita" className="py-18 sm:py-24 liquid-section border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
@@ -93,7 +93,7 @@ export const BeritaSection: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari judul berita / kegiatan..."
-              className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+              className="liquid-input w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
             />
           </div>
 
@@ -105,7 +105,8 @@ export const BeritaSection: React.FC = () => {
                 <button
                   key={kat}
                   onClick={() => setSelectedKategori(kat)}
-                  className={`min-h-[44px] shrink-0 snap-start px-3.5 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                  aria-pressed={isActive}
+                  className={`liquid-chip min-h-[44px] shrink-0 snap-start px-3.5 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                     isActive
                       ? 'bg-slate-900 text-amber-400 shadow-sm'
                       : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
@@ -135,20 +136,20 @@ export const BeritaSection: React.FC = () => {
                   transition={{ duration: 0.45, delay: Math.min(filteredBerita.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
                   whileHover={{ y: -6 }}
                   key={item.id}
-                  className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:border-amber-400 transition-all flex flex-col justify-between group shadow-2xs hover:shadow-xl"
+                  className="liquid-surface liquid-media-card flex flex-col justify-between group"
                 >
-                  <TiltCard maxTilt={6} glareOpacity={0.16} className="h-full flex flex-col justify-between">
+                  <TiltCard maxTilt={3} scale={1} glareOpacity={0.18} className="h-full flex flex-col justify-between">
                     <div>
                     {/* Gambar Artikel */}
-                    <div className="relative h-48 sm:h-52 bg-slate-200 overflow-hidden">
+                    <div className="liquid-media-card__photo relative h-48 sm:h-52 bg-slate-200 overflow-hidden">
                       <img
                         src={item.gambarUrl}
                         alt={item.judul}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition-transform duration-700 ease-out"
                         loading="lazy"
                       />
                       <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-900/90 text-amber-400 backdrop-blur-xs">
+                        <span className="liquid-dark px-2.5 py-1.5 rounded-full text-[11px] font-bold text-amber-200">
                           {item.kategori}
                         </span>
                       </div>
@@ -191,7 +192,7 @@ export const BeritaSection: React.FC = () => {
                           setReadingArticle(item);
                           setActiveImageIndex(0);
                         }}
-                        className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-900 text-slate-800 hover:text-amber-400 border border-stone-300 font-bold text-xs transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow-2xs"
+                        className="liquid-control min-h-[44px] w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-between cursor-pointer"
                       >
                         <span className="flex items-center gap-1.5">
                           <BookOpen className="w-3.5 h-3.5" />
@@ -208,7 +209,7 @@ export const BeritaSection: React.FC = () => {
           </motion.div>
         ) : (
           /* Empty State (R-27) */
-          <div className="mt-12 p-12 text-center bg-stone-50 rounded-2xl border border-stone-200 max-w-md mx-auto">
+          <div className="liquid-surface mt-12 p-12 text-center bg-stone-50 rounded-2xl border border-stone-200 max-w-md mx-auto">
             <SearchX className="w-10 h-10 text-slate-400 mx-auto mb-3" />
             <h3 className="text-base font-bold text-slate-800">
               Tidak Ada Warta yang Cocok

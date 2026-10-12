@@ -47,7 +47,7 @@ export const Tentang: React.FC = () => {
   ];
 
   return (
-    <section id="tentang" className="relative py-18 sm:py-24 bg-stone-50 border-t border-stone-200 overflow-hidden">
+    <section id="tentang" className="relative py-18 sm:py-24 liquid-section border-t border-stone-200 overflow-hidden">
       <div className="soft-grid absolute inset-0 opacity-45" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
@@ -83,7 +83,7 @@ export const Tentang: React.FC = () => {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-10 sm:mt-14 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
+          className="liquid-surface relative mt-10 sm:mt-14 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-4 space-y-4">
@@ -101,7 +101,7 @@ export const Tentang: React.FC = () => {
               </p>
             </div>
 
-            <div className="lg:col-span-8 bg-stone-50 rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-stone-200/80 space-y-4">
+            <div className="liquid-inset lg:col-span-8 bg-stone-50 rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-stone-200/80 space-y-4">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                 <BookOpen className="w-4 h-4 text-amber-600" />
                 <span>Sekilas Sejarah & Peran</span>
@@ -131,7 +131,7 @@ export const Tentang: React.FC = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-5 relative bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col justify-between overflow-hidden group border border-slate-800"
+            className="liquid-dark lg:col-span-5 relative bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col justify-between overflow-hidden group border border-slate-800"
           >
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
             <div className="space-y-4 relative z-10">
@@ -159,7 +159,7 @@ export const Tentang: React.FC = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4"
+            className="liquid-surface lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200">
               <Award className="w-3.5 h-3.5 text-amber-600" />
@@ -202,9 +202,9 @@ export const Tentang: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: idx * 0.08 }}
               >
-                <TiltCard maxTilt={10} glareOpacity={0.15} className="h-full rounded-2xl">
+                <TiltCard maxTilt={3} scale={1} glareOpacity={0.15} className="h-full rounded-2xl">
                   <div
-                    className="bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm hover:shadow-md hover:border-amber-400/80 transition-all h-full cursor-pointer"
+                    className="liquid-surface bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm hover:shadow-md hover:border-amber-400/80 transition-all h-full cursor-pointer"
                     onClick={(e) => triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 16 })}
                   >
                     <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center mb-4 text-amber-600 shadow-2xs">
@@ -223,7 +223,7 @@ export const Tentang: React.FC = () => {
           </div>
         </div>
         {/* 4 Bidang Kerja */}
-        <div className="mt-14 bg-amber-50/60 rounded-2xl p-5 sm:p-10 border border-amber-200/80">
+        <div className="liquid-surface mt-14 bg-amber-50/60 rounded-2xl p-5 sm:p-10 border border-amber-200/80">
           <h3 className="text-xl font-bold text-slate-900 mb-6 text-center">
             7 Divisi Bidang Kerja Pemuda
           </h3>
@@ -233,7 +233,7 @@ export const Tentang: React.FC = () => {
                 key={idx}
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-                className="bg-white rounded-2xl p-5 border border-amber-200/70 shadow-xs hover:border-amber-500 hover:shadow-md transition-all cursor-default"
+                className="liquid-surface bg-white rounded-2xl p-5 border border-amber-200/70 shadow-xs hover:border-amber-500 hover:shadow-md transition-all cursor-default"
               >
                 <span className="text-[11px] font-black uppercase text-amber-700 tracking-wider block mb-1">
                   Divisi 0{idx + 1}

@@ -30,7 +30,7 @@ export const Galeri: React.FC = () => {
       : galeriList.filter((g) => g.kategori === selectedKategori);
 
   return (
-    <section id="galeri" className="relative py-18 sm:py-24 bg-stone-50 border-t border-stone-200 overflow-hidden">
+    <section id="galeri" className="relative py-18 sm:py-24 liquid-section border-t border-stone-200 overflow-hidden">
       <div className="soft-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
@@ -68,7 +68,8 @@ export const Galeri: React.FC = () => {
               <button
                 key={kat}
                 onClick={() => setSelectedKategori(kat)}
-                className={`min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                aria-pressed={isActive}
+                className={`liquid-chip min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                   isActive
                     ? 'bg-slate-900 text-amber-400 shadow-sm'
                     : 'bg-white hover:bg-stone-200 text-slate-700 border border-stone-200'
@@ -102,7 +103,7 @@ export const Galeri: React.FC = () => {
                     setPhotoZoom(1);
                     setActivePhotoIndex(0);
                   }}
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-2xs hover:shadow-xl hover:border-amber-400 transition-all flex flex-col justify-between"
+                  className="liquid-surface liquid-media-card group cursor-pointer flex flex-col justify-between"
                   tabIndex={0}
                   role="button"
                   onKeyDown={(e) => {
@@ -113,12 +114,12 @@ export const Galeri: React.FC = () => {
                   }}
                   aria-label={`Buka foto ${item.judul}`}
                 >
-                  <TiltCard maxTilt={8} glareOpacity={0.22} className="h-full flex flex-col justify-between">
-                    <div className="relative h-56 sm:h-60 bg-slate-100 overflow-hidden">
+                  <TiltCard maxTilt={3} scale={1} glareOpacity={0.18} className="h-full flex flex-col justify-between">
+                    <div className="liquid-media-card__photo relative h-56 sm:h-60 bg-slate-100 overflow-hidden">
                       <img
                         src={item.gambarUrl}
                         alt={item.judul}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition-transform duration-700 ease-out"
                         loading="lazy"
                         decoding="async"
                       />
@@ -128,7 +129,7 @@ export const Galeri: React.FC = () => {
                         </span>
                       </div>
                       <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-900/90 text-amber-400 backdrop-blur-xs">
+                        <span className="liquid-dark px-2.5 py-1.5 rounded-full text-[11px] font-bold text-amber-200">
                           {item.kategori}
                         </span>
                       </div>
@@ -165,7 +166,7 @@ export const Galeri: React.FC = () => {
           </motion.div>
         ) : (
           /* Empty State (R-27) */
-          <div className="mt-12 p-12 text-center bg-white rounded-2xl border border-stone-200 max-w-md mx-auto">
+          <div className="liquid-surface mt-12 p-12 text-center bg-white rounded-2xl border border-stone-200 max-w-md mx-auto">
             <SearchX className="w-10 h-10 text-slate-400 mx-auto mb-3" />
             <h3 className="text-base font-bold text-slate-800">
               Belum Ada Dokumentasi di Kategori Ini

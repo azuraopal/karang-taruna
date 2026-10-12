@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`liquid-navbar fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
           ? 'bg-slate-900/96 backdrop-blur-md shadow-lg shadow-black/30 py-3 border-b border-slate-800/80'
           : 'bg-slate-900 py-4 border-b border-slate-800/60'
@@ -105,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
           </a>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-950/60 p-1.5 rounded-full border border-slate-800">
+          <nav className="liquid-nav-track hidden lg:flex items-center gap-1 bg-slate-950/60 p-1.5 rounded-full border border-slate-800">
             {navLinks.map((link) => {
               const isActive = activeNav === link.id && currentView === 'public';
               return (
@@ -231,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:hidden absolute inset-x-0 top-full z-35 bg-slate-950 flex flex-col overflow-y-auto"
+              className="liquid-mobile-menu lg:hidden absolute inset-x-0 top-full z-35 bg-slate-950 flex flex-col overflow-y-auto"
               style={{ height: `calc(100dvh - ${isScrolled ? '56px' : '64px'})` }}
             >
               {/* Ambient glow (rules/ambient-glow-bloom.md): restrained, ≤0.45 opacity */}
