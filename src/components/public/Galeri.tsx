@@ -3,6 +3,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Camera, Calendar, MapPin, ArrowRight, SearchX, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
+import { PhotoViewer } from '../common/PhotoViewer';
+import { imageVariantUrl } from '../../utils/imageVariants';
 import { Modal } from '../common/Modal';
 import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
 import { ScribbleTitle } from '../common/ScribbleTitle';
@@ -73,9 +75,9 @@ export const Galeri: React.FC = () => {
         {filteredGaleri.length > 0 ? (
           <div className="gallery-grid relative mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredGaleri.map((item) => (
-              <article key={item.id} className="gallery-card liquid-surface relative flex min-w-0 flex-col p-2">
+              <article key={item.id} className="gallery-card photo-hover-card liquid-surface relative flex min-w-0 flex-col p-2">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100">
-                  {item.gambarUrl ? <img src={item.gambarUrl} alt={item.judul} className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera className="mx-auto h-full w-12 text-slate-400" aria-hidden="true" />}
+                  {item.gambarUrl ? <img src={imageVariantUrl(item.gambarUrl, 640)} alt={item.judul} className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera className="mx-auto h-full w-12 text-slate-400" aria-hidden="true" />}
                   <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-semibold text-white">
                     <Images size={14} aria-hidden="true" />{getGalleryImages(item).length} foto
                   </span>
@@ -125,12 +127,9 @@ export const Galeri: React.FC = () => {
         >
           {activePhoto && (
             <div className="space-y-4">
-              <div className="relative rounded-2xl bg-slate-100">
-                <div className="max-h-[55dvh] overflow-auto rounded-2xl" tabIndex={photoZoom > 1 ? 0 : undefined} aria-label={photoZoom > 1 ? 'Foto diperbesar, geser untuk melihat bagian lainnya' : undefined}>
-                  <img src={getGalleryImages(activePhoto)[activePhotoIndex]} alt={`${activePhoto.judul} - foto ${activePhotoIndex + 1}`}
-                    className="block h-auto max-w-none" style={{ width: `${photoZoom * 100}%` }} />
-                </div>
-              </div>
+              <PhotoViewer key={`${activePhoto.id}:${activePhotoIndex}`} source={getGalleryImages(activePhoto)[activePhotoIndex]}
+                nextSource={getGalleryImages(activePhoto).length > 1 ? getGalleryImages(activePhoto)[(activePhotoIndex + 1) % getGalleryImages(activePhoto).length] : undefined}
+                alt={`${activePhoto.judul} - foto ${activePhotoIndex + 1}`} zoom={photoZoom} />
               {getGalleryImages(activePhoto).length > 1 && <div className="flex items-center justify-between gap-2">
                 <button type="button" onClick={() => changePhoto(-1)} className="liquid-control flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm" aria-label="Foto sebelumnya"><ChevronLeft size={18} /><span>Sebelumnya</span></button>
                 <span role="status" className="text-sm font-semibold text-slate-700">{activePhotoIndex + 1} / {getGalleryImages(activePhoto).length}</span>
@@ -152,11 +151,12 @@ export const Galeri: React.FC = () => {
                       aria-pressed={activePhotoIndex === index}
                     >
                       <img
-                        src={imageUrl}
+                        src={imageVariantUrl(imageUrl, 160)}
                         alt=""
                         className="w-full h-full object-cover"
                         loading={index === activePhotoIndex ? 'eager' : 'lazy'}
                         decoding="async"
+                        fetchPriority="low"
                         onError={(event) => {
                           event.currentTarget.style.visibility = 'hidden';
                         }}

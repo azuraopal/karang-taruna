@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Newspaper, Calendar, User, ArrowRight, SearchX, BookOpen, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita } from '../../types';
+import { PhotoViewer } from '../common/PhotoViewer';
+import { imageVariantUrl } from '../../utils/imageVariants';
 import { Modal } from '../common/Modal';
 import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
 import { ScribbleTitle } from '../common/ScribbleTitle';
@@ -19,7 +21,7 @@ const formatTanggalPelaksanaan = (value?: string) => {
   });
 };
 
-const getArticleImages = (article: Berita) => [article.gambarUrl, ...(article.gambarUrls || [])].filter(Boolean);
+const getArticleImages = (article: Berita) => [...new Set([article.gambarUrl, ...(article.gambarUrls || [])].filter(Boolean))];
 
 export const BeritaSection: React.FC = () => {
   const { beritaList } = useData();
@@ -95,14 +97,14 @@ export const BeritaSection: React.FC = () => {
                   transition={{ duration: 0.45, delay: Math.min(filteredBerita.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
 
                   key={item.id}
-                  className="liquid-surface liquid-media-card flex flex-col justify-between group"
+                  className="photo-hover-card liquid-surface liquid-media-card flex flex-col justify-between group"
                 >
                   <div className="h-full flex flex-col justify-between">
                     <div>
                     {/* Gambar Artikel */}
                     <div className="liquid-media-card__photo relative h-48 sm:h-52 bg-slate-200 overflow-hidden">
                       <img
-                        src={item.gambarUrl}
+                        src={imageVariantUrl(item.gambarUrl, 640)}
                         alt={item.judul}
                         className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition-transform duration-700 ease-out"
                         loading="lazy"
@@ -199,19 +201,10 @@ export const BeritaSection: React.FC = () => {
         >
           {readingArticle && (
             <div className="space-y-5">
-              <div className="relative rounded-2xl overflow-hidden bg-slate-100 h-56 sm:h-72 md:h-80 group">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={getArticleImages(readingArticle)[activeImageIndex]}
-                    src={getArticleImages(readingArticle)[activeImageIndex]}
-                    alt={`${readingArticle.judul} - foto ${activeImageIndex + 1}`}
-                    initial={{ opacity: 0, scale: 1.04 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-full h-full object-cover"
-                  />
-                </AnimatePresence>
+              <div className="relative rounded-2xl bg-slate-100">
+                <PhotoViewer key={`${readingArticle.id}:${activeImageIndex}`} source={getArticleImages(readingArticle)[activeImageIndex]}
+                  nextSource={getArticleImages(readingArticle).length > 1 ? getArticleImages(readingArticle)[(activeImageIndex + 1) % getArticleImages(readingArticle).length] : undefined}
+                  alt={`${readingArticle.judul} - foto ${activeImageIndex + 1}`} zoom={1} />
                 {getArticleImages(readingArticle).length > 1 && (
                   <>
                     <button
@@ -247,7 +240,7 @@ export const BeritaSection: React.FC = () => {
                       className={`relative shrink-0 snap-start w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${activeImageIndex === index ? 'border-amber-500 ring-2 ring-amber-200' : 'border-transparent opacity-65 hover:opacity-100'}`}
                       aria-label={`Tampilkan foto ${index + 1}`} aria-pressed={activeImageIndex === index}
                     >
-                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                      <img src={imageVariantUrl(imageUrl, 160)} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" fetchPriority="low" />
                     </button>
                   ))}
                   <div className="flex items-center gap-1 text-[11px] text-slate-500 px-1 shrink-0">

@@ -4,6 +4,8 @@ import { Users, Mail, Phone, ArrowUpRight, SearchX, ZoomIn, ZoomOut, RotateCcw }
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim } from '../../types';
 import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
+import { PhotoViewer } from '../common/PhotoViewer';
+import { imageVariantUrl } from '../../utils/imageVariants';
 import { Modal } from '../common/Modal';
 import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
@@ -93,7 +95,7 @@ export const Tim: React.FC = () => {
                     layout: { duration: 0.3 },
                   }}
                   key={member.id}
-                  className="member-card"
+                  className="member-card photo-hover-card"
                 >
                   <motion.button
                     type="button"
@@ -103,7 +105,7 @@ export const Tim: React.FC = () => {
                     aria-label={`Lihat foto ${member.nama}`}
                   >
                     <img
-                      src={member.fotoUrl || '/default-avatar.svg'}
+                      src={imageVariantUrl(member.fotoUrl, 640) || '/default-avatar.svg'}
                       alt={`Foto ${member.nama}`}
                       onError={(event) => { event.currentTarget.src = '/default-avatar.svg'; }}
                       loading="lazy"
@@ -171,7 +173,7 @@ export const Tim: React.FC = () => {
             <div className="space-y-5">
               <div className="flex items-center gap-4">
                 <img
-                  src={selectedMember.fotoUrl || '/default-avatar.svg'}
+                  src={imageVariantUrl(selectedMember.fotoUrl, 160) || '/default-avatar.svg'}
                   alt={selectedMember.nama}
                   onError={(e) => {
                     e.currentTarget.src = '/default-avatar.svg';
@@ -247,17 +249,7 @@ export const Tim: React.FC = () => {
         >
           {activePhotoMember && (
             <div className="space-y-4">
-              <div className="max-h-[60dvh] overflow-auto rounded-2xl" tabIndex={memberPhotoZoom > 1 ? 0 : undefined} aria-label="Foto pengurus, geser saat diperbesar">
-                <img
-                  src={activePhotoMember.fotoUrl || '/default-avatar.svg'}
-                  alt={`Foto ${activePhotoMember.nama}`}
-                  onError={(e) => {
-                    e.currentTarget.src = '/default-avatar.svg';
-                  }}
-                  className="block h-auto max-w-none"
-                  style={{ width: `${memberPhotoZoom * 100}%` }}
-                />
-              </div>
+              <PhotoViewer key={activePhotoMember.id} source={activePhotoMember.fotoUrl || '/default-avatar.svg'} alt={`Foto ${activePhotoMember.nama}`} zoom={memberPhotoZoom} fallbackSource="/default-avatar.svg" />
               <div className="flex items-center justify-center gap-2">
                 <button type="button" onClick={() => setMemberPhotoZoom((zoom) => Math.max(1, Number((zoom - 0.25).toFixed(2))))} disabled={memberPhotoZoom <= 1} className="min-h-11 min-w-11 inline-flex items-center justify-center p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Perkecil foto" title="Perkecil foto">
                   <ZoomOut className="w-4 h-4" />

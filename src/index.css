@@ -972,8 +972,18 @@
 .public-portal :is(input, select, textarea) { min-height: 48px; font-size: 16px; }
 .collection-tools input::-webkit-search-cancel-button { display: none; }
 .gallery-card { border-radius: 24px; }
+@media (hover: hover) and (pointer: fine) {
+  .photo-hover-card:hover { border-color: #aebfd0; box-shadow: 0 10px 26px #172b431c; }
+  .gallery-card:hover .gallery-open { background: #243b55; }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .photo-hover-card { transition: translate 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out; }
+  .photo-hover-card:hover { translate: 0 -4px; }
+  .gallery-card > div:first-child img { transition: transform 300ms ease-out; }
+  .gallery-card:hover > div:first-child img { transform: scale(1.025); }
+}
 .gallery-open::after { content: ''; position: absolute; inset: 0; border-radius: 24px; }
-.gallery-card:focus-within { outline: 3px solid #a16d18; outline-offset: 4px; }
+.gallery-card:has(.gallery-open:focus-visible) { outline: 2px solid #64748b; outline-offset: 3px; }
 .member-card__division { white-space: normal; font-size: 11px; line-height: 1.5; }
 .member-card__profile { min-height: 48px; font-size: 13px; }
 .public-portal footer button { text-align: left; }

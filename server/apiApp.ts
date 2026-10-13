@@ -1,4 +1,5 @@
 import express from 'express';
+import { createImageVariants } from './imageVariants.js';
 import { agendaRouter } from './agendaRouter.js';
 import cors from 'cors';
 import path from 'path';
@@ -29,10 +30,6 @@ apiApp.use(['/api/auth', '/api/users', '/api/absensi', '/api/agenda'], (req, res
   }
   next();
 });
-apiApp.use(async (_req, _res, next) => {
-  await initDb();
-  next();
-});
 
 const uploadsRoot = path.join(process.cwd(), 'uploads');
 const publicUploadsRoot = path.join(process.cwd(), 'public', 'uploads');
@@ -41,8 +38,15 @@ for (const cat of ['profiles', 'galeri', 'berita']) {
   fs.mkdirSync(path.join(publicUploadsRoot, cat), { recursive: true });
 }
 
+apiApp.use('/uploads', createImageVariants([uploadsRoot, publicUploadsRoot]));
 apiApp.use('/uploads', express.static(uploadsRoot, { maxAge: '7d', immutable: true }));
 apiApp.use('/uploads', express.static(publicUploadsRoot, { maxAge: '7d', immutable: true }));
+
+apiApp.use(async (_req, _res, next) => {
+  await initDb();
+  next();
+});
+
 
 const sseClients = new Set<Response>();
 

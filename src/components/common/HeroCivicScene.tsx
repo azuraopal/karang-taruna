@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Activity, ArrowUpRight, CalendarDays, Sparkles, Users } from 'lucide-react';
+import { imageVariantUrl } from '../../utils/imageVariants';
 import { Logo } from './Logo';
 
 interface HeroCivicSceneProps {
@@ -42,7 +43,7 @@ export const HeroCivicScene: React.FC<HeroCivicSceneProps> = ({ imageUrl, title,
         <div className="hero-scene__frame hero-scene__frame--rear" />
         <div className="hero-scene__story">
           <div className="hero-scene__story-image">
-            {imageUrl ? <img src={imageUrl} alt="" /> : <div className="hero-scene__image-fallback" />}
+            {imageUrl ? <img src={imageVariantUrl(imageUrl, 640)} alt="" decoding="async" fetchPriority="high" /> : <div className="hero-scene__image-fallback" />}
             <div className="hero-scene__image-overlay" />
           </div>
           <div className="hero-scene__story-meta">
