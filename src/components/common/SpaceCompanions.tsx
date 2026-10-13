@@ -117,28 +117,20 @@ export function SpaceCompanions() {
     );
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const mouseScreen = window.matchMedia('(min-width: 768px) and (pointer: fine)');
-    let following = false;
-    let canvasWidth = 384;
-    let canvasHeight = 192;
-    let targetX = 0;
-    let targetY = 0;
-    let followerX = 0;
-    let followerY = 0;
     let visible = true;
     let frame = 0;
     let previous = 0;
     let time = 0;
-    let pointerX = 0;
-    let pointerY = 0;
     // Every pose derives from the same timeline; pause time while offscreen.
     function renderAt(t: number) {
       const phase = t * Math.PI / 4;
       const flight = Math.sin(phase);
       const bank = Math.cos(phase);
       // Closed flight paths and limb follow-through share an eight-second cycle.
-      rider.position.set(flight * 0.55, Math.sin(phase - 0.25) * 0.3, bank * 0.2);
-      rider.rotation.set(pointerY + flight * 0.06, -0.12 + bank * 0.12 + pointerX, 0.16 + bank * 0.1);
+      // Travel around a closed oval on every screen, within the hero's own canvas.
+      const travelX = Math.max(0.65, Math.min(2.8, camera.aspect * 2.4 - 3.2));
+      rider.position.set(Math.cos(phase) * travelX, flight * 0.65, bank * 0.12);
+      rider.rotation.set(flight * 0.06, -0.12 + bank * 0.12, 0.16 + bank * 0.12);
       astronaut.rotation.set(0, -0.12, -0.12 + flight * 0.025);
       arm.rotation.z = -0.15 + Math.sin(phase * 3) * 0.24;
       trailingArm.rotation.z = -0.15 + Math.sin(phase - 0.6) * 0.3;
@@ -168,28 +160,18 @@ export function SpaceCompanions() {
       const delta = previous ? Math.min((timestamp - previous) / 1000, 0.05) : 0;
       time += delta;
       previous = timestamp;
-      if (following) {
-        const ease = 1 - Math.exp(-7 * delta);
-        followerX += (targetX - followerX) * ease;
-        followerY += (targetY - followerY) * ease;
-        renderer.domElement.style.transform = `translate3d(${followerX}px, ${followerY}px, 0)`;
-        pointerX = Math.max(-0.4, Math.min(0.4, (targetX - followerX) / 250));
-        pointerY = Math.max(-0.15, Math.min(0.15, (targetY - followerY) / 300));
-      }
       renderAt(time);
       frame = requestAnimationFrame(tick);
     }
     function sync() {
       cancelAnimationFrame(frame);
       previous = 0;
-      if ((visible || following) && !document.hidden && !reduce.matches) frame = requestAnimationFrame(tick);
+      if (visible && !document.hidden && !reduce.matches) frame = requestAnimationFrame(tick);
       else renderAt(time);
     }
     const resize = new ResizeObserver(() => {
       const { width, height } = host.getBoundingClientRect();
       if (!width || !height) return;
-      canvasWidth = width;
-      canvasHeight = height;
       renderer.setSize(width, height);
       camera.aspect = width / height;
       camera.position.z = camera.aspect < 1.5 ? 11 : 9;
@@ -199,46 +181,15 @@ export function SpaceCompanions() {
     resize.observe(host);
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); });
     observer.observe(host);
-    const move = (event: PointerEvent) => {
-      if (reduce.matches || !mouseScreen.matches || event.pointerType === 'touch') return;
-      targetX = Math.max(0, Math.min(window.innerWidth - canvasWidth, event.clientX - canvasWidth / 2 - 36));
-      targetY = Math.max(0, Math.min(window.innerHeight - canvasHeight, event.clientY - canvasHeight / 2 + 38));
-      if (!following) {
-        const rect = host.getBoundingClientRect();
-        followerX = Math.max(0, Math.min(window.innerWidth - canvasWidth, rect.left));
-        followerY = Math.max(0, Math.min(window.innerHeight - canvasHeight, rect.top));
-        following = true;
-        // A body-level, non-interactive canvas can follow across landing sections.
-        document.body.appendChild(renderer.domElement);
-        Object.assign(renderer.domElement.style, { position: 'fixed', left: '0', top: '0', zIndex: '40', pointerEvents: 'none', transform: `translate3d(${followerX}px, ${followerY}px, 0)` });
-        sync();
-      }
-    };
-    const reset = () => {
-      following = false;
-      pointerX = 0;
-      pointerY = 0;
-      host.appendChild(renderer.domElement);
-      Object.assign(renderer.domElement.style, { position: '', left: '', top: '', zIndex: '', pointerEvents: '', transform: '' });
-      sync();
-    };
-    window.addEventListener('pointermove', move);
-    document.documentElement.addEventListener('pointerleave', reset);
-    window.addEventListener('resize', reset);
-    mouseScreen.addEventListener('change', reset);
     document.addEventListener('visibilitychange', sync);
-    reduce.addEventListener('change', reset);
+    reduce.addEventListener('change', sync);
     sync();
     return () => {
       cancelAnimationFrame(frame);
       resize.disconnect();
       observer.disconnect();
-      window.removeEventListener('pointermove', move);
-      document.documentElement.removeEventListener('pointerleave', reset);
-      window.removeEventListener('resize', reset);
-      mouseScreen.removeEventListener('change', reset);
       document.removeEventListener('visibilitychange', sync);
-      reduce.removeEventListener('change', reset);
+      reduce.removeEventListener('change', sync);
       geometries.forEach((geometry) => geometry.dispose());
       [white, red, dark, gold, blue, flameMaterial, visor, cyan, capeMaterial, sparkMaterial].forEach((material) => material.dispose());
       renderer.dispose();

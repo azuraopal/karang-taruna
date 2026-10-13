@@ -140,7 +140,7 @@ function renderFrame() {
 }
 
 export function triggerParticleBurst(options?: BurstOptions) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const originX = options?.x ?? window.innerWidth / 2;
   const originY = options?.y ?? window.innerHeight / 2;

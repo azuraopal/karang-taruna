@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Newspaper, Calendar, User, Search, ArrowRight, SearchX, BookOpen, ChevronLeft, ChevronRight, Images } from 'lucide-react';
+import { Newspaper, Calendar, User, ArrowRight, SearchX, BookOpen, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Berita } from '../../types';
 import { Modal } from '../common/Modal';
-import { TiltCard } from '../common/TiltCard';
+import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
+import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
-import { triggerParticleBurst } from '../../utils/particleBurst';
 
 const formatTanggalPelaksanaan = (value?: string) => {
   if (!value) return '';
@@ -28,14 +28,8 @@ export const BeritaSection: React.FC = () => {
   const [readingArticle, setReadingArticle] = useState<Berita | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  const kategoriList = [
-    'Semua',
-    'Program Kerja',
-    'Sosial & Warga',
-    'Olahraga',
-    'Pendidikan',
-    'Pengumuman',
-  ];
+  const kategoriList = ['Semua', ...new Set([...['Program Kerja', 'Sosial & Warga', 'Olahraga', 'Pendidikan', 'Pengumuman'], ...beritaList.filter((item) => item.status === 'published').map((item) => item.kategori)])];
+  const categoryCounts = Object.fromEntries(kategoriList.map((category) => [category, category === 'Semua' ? beritaList.filter((item) => item.status === 'published').length : beritaList.filter((item) => item.status === 'published').filter((item) => item.kategori === category).length]));
 
   const filteredBerita = beritaList.filter((b) => {
     // Only show published articles in public view
@@ -44,9 +38,9 @@ export const BeritaSection: React.FC = () => {
     const matchesCat =
       selectedKategori === 'Semua' || b.kategori === selectedKategori;
     const matchesSearch =
-      b.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.ringkasan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.isi.toLowerCase().includes(searchQuery.toLowerCase());
+      b.judul.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+      b.ringkasan.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+      b.isi.toLowerCase().includes(searchQuery.trim().toLowerCase());
 
     return matchesCat && matchesSearch;
   });
@@ -55,13 +49,13 @@ export const BeritaSection: React.FC = () => {
     <section id="berita" className="py-18 sm:py-24 liquid-section border-t border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
-        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+        <div className="collection-heading relative grid grid-cols-1 items-center gap-5 lg:grid-cols-12">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
+            className="public-section-heading mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold tracking-wide uppercase">
               <Newspaper className="w-3.5 h-3.5 text-amber-600" />
@@ -69,11 +63,11 @@ export const BeritaSection: React.FC = () => {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Warta Kegiatan & Pengumuman
+              <ScribbleTitle>Berita & pengumuman</ScribbleTitle>
             </h2>
 
             <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-              Ikuti laporan pelaksanaan program kerja, pengumuman agenda rapat, turnamen, dan aksi sosial kemasyarakatan.
+              Baca kabar terbaru, hasil kegiatan, dan pengumuman untuk warga. Gunakan pencarian untuk menemukan informasi yang Anda butuhkan.
             </p>
           </motion.div>
           <div className="lg:col-span-5">
@@ -81,49 +75,14 @@ export const BeritaSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Baris Pencarian & Filter */}
-        <div className="mt-8 sm:mt-10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          {/* Search Bar */}
-          <div className="relative w-full md:max-w-xs">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Search className="w-4 h-4" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari judul berita / kegiatan..."
-              className="liquid-input w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
-            />
-          </div>
-
-          {/* Filter Kategori */}
-          <div className="mobile-chip-scroll no-scrollbar -mx-4 flex w-[calc(100%+2rem)] snap-x items-center gap-1.5 overflow-x-auto px-4 pb-2 md:mx-0 md:w-auto md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
-            {kategoriList.map((kat) => {
-              const isActive = selectedKategori === kat;
-              return (
-                <button
-                  key={kat}
-                  onClick={() => setSelectedKategori(kat)}
-                  aria-pressed={isActive}
-                  className={`liquid-chip min-h-[44px] shrink-0 snap-start px-3.5 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
-                    isActive
-                      ? 'bg-slate-900 text-amber-400 shadow-sm'
-                      : 'bg-stone-100 hover:bg-stone-200 text-slate-700'
-                  }`}
-                >
-                  {kat}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <PublicCollectionFilters label="Kategori berita" options={kategoriList} counts={categoryCounts} selected={selectedKategori} onSelect={setSelectedKategori}
+          searchLabel="Cari berita atau pengumuman" query={searchQuery} onSearch={setSearchQuery} resultText={`${filteredBerita.length} berita ditemukan`} />
 
         {/* Grid Kartu Berita */}
         {filteredBerita.length > 0 ? (
           <motion.div
             layout
-            className="mt-10 sm:mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7"
+            className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7"
           >
             <AnimatePresence>
               {filteredBerita.map((item) => (
@@ -134,11 +93,11 @@ export const BeritaSection: React.FC = () => {
                   viewport={{ once: true, amount: 0.2 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.45, delay: Math.min(filteredBerita.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ y: -6 }}
+
                   key={item.id}
                   className="liquid-surface liquid-media-card flex flex-col justify-between group"
                 >
-                  <TiltCard maxTilt={3} scale={1} glareOpacity={0.18} className="h-full flex flex-col justify-between">
+                  <div className="h-full flex flex-col justify-between">
                     <div>
                     {/* Gambar Artikel */}
                     <div className="liquid-media-card__photo relative h-48 sm:h-52 bg-slate-200 overflow-hidden">
@@ -157,7 +116,7 @@ export const BeritaSection: React.FC = () => {
 
                     {/* Konten Artikel */}
                     <div className="p-4 sm:p-6 space-y-2.5">
-                      <div className="flex items-center gap-3 text-[11px] text-slate-500">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5 text-amber-600" />
                           {item.tanggal}
@@ -173,11 +132,11 @@ export const BeritaSection: React.FC = () => {
                         </div>
                       )}
 
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
+                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
                         {item.judul}
                       </h3>
 
-                      <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                      <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
                         {item.ringkasan}
                       </p>
                     </div>
@@ -187,8 +146,7 @@ export const BeritaSection: React.FC = () => {
                     <div className="p-4 pt-0 sm:p-6 sm:pt-0">
                       <button
                         type="button"
-                        onClick={(e) => {
-                          triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 16 });
+                        onClick={() => {
                           setReadingArticle(item);
                           setActiveImageIndex(0);
                         }}
@@ -196,12 +154,12 @@ export const BeritaSection: React.FC = () => {
                       >
                         <span className="flex items-center gap-1.5">
                           <BookOpen className="w-3.5 h-3.5" />
-                          <span>Baca Warta Lengkap</span>
+                          <span>Baca selengkapnya</span>
                         </span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  </TiltCard>
+                  </div>
                 </motion.article>
 
               ))}
@@ -259,7 +217,7 @@ export const BeritaSection: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveImageIndex((index) => (index - 1 + getArticleImages(readingArticle).length) % getArticleImages(readingArticle).length)}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
+                      className="min-h-11 min-w-11 flex items-center justify-center absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white transition-opacity hover:bg-slate-950"
                       aria-label="Foto sebelumnya"
                     >
                       <ChevronLeft className="w-5 h-5" />
@@ -267,7 +225,7 @@ export const BeritaSection: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveImageIndex((index) => (index + 1) % getArticleImages(readingArticle).length)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
+                      className="min-h-11 min-w-11 flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white transition-opacity hover:bg-slate-950"
                       aria-label="Foto berikutnya"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -287,7 +245,7 @@ export const BeritaSection: React.FC = () => {
                       type="button"
                       onClick={() => setActiveImageIndex(index)}
                       className={`relative shrink-0 snap-start w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${activeImageIndex === index ? 'border-amber-500 ring-2 ring-amber-200' : 'border-transparent opacity-65 hover:opacity-100'}`}
-                      aria-label={`Tampilkan foto ${index + 1}`}
+                      aria-label={`Tampilkan foto ${index + 1}`} aria-pressed={activeImageIndex === index}
                     >
                       <img src={imageUrl} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -325,12 +283,12 @@ export const BeritaSection: React.FC = () => {
               </div>
 
               {/* Ringkasan Box */}
-              <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-xs sm:text-sm font-medium text-amber-950 leading-relaxed italic">
+              <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-sm font-medium text-amber-950 leading-relaxed italic">
                 "{readingArticle.ringkasan}"
               </div>
 
               {/* Isi Lengkap */}
-              <div className="text-xs sm:text-sm text-slate-700 leading-relaxed space-y-3 whitespace-pre-line border-t border-stone-100 pt-4">
+              <div className="text-base text-slate-700 leading-relaxed space-y-3 whitespace-pre-line border-t border-stone-100 pt-4">
                 {readingArticle.isi}
               </div>
 

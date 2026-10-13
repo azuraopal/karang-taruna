@@ -18,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
     setTimeout(() => {
       const el = document.getElementById(id);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+        el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
       }
     }, 50);
   };
@@ -117,11 +117,11 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>{TENTANG_DATA.kontak.email}</span>
+                <a className="public-contact-link" href={`mailto:${TENTANG_DATA.kontak.email}`}>Email: {TENTANG_DATA.kontak.email}</a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>{TENTANG_DATA.kontak.whatsapp} (WhatsApp Resmi)</span>
+                <a className="public-contact-link" href={`https://wa.me/${TENTANG_DATA.kontak.whatsapp.replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer">WhatsApp: {TENTANG_DATA.kontak.whatsapp}</a>
               </div>
             </div>
 

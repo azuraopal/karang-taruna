@@ -1,46 +1,52 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Calendar, MapPin, Eye, SearchX, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Images, User } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Camera, Calendar, MapPin, ArrowRight, SearchX, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { ItemGaleri } from '../../types';
 import { Modal } from '../common/Modal';
-import { TiltCard } from '../common/TiltCard';
+import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
+import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
-const getGalleryImages = (item: ItemGaleri) => [item.gambarUrl, ...(item.gambarUrls || [])].filter(Boolean);
+const getGalleryImages = (item: ItemGaleri) => [...new Set([item.gambarUrl, ...(item.gambarUrls || [])].filter(Boolean))];
 
 export const Galeri: React.FC = () => {
   const { galeriList } = useData();
+  const reduceMotion = useReducedMotion();
+  const [query, setQuery] = useState('');
   const [selectedKategori, setSelectedKategori] = useState<string>('Semua');
   const [activePhoto, setActivePhoto] = useState<ItemGaleri | null>(null);
   const [photoZoom, setPhotoZoom] = useState(1);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
-  const kategoriList = [
-    'Semua',
-    'Kegiatan Sosial',
-    'Olahraga',
-    'Pentas Seni',
-    'Lingkungan',
-    'Pelatihan',
-  ];
-
-  const filteredGaleri =
-    selectedKategori === 'Semua'
-      ? galeriList
-      : galeriList.filter((g) => g.kategori === selectedKategori);
+  const kategoriList = ['Semua', ...new Set([...['Kegiatan Sosial', 'Olahraga', 'Pentas Seni', 'Lingkungan', 'Pelatihan'], ...galeriList.map((item) => item.kategori)])];
+  const categoryCounts = Object.fromEntries(kategoriList.map((category) => [category, category === 'Semua' ? galeriList.length : galeriList.filter((item) => item.kategori === category).length]));
+  const filteredGaleri = galeriList.filter((item) =>
+    (selectedKategori === 'Semua' || item.kategori === selectedKategori) &&
+    `${item.judul} ${item.deskripsi} ${item.lokasi}`.toLocaleLowerCase('id').includes(query.trim().toLocaleLowerCase('id')),
+  );
+  const openPhoto = (item: ItemGaleri) => {
+    setActivePhoto(item);
+    setPhotoZoom(1);
+    setActivePhotoIndex(0);
+  };
+  const changePhoto = (direction: number) => {
+    if (!activePhoto) return;
+    setActivePhotoIndex((index) => (index + direction + getGalleryImages(activePhoto).length) % getGalleryImages(activePhoto).length);
+    setPhotoZoom(1);
+  };
 
   return (
     <section id="galeri" className="relative py-18 sm:py-24 liquid-section border-t border-stone-200 overflow-hidden">
       <div className="soft-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bagian */}
-        <div className="relative grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+        <div className="collection-heading relative grid grid-cols-1 items-center gap-5 lg:grid-cols-12">
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
+            className="public-section-heading mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
               <Camera className="w-3.5 h-3.5 text-amber-700" />
@@ -48,11 +54,11 @@ export const Galeri: React.FC = () => {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Galeri Kegiatan Pemuda
+              <ScribbleTitle>Foto kegiatan warga</ScribbleTitle>
             </h2>
 
             <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-              Rekam jejak kebersamaan, aksi sosial, kompetisi olahraga, serta festival kebudayaan yang diselenggarakan bersama masyarakat.
+              Lihat dokumentasi kegiatan kami. Pilih album untuk membuka foto, tanggal, dan lokasi kegiatan.
             </p>
           </motion.div>
           <div className="lg:col-span-5">
@@ -60,123 +66,49 @@ export const Galeri: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Kategori */}
-        <div className="mobile-chip-scroll no-scrollbar -mx-4 mt-8 sm:mt-10 flex w-[calc(100%+2rem)] snap-x items-center justify-start gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:w-auto md:flex-wrap md:justify-center md:overflow-visible md:px-0 md:pb-0">
-          {kategoriList.map((kat) => {
-            const isActive = selectedKategori === kat;
-            return (
-              <button
-                key={kat}
-                onClick={() => setSelectedKategori(kat)}
-                aria-pressed={isActive}
-                className={`liquid-chip min-h-[44px] shrink-0 snap-start px-4 py-2 rounded-full text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
-                  isActive
-                    ? 'bg-slate-900 text-amber-400 shadow-sm'
-                    : 'bg-white hover:bg-stone-200 text-slate-700 border border-stone-200'
-                }`}
-              >
-                {kat}
-              </button>
-            );
-          })}
-        </div>
+        <PublicCollectionFilters label="Kategori kegiatan" options={kategoriList} counts={categoryCounts} selected={selectedKategori} onSelect={setSelectedKategori}
+          searchLabel="Cari kegiatan atau lokasi" query={query} onSearch={setQuery} resultText={`${filteredGaleri.length} album kegiatan ditemukan`} />
 
         {/* Grid Foto */}
         {filteredGaleri.length > 0 ? (
-          <motion.div
-            layout
-            className="relative mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
-          >
-            <AnimatePresence>
-              {filteredGaleri.map((item) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 24, scale: 0.97 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.45, delay: Math.min(filteredGaleri.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ y: -6 }}
-                  key={item.id}
-                  onClick={() => {
-                    setActivePhoto(item);
-                    setPhotoZoom(1);
-                    setActivePhotoIndex(0);
-                  }}
-                  className="liquid-surface liquid-media-card group cursor-pointer flex flex-col justify-between"
-                  tabIndex={0}
-                  role="button"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setActivePhoto(item);
-                    }
-                  }}
-                  aria-label={`Buka foto ${item.judul}`}
-                >
-                  <TiltCard maxTilt={3} scale={1} glareOpacity={0.18} className="h-full flex flex-col justify-between">
-                    <div className="liquid-media-card__photo relative h-56 sm:h-60 bg-slate-100 overflow-hidden">
-                      <img
-                        src={item.gambarUrl}
-                        alt={item.judul}
-                        className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition-transform duration-700 ease-out"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-colors flex items-center justify-center">
-                        <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white p-2.5 rounded-full backdrop-blur-xs">
-                          <Eye className="w-5 h-5" />
-                        </span>
-                      </div>
-                      <div className="absolute top-3 left-3">
-                        <span className="liquid-dark px-2.5 py-1.5 rounded-full text-[11px] font-bold text-amber-200">
-                          {item.kategori}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-4 sm:p-5 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="min-w-0 text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
-                          {item.judul}
-                        </h3>
-                        <span className="flex max-w-[45%] shrink-0 items-center gap-1 truncate text-[11px] text-slate-400" title={item.dibuatOleh || 'Data lama'}>
-                          <User className="h-3.5 w-3.5 shrink-0" />
-                          <span className="truncate">{item.dibuatOleh || 'Data lama'}</span>
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                        {item.deskripsi}
-                      </p>
-                      <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-amber-600" />
-                          {item.tanggal}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                          {item.lokasi}
-                        </span>
-                      </div>
-                    </div>
-                  </TiltCard>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="gallery-grid relative mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredGaleri.map((item) => (
+              <article key={item.id} className="gallery-card liquid-surface relative flex min-w-0 flex-col p-2">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100">
+                  {item.gambarUrl ? <img src={item.gambarUrl} alt={item.judul} className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera className="mx-auto h-full w-12 text-slate-400" aria-hidden="true" />}
+                  <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-semibold text-white">
+                    <Images size={14} aria-hidden="true" />{getGalleryImages(item).length} foto
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
+                  <span className="text-xs font-semibold text-amber-800">{item.kategori}</span>
+                  <h3 className="text-lg font-bold leading-snug text-slate-900 wrap-anywhere">{item.judul}</h3>
+                  <p className="line-clamp-2 text-sm leading-relaxed text-slate-600">{item.deskripsi}</p>
+                  <div className="mt-auto space-y-2 border-t border-slate-200/70 pt-3 text-sm text-slate-600">
+                    <p className="flex items-start gap-2"><Calendar size={16} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" /><span>{item.tanggal}</span></p>
+                    {item.lokasi && <p className="flex items-start gap-2"><MapPin size={16} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" /><span className="wrap-anywhere">{item.lokasi}</span></p>}
+                  </div>
+                  <button type="button" onClick={() => openPhoto(item)} aria-label={`Lihat foto: ${item.judul}`}
+                    className="gallery-open flex min-h-12 w-full items-center justify-between rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                    <span>Lihat foto kegiatan</span><ArrowRight size={17} aria-hidden="true" />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         ) : (
           /* Empty State (R-27) */
           <div className="liquid-surface mt-12 p-12 text-center bg-white rounded-2xl border border-stone-200 max-w-md mx-auto">
             <SearchX className="w-10 h-10 text-slate-400 mx-auto mb-3" />
             <h3 className="text-base font-bold text-slate-800">
-              Belum Ada Dokumentasi di Kategori Ini
+              Belum ada foto yang cocok
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Pilih kategori lain atau tambahkan dokumentasi foto baru lewat Panel Admin.
+              Coba kata kunci lain atau tampilkan semua kegiatan.
             </p>
             <button
               type="button"
-              onClick={() => setSelectedKategori('Semua')}
+              onClick={() => { setSelectedKategori('Semua'); setQuery(''); }}
               className="mt-4 px-4 py-2 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold hover:bg-slate-800"
             >
               Tampilkan Semua Foto
@@ -189,57 +121,21 @@ export const Galeri: React.FC = () => {
           isOpen={!!activePhoto}
           onClose={() => setActivePhoto(null)}
           title="Detail Dokumentasi Kegiatan"
-          maxWidth="xl"
+          maxWidth="2xl"
         >
           {activePhoto && (
             <div className="space-y-4">
-              <div className="relative rounded-2xl overflow-hidden flex items-center justify-center group">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={getGalleryImages(activePhoto)[activePhotoIndex]}
-                    src={getGalleryImages(activePhoto)[activePhotoIndex]}
-                    alt={`${activePhoto.judul} - foto ${activePhotoIndex + 1}`}
-                    initial={{ opacity: 0, scale: 1.04 }}
-                    animate={{ opacity: 1, scale: photoZoom }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.3 }}
-                    className="block w-auto max-w-full max-h-[70vh] object-contain"
-                    loading="eager"
-                    decoding="async"
-                    fetchPriority="high"
-                    onError={() => {
-                      const imageCount = getGalleryImages(activePhoto).length;
-                      if (activePhotoIndex < imageCount - 1) {
-                        setActivePhotoIndex((index) => index + 1);
-                        setPhotoZoom(1);
-                      }
-                    }}
-                  />
-                </AnimatePresence>
-                {getGalleryImages(activePhoto).length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setActivePhotoIndex((index) => (index - 1 + getGalleryImages(activePhoto).length) % getGalleryImages(activePhoto).length)}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
-                      aria-label="Foto sebelumnya"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActivePhotoIndex((index) => (index + 1) % getGalleryImages(activePhoto).length)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity hover:bg-slate-950"
-                      aria-label="Foto berikutnya"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <span className="absolute right-3 bottom-3 px-2.5 py-1 rounded-full bg-slate-950/75 text-white text-[11px] font-bold">
-                      {activePhotoIndex + 1} / {getGalleryImages(activePhoto).length}
-                    </span>
-                  </>
-                )}
+              <div className="relative rounded-2xl bg-slate-100">
+                <div className="max-h-[55dvh] overflow-auto rounded-2xl" tabIndex={photoZoom > 1 ? 0 : undefined} aria-label={photoZoom > 1 ? 'Foto diperbesar, geser untuk melihat bagian lainnya' : undefined}>
+                  <img src={getGalleryImages(activePhoto)[activePhotoIndex]} alt={`${activePhoto.judul} - foto ${activePhotoIndex + 1}`}
+                    className="block h-auto max-w-none" style={{ width: `${photoZoom * 100}%` }} />
+                </div>
               </div>
+              {getGalleryImages(activePhoto).length > 1 && <div className="flex items-center justify-between gap-2">
+                <button type="button" onClick={() => changePhoto(-1)} className="liquid-control flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm" aria-label="Foto sebelumnya"><ChevronLeft size={18} /><span>Sebelumnya</span></button>
+                <span role="status" className="text-sm font-semibold text-slate-700">{activePhotoIndex + 1} / {getGalleryImages(activePhoto).length}</span>
+                <button type="button" onClick={() => changePhoto(1)} className="liquid-control flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm" aria-label="Foto berikutnya"><span>Berikutnya</span><ChevronRight size={18} /></button>
+              </div>}
 
               {getGalleryImages(activePhoto).length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
@@ -253,6 +149,7 @@ export const Galeri: React.FC = () => {
                       }}
                       className={`relative shrink-0 snap-start w-16 h-12 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhotoIndex === index ? 'border-amber-500 ring-2 ring-amber-200' : 'border-transparent opacity-65 hover:opacity-100'}`}
                       aria-label={`Tampilkan foto ${index + 1}`}
+                      aria-pressed={activePhotoIndex === index}
                     >
                       <img
                         src={imageUrl}
@@ -278,7 +175,7 @@ export const Galeri: React.FC = () => {
                   type="button"
                   onClick={() => setPhotoZoom((zoom) => Math.max(1, Number((zoom - 0.25).toFixed(2))))}
                   disabled={photoZoom <= 1}
-                  className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="min-h-11 min-w-11 inline-flex items-center justify-center p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Perkecil foto"
                   title="Perkecil foto"
                 >
@@ -287,17 +184,17 @@ export const Galeri: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setPhotoZoom(1)}
-                  className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200"
+                  className="min-h-11 min-w-11 inline-flex items-center justify-center p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200"
                   aria-label="Reset ukuran foto"
                   title="Reset ukuran foto"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-4 h-4" /><span className="ml-2 text-sm">{Math.round(photoZoom * 100)}%</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPhotoZoom((zoom) => Math.min(3, Number((zoom + 0.25).toFixed(2))))}
                   disabled={photoZoom >= 3}
-                  className="p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="min-h-11 min-w-11 inline-flex items-center justify-center p-2.5 rounded-xl bg-stone-100 text-slate-700 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Perbesar foto"
                   title="Perbesar foto"
                 >
@@ -324,7 +221,7 @@ export const Galeri: React.FC = () => {
                   {activePhoto.judul}
                 </h3>
 
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed mt-2 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                <p className="text-sm text-slate-700 leading-relaxed mt-2 bg-stone-50 p-4 rounded-xl border border-stone-200">
                   {activePhoto.deskripsi}
                 </p>
               </div>

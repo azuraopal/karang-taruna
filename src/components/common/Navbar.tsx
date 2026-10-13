@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Menu, X, Lock, LayoutDashboard, ArrowUpRight } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Logo } from './Logo';
@@ -13,6 +13,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
   const { currentView, setCurrentView, currentUser, isAdminLoggedIn, logoutAdmin } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
   const [activeNav, setActiveNav] = useState('beranda');
 
   useEffect(() => {
@@ -35,11 +38,33 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
+  // Keep the mobile overlay usable with touch, keyboard, and viewport changes.
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    if (!mobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnDesktop = () => {
+      if (window.innerWidth >= 1024) setMobileMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+      if (event.key === 'Tab') {
+        const buttons = [menuButtonRef.current, ...Array.from(menuPanelRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])].filter((item): item is HTMLButtonElement => Boolean(item));
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', closeOnDesktop);
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', closeOnDesktop);
     };
   }, [mobileMenuOpen]);
 
@@ -59,12 +84,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
       setCurrentView('public');
       navigateTo('/');
       setTimeout(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById(id)?.scrollIntoView({ behavior: shouldReduceMotion ? 'instant' : 'smooth' });
       }, 100);
       return;
     }
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentView, setCurrentView]);
+    const target = document.getElementById(id);
+    if (target) {
+      target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ behavior: shouldReduceMotion ? 'instant' : 'smooth' });
+    }
+  }, [currentView, setCurrentView, shouldReduceMotion]);
 
   const handleDashboardToggle = () => {
     if (currentView === 'admin') {
@@ -94,10 +124,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
           <a
             href="#beranda"
             onClick={(e) => { e.preventDefault(); handleNavClick('beranda'); }}
-            className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg p-1"
+            className="navbar-brand flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg p-1"
           >
             <Logo variant="white" className="h-7 sm:h-8 w-auto" />
-            <div className="hidden sm:block pl-2.5 border-l border-slate-700/80">
+            <div className="navbar-tagline hidden lg:block pl-2.5 border-l border-slate-700/80">
               <p className="text-xs text-slate-300 font-medium font-subtitle tracking-wide">
                 Muda Berkarya, Nyata Berdaya
               </p>
@@ -105,14 +135,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
           </a>
 
           {/* Desktop Nav */}
-          <nav className="liquid-nav-track hidden lg:flex items-center gap-1 bg-slate-950/60 p-1.5 rounded-full border border-slate-800">
+          <nav aria-label="Navigasi utama" className="liquid-nav-track hidden lg:flex items-center gap-1 bg-slate-950/60 p-1.5 rounded-full border border-slate-800">
             {navLinks.map((link) => {
               const isActive = activeNav === link.id && currentView === 'public';
               return (
                 <button
                   key={link.id}
                   onClick={() => handleNavClick(link.id)}
-                  className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                  aria-current={isActive ? 'location' : undefined}
+                  className={`relative px-3 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                     isActive ? 'text-slate-950' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
@@ -120,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                     <motion.div
                       layoutId="activeNavTab"
                       transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
-                      className="absolute inset-0 bg-amber-400 rounded-full"
+                      className="navbar-active-tab absolute inset-0 bg-amber-400 rounded-full"
                     />
                   )}
                   <span className="relative z-10">{link.label}</span>
@@ -130,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
           </nav>
 
           {/* Desktop Action Buttons */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="navbar-account hidden lg:flex items-center gap-3">
             {isAdminLoggedIn ? (
               <div className="flex items-center gap-2">
                 <button
@@ -169,7 +200,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((o) => !o)}
-            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-800/80 text-slate-200 border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
+            className="lg:hidden gap-2 px-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-800/80 text-slate-200 border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
+            ref={menuButtonRef}
+            aria-controls="mobile-navigation"
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu navigasi'}
           >
@@ -196,6 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                 </motion.span>
               )}
             </AnimatePresence>
+            <span className="text-sm font-semibold">{mobileMenuOpen ? 'Tutup' : 'Menu'}</span>
           </button>
         </div>
       </div>
@@ -219,7 +253,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
               transition={{ duration: 0.18 }}
               onClick={() => setMobileMenuOpen(false)}
               className="lg:hidden absolute inset-x-0 top-full bg-black/20 z-30"
-              style={{ height: `calc(100dvh - ${isScrolled ? '56px' : '64px'})` }}
+              style={{ height: 'calc(100dvh - 65px)' }}
               aria-hidden="true"
             />
 
@@ -227,12 +261,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
             {/* Curtain Panel — slide down from header edge */}
             <motion.div
               key="curtain"
+              id="mobile-navigation"
+              ref={menuPanelRef}
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
               className="liquid-mobile-menu lg:hidden absolute inset-x-0 top-full z-35 bg-slate-950 flex flex-col overflow-y-auto"
-              style={{ height: `calc(100dvh - ${isScrolled ? '56px' : '64px'})` }}
+              style={{ maxHeight: 'calc(100dvh - 65px)' }}
             >
               {/* Ambient glow (rules/ambient-glow-bloom.md): restrained, ≤0.45 opacity */}
               <div
@@ -242,7 +278,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
               />
 
               {/* Nav links — waterfall-entry stagger (rules/waterfall-entry.md) */}
-              <div className="flex-1 flex flex-col justify-center px-7 py-8 space-y-1">
+              <nav aria-label="Navigasi utama mobile" className="flex-1 flex flex-col justify-center px-7 py-8 space-y-1">
                 {navLinks.map((link, idx) => {
                   const isActive = activeNav === link.id && currentView === 'public';
                   return (
@@ -251,15 +287,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                       initial={{ opacity: 0, y: 24 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
-                        delay: idx * 0.045,
-                        duration: 0.32,
+                        delay: shouldReduceMotion ? 0 : idx * 0.045,
+                        duration: shouldReduceMotion ? 0 : 0.32,
                         ease: [0.22, 1, 0.36, 1],
                       }}
                       onClick={() => handleNavClick(link.id)}
+                  aria-current={isActive ? 'location' : undefined}
                       className="flex items-center justify-between w-full py-3.5 border-b border-slate-800/60 text-left group"
                     >
                       <div className="flex items-center gap-4">
-                        <span className="text-[11px] font-mono text-slate-600 w-5 select-none">
+                        <span aria-hidden="true" className="text-[11px] font-mono text-slate-400 w-5 select-none">
                           {String(idx + 1).padStart(2, '0')}
                         </span>
                         <span
@@ -284,13 +321,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                     </motion.button>
                   );
                 })}
-              </div>
+              </nav>
 
               {/* Bottom action area — spring-pop-entrance (rules/spring-pop-entrance.md) */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.94, y: 12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: navLinks.length * 0.045 + 0.05, duration: 0.4, ease: 'easeOut' }}
+                transition={{ delay: shouldReduceMotion ? 0 : navLinks.length * 0.045 + 0.05, duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeOut' }}
                 className="px-7 pb-10 pt-5 border-t border-slate-800/60 space-y-3"
               >
                 {isAdminLoggedIn ? (
@@ -327,7 +364,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
                     Keluar dari Sesi Admin
                   </button>
                 )}
-                <p className="text-[11px] text-slate-700 text-center font-subtitle pt-1">
+                <p className="text-[11px] text-slate-400 text-center font-subtitle pt-1">
                   Karang Taruna Margabakti 07 · RW 07
                 </p>
               </motion.div>

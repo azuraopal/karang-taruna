@@ -4,6 +4,7 @@ import { Users, HeartHandshake, Sparkles, Award, Target, BookOpen, Compass } fro
 import { TENTANG_DATA } from '../../data/initialData';
 import { Logo } from '../common/Logo';
 import { TiltCard } from '../common/TiltCard';
+import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
 
@@ -57,19 +58,19 @@ export const Tentang: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
+            className="public-section-heading mx-auto max-w-3xl space-y-4 text-center lg:col-span-7 lg:mx-0 lg:text-left"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
               <Compass className="w-3.5 h-3.5 text-amber-700" />
-              <span>Profil & Landasan Gerak</span>
+              <span>Kenali organisasi kami</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Mengenal Karang Taruna Margabakti 07
-            </h2>
+                <ScribbleTitle>Tentang Karang Taruna kami</ScribbleTitle>
+              </h2>
 
             <p className="text-slate-600 text-base sm:text-lg leading-relaxed font-subtitle">
-              Organisasi sosial kepemudaan yang berdiri mandiri di tingkat rukun warga, berfungsi sebagai wadah untuk meningkatkan kepedulian sosial terhadap masyarakat dan lingkungan sekitar.
+              Kami adalah organisasi pemuda RW 07 Margabakti. Bersama warga, kami menjalankan kegiatan sosial, olahraga, pendidikan, seni, dan pemberdayaan usaha.
             </p>
           </motion.div>
           <div className="lg:col-span-5">
@@ -111,11 +112,11 @@ export const Tentang: React.FC = () => {
               </p>
               <div className="pt-2 border-t border-stone-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-600">
                 <div>
-                  <span className="font-bold text-slate-900 block mb-0.5">Wilayah Gerak:</span>
+                  <span className="font-bold text-slate-900 block mb-0.5">Wilayah kegiatan:</span>
                   <span>Komunitas Warga Margabakti 07</span>
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900 block mb-0.5">Pangkalan Utama:</span>
+                  <span className="font-bold text-slate-900 block mb-0.5">Tempat berkumpul:</span>
                   <span>Majelis RT 003</span>
                 </div>
               </div>

@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, CheckCircle2, MapPin, Mail, Phone, Clock, AlertCircle, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle2, MapPin, Mail, Phone, Clock, AlertCircle, Sparkles, LoaderCircle } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import type { Aspirasi } from '../../types';
 import { TENTANG_DATA } from '../../data/initialData';
+import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
 
 export const AspirasiSection: React.FC = () => {
   const { addAspirasi } = useData();
 
+  const sendingRef = useRef(false);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
   const [noHp, setNoHp] = useState('');
@@ -18,8 +22,13 @@ export const AspirasiSection: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isSubmitted) resultRef.current?.focus();
+  }, [isSubmitted]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sendingRef.current) return;
     setErrorMsg('');
 
     if (!nama.trim() || !email.trim() || !noHp.trim() || !pesan.trim()) {
@@ -27,36 +36,26 @@ export const AspirasiSection: React.FC = () => {
       return;
     }
 
-    addAspirasi({
-      nama: nama.trim(),
-      email: email.trim(),
-      noHp: noHp.trim(),
-      kategori,
-      pesan: pesan.trim(),
-    });
-    setIsSubmitted(true);
-    triggerParticleBurst({
-      count: 50,
-      power: 1.25,
-    });
-    setNama('');
-    setEmail('');
-    setNoHp('');
-    setPesan('');
+    sendingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      await addAspirasi({ nama: nama.trim(), email: email.trim(), noHp: noHp.trim(), kategori, pesan: pesan.trim() });
+      setIsSubmitted(true);
+      triggerParticleBurst({ count: 24, power: 0.8 });
+      setNama(''); setEmail(''); setNoHp(''); setPesan('');
+    } catch {
+      setErrorMsg('Pesan belum berhasil dikirim. Periksa koneksi lalu coba lagi. Isian Anda tetap tersimpan di formulir ini.');
+    } finally {
+      sendingRef.current = false;
+      setIsSubmitting(false);
+    }
+
   };
   return (
     <section id="aspirasi" className="relative py-18 sm:py-24 liquid-section border-t border-stone-200 overflow-visible">
       <div className="soft-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
-          {/* Kolom Informasi & Sekretariat (5 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 space-y-5 sm:space-y-6"
-          >
+        <div className="public-section-heading relative mb-8 max-w-3xl">
             <div className="space-y-5">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold tracking-wide uppercase">
                 <MessageSquare className="w-3.5 h-3.5 text-amber-700" />
@@ -64,14 +63,181 @@ export const AspirasiSection: React.FC = () => {
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                Kirim Aspirasi & Ide Positif untuk Kemajuan Margabakti 07
+                <ScribbleTitle>Punya ide atau saran?</ScribbleTitle>
               </h2>
 
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-subtitle">
-                Punya usulan kegiatan pemuda, ide lomba baru, aduan fasilitas umum, atau ingin mengajak kolaborasi? Sampaikan langsung kepada pengurus melalui formulir ini.
+                Sampaikan usulan kegiatan, keluhan lingkungan, atau ajakan kerja sama kepada pengurus. Tidak perlu membuat akun.
               </p>
             </div>
 
+        </div>
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
+          {/* Keep sticky positioning separate from the entrance transform. */}
+          <div className="aspirasi-form-sticky order-1 lg:order-2 lg:col-span-7">
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="aspirasi-form-surface liquid-surface bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
+          >
+            {isSubmitted ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+                ref={resultRef} tabIndex={-1} role="status" aria-live="polite" className="py-12 text-center space-y-4"
+              >
+                <motion.div
+                  animate={{ scale: [0.8, 1.15, 1], rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.6 }}
+                  className="w-18 h-18 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 border-2 border-emerald-300"
+                >
+                  <CheckCircle2 className="w-10 h-10" />
+                </motion.div>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
+                  <span>Aspirasi Berhasil Disampaikan!</span>
+                  <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
+                </h3>
+                <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                  Terima kasih atas partisipasi aktif Anda. Pesan telah tercatat secara langsung pada sistem pengurus untuk segera ditinjau dan ditindaklanjuti.
+                </p>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 20 });
+                    setIsSubmitted(false);
+                  }}
+                  className="px-7 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  Kirim Aspirasi Lainnya
+                </motion.button>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit}
+                onInvalidCapture={(event) => {
+                  const field = event.target;
+                  if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+                    field.setCustomValidity(field.validity.valueMissing ? 'Mohon isi kolom ini.' : field.validity.typeMismatch ? 'Masukkan alamat email yang valid.' : 'Periksa kembali isian Anda.');
+                  }
+                }}
+                onInputCapture={(event) => {
+                  const field = event.target;
+                  if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) field.setCustomValidity('');
+                }} aria-busy={isSubmitting} className="space-y-4.5">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">
+                  Formulir aspirasi warga
+                </h3>
+                <p id="aspirasi-help" className="text-sm leading-relaxed text-slate-600">Kolom bertanda * wajib diisi. Gunakan kontak yang dapat dihubungi untuk tindak lanjut.</p>
+
+                {errorMsg && (
+                  <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-800 text-xs p-3 rounded-xl flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="aspirasi-nama" className="block text-sm font-semibold text-slate-700 mb-2">
+                      Nama Lengkap *
+                    </label>
+                    <input
+                      id="aspirasi-nama" name="nama" required autoComplete="name" disabled={isSubmitting}
+                      type="text"
+                      value={nama}
+                      onChange={(e) => setNama(e.target.value)}
+                      placeholder="Contoh: Budi Prasetyo"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="aspirasi-telepon" className="block text-sm font-semibold text-slate-700 mb-2">
+                      Nomor HP / WhatsApp *
+                    </label>
+                    <input
+                      id="aspirasi-telepon" name="telepon" required autoComplete="tel" disabled={isSubmitting}
+                      type="tel"
+                      value={noHp}
+                      onChange={(e) => setNoHp(e.target.value)}
+                      placeholder="Contoh: 0812-xxxx-xxxx"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="aspirasi-email" className="block text-sm font-semibold text-slate-700 mb-2">
+                      Alamat Email *
+                    </label>
+                    <input
+                      id="aspirasi-email" name="email" required autoComplete="email" disabled={isSubmitting}
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="nama@email.com"
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="aspirasi-kategori" className="block text-sm font-semibold text-slate-700 mb-2">
+                      Kategori Aspirasi
+                    </label>
+                    <select id="aspirasi-kategori" disabled={isSubmitting}
+                      value={kategori}
+                      onChange={(e) => setKategori(e.target.value as Aspirasi['kategori'])}
+                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                    >
+                      <option value="Saran Kegiatan">Saran Kegiatan / Program</option>
+                      <option value="Aduan Lingkungan">Aduan Kebersihan & Lingkungan</option>
+                      <option value="Ide Kreatif">Ide Kreatif & Kewirausahaan</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="aspirasi-pesan" className="block text-sm font-semibold text-slate-700 mb-2">
+                    Uraian Pesan / Masukan *
+                  </label>
+                  <textarea id="aspirasi-pesan" name="pesan" required disabled={isSubmitting} aria-describedby="aspirasi-help"
+                    rows={4}
+                    value={pesan}
+                    onChange={(e) => setPesan(e.target.value)}
+                    placeholder="Tuliskan aspirasi, ide, atau saran Anda secara rinci dan santun..."
+                    className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <motion.button
+                    type="submit" disabled={isSubmitting}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="min-h-[44px] w-full py-3 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer border border-slate-800"
+                  >
+                    {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    <span>{isSubmitting ? 'Sedang mengirim…' : 'Kirim aspirasi'}</span>
+                  </motion.button>
+                </div>
+              </form>
+            )}
+          </motion.div>
+          </div>
+          {/* Kolom Informasi & Sekretariat (5 cols) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="order-2 lg:order-1 lg:col-span-5 space-y-5 sm:space-y-6"
+          >
             <Section3DShowcase kind="aspirasi" />
 
             <div className="liquid-surface bg-white rounded-2xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
@@ -86,11 +252,11 @@ export const AspirasiSection: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>{TENTANG_DATA.kontak.email}</span>
+                  <a className="public-contact-link" href={`mailto:${TENTANG_DATA.kontak.email}`}>Email: {TENTANG_DATA.kontak.email}</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>{TENTANG_DATA.kontak.whatsapp}</span>
+                  <a className="public-contact-link" href={`https://wa.me/${TENTANG_DATA.kontak.whatsapp.replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer">WhatsApp: {TENTANG_DATA.kontak.whatsapp}</a>
                 </div>
                 <div className="flex items-start gap-3 pt-1 border-t border-stone-100">
                   <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
@@ -123,147 +289,7 @@ export const AspirasiSection: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Kolom Formulir Aspirasi (7 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="liquid-surface lg:col-span-7 lg:sticky lg:top-24 bg-white rounded-2xl border border-stone-200 p-5 sm:p-10 shadow-sm"
-          >
-            {isSubmitted ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-                className="py-12 text-center space-y-4"
-              >
-                <motion.div
-                  animate={{ scale: [0.8, 1.15, 1], rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 0.6 }}
-                  className="w-18 h-18 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 border-2 border-emerald-300"
-                >
-                  <CheckCircle2 className="w-10 h-10" />
-                </motion.div>
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
-                  <span>Aspirasi Berhasil Disampaikan!</span>
-                  <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
-                </h3>
-                <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                  Terima kasih atas partisipasi aktif Anda. Pesan telah tercatat secara langsung pada sistem pengurus untuk segera ditinjau dan ditindaklanjuti.
-                </p>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    triggerParticleBurst({ x: e.clientX, y: e.clientY, count: 20 });
-                    setIsSubmitted(false);
-                  }}
-                  className="px-7 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs shadow-md transition-all cursor-pointer"
-                >
-                  Kirim Aspirasi Lainnya
-                </motion.button>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4.5">
-                <h3 className="text-lg font-bold text-slate-900 mb-2">
-                  Formulir Aspirasi Warga
-                </h3>
 
-                {errorMsg && (
-                  <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs p-3 rounded-xl flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      Nama Lengkap *
-                    </label>
-                    <input
-                      type="text"
-                      value={nama}
-                      onChange={(e) => setNama(e.target.value)}
-                      placeholder="Contoh: Budi Prasetyo"
-                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      Nomor HP / WhatsApp *
-                    </label>
-                    <input
-                      type="tel"
-                      value={noHp}
-                      onChange={(e) => setNoHp(e.target.value)}
-                      placeholder="Contoh: 0812-xxxx-xxxx"
-                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      Alamat Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="nama@email.com"
-                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      Kategori Aspirasi
-                    </label>
-                    <select
-                      value={kategori}
-                      onChange={(e) => setKategori(e.target.value as Aspirasi['kategori'])}
-                      className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
-                    >
-                      <option value="Saran Kegiatan">Saran Kegiatan / Program</option>
-                      <option value="Aduan Lingkungan">Aduan Kebersihan & Lingkungan</option>
-                      <option value="Ide Kreatif">Ide Kreatif & Kewirausahaan</option>
-                      <option value="Lainnya">Lainnya</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                    Uraian Pesan / Masukan *
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={pesan}
-                    onChange={(e) => setPesan(e.target.value)}
-                    placeholder="Tuliskan aspirasi, ide, atau saran Anda secara rinci dan santun..."
-                    className="liquid-input w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all"
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <motion.button
-                    type="submit"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.96 }}
-                    className="min-h-[44px] w-full py-3 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer border border-slate-800"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Kirim Aspirasi Sekarang</span>
-                  </motion.button>
-                </div>
-              </form>
-            )}
-          </motion.div>
         </div>
       </div>
     </section>

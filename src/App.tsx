@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useEffect, useLayoutEffect, useState } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { DataProvider, useData } from './context/DataContext';
 import { ToastContainer } from './components/common/Toast';
 import { Navbar } from './components/common/Navbar';
@@ -77,15 +78,16 @@ const AppContent: React.FC = () => {
 
   // Otherwise, display the Public Website Portal
   return (
-    <div className="min-h-screen bg-stone-50 text-slate-900 font-sans antialiased selection:bg-amber-400 selection:text-slate-950 flex flex-col">
+    <div className="public-portal min-h-screen bg-stone-50 text-slate-900 font-sans antialiased selection:bg-amber-400 selection:text-slate-950 flex flex-col">
       <ToastContainer />
+      <a href="#konten-utama" className="skip-link">Lewati ke konten utama</a>
 
       {/* Public Header */}
       <Navbar onOpenLoginModal={() => setIsLoginModalOpen(true)} />
 
       {/* Main Public Content */}
       <Suspense fallback={<PublicLoadingSkeleton />}>
-        <main className="flex-1">
+        <main id="konten-utama" tabIndex={-1} className="flex-1">
           <Hero />
           <Tentang />
           <Tim />
@@ -113,8 +115,8 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <DataProvider>
-      <AppContent />
-    </DataProvider>
+    <MotionConfig reducedMotion="user">
+      <DataProvider><AppContent /></DataProvider>
+    </MotionConfig>
   );
 }

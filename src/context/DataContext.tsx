@@ -657,25 +657,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     kategori: Aspirasi['kategori'];
     pesan: string;
   }) => {
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-    const tanggalSekarang = new Date().toLocaleDateString('id-ID', options);
-    const tempId = 'asp-' + Date.now();
-    const newAspirasi: Aspirasi = { ...item, id: tempId, tanggal: tanggalSekarang, status: 'baru', dibuatOleh: currentUser?.namaLengkap || 'Warga / Publik' };
-    setAspirasiList((prev) => [newAspirasi, ...prev]);
-
-    try {
-      const res = await fetch('/api/aspirasi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Warga / Publik' }),
-      });
-      if (res.ok) {
-        const saved = await res.json();
-        setAspirasiList((prev) => prev.map((a) => (a.id === tempId ? { ...saved, dibuatOleh: newAspirasi.dibuatOleh } : a)));
-      }
-    } catch {}
+    const res = await fetch('/api/aspirasi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...item, dibuatOleh: currentUser?.namaLengkap || 'Warga / Publik' }),
+    });
+    if (!res.ok) throw new Error('Aspirasi belum berhasil dikirim. Silakan coba lagi.');
+    const saved: Aspirasi = await res.json();
+    setAspirasiList((prev) => [saved, ...prev.filter((entry) => entry.id !== saved.id)]);
     showToast('Terima kasih, aspirasi Anda telah kami terima untuk ditindaklanjuti!', 'success');
-    addActivityLog('tambah', 'Aspirasi', `Menerima aspirasi dari "${newAspirasi.nama}"`, currentUser);
+    addActivityLog('tambah', 'Aspirasi', `Menerima aspirasi dari "${item.nama}"`, currentUser);
   };
 
   const updateStatusAspirasi = async (id: string, status: Aspirasi['status']) => {
