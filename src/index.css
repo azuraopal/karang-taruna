@@ -1107,6 +1107,10 @@
   .liquid-nav-track button { min-height: 44px; padding-block: 8px; border-radius: 10px; letter-spacing: 0; }
   .liquid-nav-track .navbar-active-tab { inset: 4px 1px; border-radius: 9px; }
   .navbar-account button { min-height: 44px; padding-inline: 12px; border-radius: 10px; font-weight: 600; box-shadow: none; }
+  .navbar-account .navbar-login { padding-inline: 10px; font-size: 11px; font-weight: 500; }
+  .navbar-login::before { content: ''; position: absolute; inset: 6px 0; z-index: -1; border: 1px solid #334155; border-radius: 8px; background: #1e293b99; }
+  .navbar-login:hover::before { border-color: #64748b; background: #1e293b; }
+  .navbar-login > svg { width: 13px; height: 13px; }
 }
 @media (min-width: 1024px) and (max-width: 1279px) {
   .navbar-brand { flex-direction: column; align-items: flex-start; gap: 2px; padding-block: 0; }

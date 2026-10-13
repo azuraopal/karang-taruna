@@ -188,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenLoginModal }) => {
               <button
                 type="button"
                 onClick={onOpenLoginModal}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-300 bg-slate-800/90 hover:text-white border border-slate-700 hover:border-slate-600 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="navbar-login relative isolate flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
                 <Lock className="w-3.5 h-3.5 text-amber-400" />
                 <span>Masuk Admin</span>

@@ -121,13 +121,10 @@ export function SpaceCompanions() {
     let frame = 0;
     let previous = 0;
     let time = 0;
-    // Every pose derives from the same timeline; pause time while offscreen.
     function renderAt(t: number) {
       const phase = t * Math.PI / 4;
       const flight = Math.sin(phase);
       const bank = Math.cos(phase);
-      // Closed flight paths and limb follow-through share an eight-second cycle.
-      // Travel around a closed oval on every screen, within the hero's own canvas.
       const travelX = Math.max(0.65, Math.min(2.8, camera.aspect * 2.4 - 3.2));
       rider.position.set(Math.cos(phase) * travelX, flight * 0.65, bank * 0.12);
       rider.rotation.set(flight * 0.06, -0.12 + bank * 0.12, 0.16 + bank * 0.12);
