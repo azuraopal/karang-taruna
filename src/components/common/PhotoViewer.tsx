@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LoaderCircle, ImageOff } from 'lucide-react';
 import { imageVariantUrl } from '../../utils/imageVariants';
 
@@ -7,6 +7,20 @@ export function PhotoViewer({ source, nextSource, alt, zoom, fallbackSource }: {
   const [loaded, setLoaded] = useState<{ key: string; url: string } | null>(null);
   const [failed, setFailed] = useState('');
   const [attempt, setAttempt] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const previousZoom = useRef(1);
+  const dragOrigin = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const viewport = scrollRef.current;
+    if (viewport) {
+      const ratio = zoom / previousZoom.current;
+      viewport.scrollLeft = zoom === 1 ? 0 : (viewport.scrollLeft + viewport.clientWidth / 2) * ratio - viewport.clientWidth / 2;
+      viewport.scrollTop = zoom === 1 ? 0 : (viewport.scrollTop + viewport.clientHeight / 2) * ratio - viewport.clientHeight / 2;
+    }
+    previousZoom.current = zoom;
+  }, [zoom]);
   const src = zoom > 1 ? source : imageVariantUrl(source, 1280);
   const requestKey = `${src}:${attempt}`;
   const ready = loaded?.key === requestKey;
@@ -46,9 +60,32 @@ export function PhotoViewer({ source, nextSource, alt, zoom, fallbackSource }: {
   return (
     <div className="photo-viewer relative w-full rounded-2xl bg-slate-100" aria-busy={!ready && !error}>
       <div className="photo-viewer-viewport relative w-full aspect-[4/3] max-h-[min(55dvh,420px)] overflow-hidden rounded-2xl">
-        <div className="absolute inset-0 overflow-auto overscroll-contain" tabIndex={zoom > 1 ? 0 : undefined} aria-label={zoom > 1 ? 'Foto diperbesar, geser untuk melihat bagian lainnya' : undefined}>
+        {loaded && <img src={loaded.url} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-xl" />}
+        <div ref={scrollRef} className={`absolute inset-0 overscroll-contain ${zoom > 1 ? 'overflow-auto' : 'overflow-hidden'}`}
+          style={{ cursor: zoom > 1 ? dragging ? 'grabbing' : 'grab' : 'default', touchAction: zoom > 1 ? 'pan-x pan-y' : 'auto' }}
+          tabIndex={zoom > 1 ? 0 : undefined} aria-label={zoom > 1 ? 'Foto diperbesar, geser untuk melihat bagian lainnya' : undefined}
+          onPointerDown={(event) => {
+            if (zoom <= 1 || event.button !== 0 || event.pointerType === 'touch') return;
+            const viewport = event.currentTarget;
+            dragOrigin.current = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
+            viewport.setPointerCapture(event.pointerId);
+            setDragging(true);
+            event.preventDefault();
+          }}
+          onPointerMove={(event) => {
+            const origin = dragOrigin.current;
+            if (!origin) return;
+            event.currentTarget.scrollLeft = origin.left - (event.clientX - origin.x);
+            event.currentTarget.scrollTop = origin.top - (event.clientY - origin.y);
+          }}
+          onPointerUp={(event) => {
+            dragOrigin.current = null;
+            setDragging(false);
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+          }}
+          onLostPointerCapture={() => { dragOrigin.current = null; setDragging(false); }}>
           <div className="relative" style={{ width: `${zoom * 100}%`, height: `${zoom * 100}%` }}>
-            {loaded && <img src={loaded.url} alt={alt} className="absolute inset-0 block h-full w-full max-w-none object-cover object-center" />}
+            {loaded && <img src={loaded.url} alt={alt} className="absolute inset-0 block h-full w-full max-w-none object-contain object-center select-none" draggable={false} />}
           </div>
         </div>
       </div>
