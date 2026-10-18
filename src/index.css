@@ -513,9 +513,7 @@
 .dashboard-command h1 span { color: #fbbf24; }
 .dashboard-command__lead { max-width: 32rem; margin: 1rem 0 0; color: #cbd5e1; font-size: 0.86rem; line-height: 1.65; }
 .dashboard-command__actions { display: grid; gap: 0.6rem; min-width: 12rem; }
-.dashboard-command__actions button { display: inline-flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.62rem 0.8rem; border-radius: 0.65rem; font-size: 0.72rem; font-weight: 800; transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease; }
-.dashboard-command__actions button:hover { transform: translateY(-2px); }
-.dashboard-command__actions button:active { transform: translateY(1px) scale(0.98); }
+.dashboard-command__actions button { display: inline-flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.62rem 0.8rem; border-radius: 0.65rem; font-size: 0.72rem; font-weight: 800; }
 .dashboard-command__primary { color: #0f172a; background: #fbbf24; box-shadow: 0 8px 22px rgba(251, 191, 36, 0.2); }
 .dashboard-command__primary svg:last-child { margin-left: auto; }
 .dashboard-command__secondary { border: 1px solid rgba(226, 232, 240, 0.2); color: #e2e8f0; background: rgba(15, 23, 42, 0.38); }
@@ -556,8 +554,14 @@
 .dashboard-launchpad__flare { position: absolute; right: -3rem; top: -4.5rem; width: 11rem; height: 11rem; border: 1px solid rgba(251, 191, 36, 0.52); border-radius: 50%; box-shadow: 0 0 0 1rem rgba(251, 191, 36, 0.045), 0 0 0 2rem rgba(251, 191, 36, 0.035); animation: dashboard-flare-breathe 6s ease-in-out infinite; }
 .dashboard-launchpad h2 { position: relative; max-width: 13rem; margin: 0.52rem 0 1.25rem; color: #fff; font-size: 1.32rem; font-weight: 900; letter-spacing: 0; line-height: 1.05; }
 .dashboard-launchpad__actions { position: relative; display: grid; gap: 0.4rem; }
-.dashboard-launchpad__actions button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; min-height: 2.35rem; align-items: center; gap: 0.56rem; padding: 0.45rem 0.6rem; border-radius: 0.55rem; color: #e2e8f0; font-size: 0.7rem; font-weight: 750; text-align: left; background: rgba(255, 255, 255, 0.065); transition: background-color 180ms ease, transform 180ms ease; }
-.dashboard-launchpad__actions button:hover { background: rgba(255, 255, 255, 0.12); transform: translateX(3px); }
+.dashboard-launchpad__actions button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; min-height: 2.35rem; align-items: center; gap: 0.56rem; padding: 0.45rem 0.6rem; border-radius: 0.55rem; color: #e2e8f0; font-size: 0.7rem; font-weight: 750; text-align: left; background: rgba(255, 255, 255, 0.065); }
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-launchpad__actions button:not(:disabled):not([aria-disabled="true"]):hover { background: rgba(255, 255, 255, 0.12); }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .dashboard-command__actions button:not(:disabled):not([aria-disabled="true"]):hover { translate: 0 -1px; }
+  .dashboard-launchpad__actions button:not(:disabled):not([aria-disabled="true"]):hover { translate: 1px 0; }
+}
 .dashboard-launchpad__actions button svg:first-child { color: #fbbf24; }
 .dashboard-launchpad__actions button svg:last-child { color: #94a3b8; }
 
@@ -1142,4 +1146,48 @@
 .hero-rocket-zone canvas { display: block; max-width: 100%; }
 @media (max-width: 767px) {
   .hero-rocket-zone { margin-top: 24px; }
+}
+
+/* Keep CSS press feedback separate from transforms owned by Framer Motion.
+   The enabled selector also takes precedence over component/Tailwind transitions. */
+button:not(:disabled):not([aria-disabled="true"]) {
+  transition: scale 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 160ms ease-out, border-color 160ms ease-out,
+    color 160ms ease-out, box-shadow 160ms ease-out, opacity 160ms ease-out;
+}
+
+/* Active is not gated on hover, so touch and mouse share the same feedback. */
+button:not(:disabled):not([aria-disabled="true"]):active {
+  scale: 0.985;
+}
+
+button:focus-visible {
+  outline: 2px solid #a16d18;
+  outline-offset: 3px;
+}
+
+/* Important resets also suppress inline motion styles and utility animations. */
+button:is(:disabled, [aria-disabled="true"]) {
+  scale: 1 !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+button:is(:disabled, [aria-disabled="true"])::before,
+button:is(:disabled, [aria-disabled="true"])::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  button::before,
+  button::after {
+    scale: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
 }
