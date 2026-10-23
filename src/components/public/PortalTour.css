@@ -129,11 +129,12 @@
 
 @media (max-width: 900px) {
   .portal-tour[data-pinned='true'] { height: 300svh; }
+  .portal-tour__intro { padding: 3rem 1.25rem 1rem; }
   .portal-tour__stage { padding: 1.1rem 1.25rem .8rem; gap: .7rem; }
   .portal-tour[data-pinned='true'] .portal-tour__stage { top: 80px; height: calc(100svh - 80px); }
   .portal-tour__eyebrow { font-size: .58rem; margin-bottom: .45rem; }
   .portal-tour__layout { display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
-  .portal-tour__preview { order: -1; max-width: min(100%, calc((100svh - 510px) * 1.5)); align-self: center; }
+  .portal-tour__preview { order: -1; max-width: min(100%, calc((100svh - 390px) * 1.45)); align-self: center; }
   .portal-tour__backlight { filter: blur(24px); box-shadow: 0 0 30px 8px var(--backlight); }
   .portal-demo__bar { height: 35px; }
   .portal-demo__nav { height: 30px; gap: 2.3cqi; }
@@ -158,6 +159,15 @@
   .portal-tour__scroll { font-size: .6rem; }
   .portal-tour[data-pinned='false'] .portal-tour__preview { max-width: 550px; }
   .portal-tour[data-pinned='false'] .portal-tour__chapter { padding-block: .4rem; }
+}
+
+/* Reserve readable preview space even with the phone browser bars expanded. */
+@media (max-width: 900px) and (max-height: 640px) {
+  .portal-tour[data-pinned='true'] .portal-tour__stage { padding-block: .5rem; gap: .35rem; }
+  .portal-tour[data-pinned='true'] .portal-tour__layout { gap: .5rem; }
+  .portal-tour[data-pinned='true'] .portal-tour__preview { max-width: min(100%, 300px); }
+  .portal-tour[data-pinned='true'] .portal-tour__chapter p { min-height: 0; }
+  .portal-tour[data-pinned='true'] .portal-tour__scroll { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

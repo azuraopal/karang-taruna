@@ -101,6 +101,7 @@ function PreviewScreens({ activeTeam }: { activeTeam: number }) {
 export function PortalTour() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const introRef = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(false);
   const [compact, setCompact] = useState(false);
   const [scene, setScene] = useState({ index: 0, highlight: false, activeTeam: -1, formStep: 3 });
@@ -108,7 +109,9 @@ export function PortalTour() {
   const previewId = useId();
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce), (max-height: 650px), (max-width: 900px) and (max-height: 740px)');
+    // Browser toolbars shorten phone viewports. Keep the scroll tour enabled
+    // in portrait; only very short/landscape layouts need manual navigation.
+    const media = window.matchMedia('(prefers-reduced-motion: reduce), (max-height: 550px), (min-width: 901px) and (max-height: 650px)');
     const mobile = window.matchMedia('(max-width: 900px)');
     const sync = () => { setPinned(!media.matches); setCompact(mobile.matches); };
     sync();
@@ -133,8 +136,9 @@ export function PortalTour() {
     const sync = () => {
       frame = 0;
       const top = Number.parseFloat(getComputedStyle(stage).top) || 0;
-      const travel = section.offsetHeight - stage.offsetHeight;
-      const position = getTourPosition(travel > 0 ? (top - section.getBoundingClientRect().top) / travel : 0);
+      const introHeight = introRef.current?.offsetHeight ?? 0;
+      const travel = section.offsetHeight - stage.offsetHeight - introHeight;
+      const position = getTourPosition(travel > 0 ? (top - section.getBoundingClientRect().top - introHeight) / travel : 0);
       section.style.setProperty('--chapter-progress', String(position.local));
       section.style.setProperty('--demo-progress', String(Math.min(1, Math.max(0, (position.local - 0.15) / 0.5))));
       const team = getTeamSequence(position.index === 0 ? position.local : 1);
@@ -148,6 +152,7 @@ export function PortalTour() {
     const observer = new ResizeObserver(schedule);
     observer.observe(section);
     observer.observe(stage);
+    if (introRef.current) observer.observe(introRef.current);
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
     sync();
@@ -157,7 +162,7 @@ export function PortalTour() {
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
     };
-  }, [pinned]);
+  }, [pinned, compact]);
 
   const selectChapter = (index: number) => {
     const section = sectionRef.current;
@@ -173,8 +178,9 @@ export function PortalTour() {
       return;
     }
     const inset = Number.parseFloat(getComputedStyle(stage).top) || 0;
-    const top = section.getBoundingClientRect().top + window.scrollY - inset;
-    const travel = section.offsetHeight - stage.offsetHeight;
+    const introHeight = introRef.current?.offsetHeight ?? 0;
+    const top = section.getBoundingClientRect().top + window.scrollY + introHeight - inset;
+    const travel = section.offsetHeight - stage.offsetHeight - introHeight;
     window.scrollTo({ top: top + travel * getTourChapterProgress(index), behavior: 'smooth' });
   };
 
@@ -187,13 +193,16 @@ export function PortalTour() {
     target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
   };
 
-  return (
-    <section id="jelajahi" className="portal-tour" ref={sectionRef} aria-labelledby={headingId} data-pinned={pinned} data-active={scene.index} data-highlight={pinned && scene.highlight} data-form-step={pinned ? scene.formStep : 3}>
-      <div className="portal-tour__stage" ref={stageRef}>
-        <header className="portal-tour__heading public-section-heading">
+  const heading = <header className="portal-tour__heading public-section-heading">
           <div className="portal-tour__eyebrow">Lebih dekat, lebih terlibat</div>
           <h2 id={headingId} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight"><ScribbleTitle>Satu portal. Banyak cara berperan.</ScribbleTitle></h2>
-        </header>
+        </header>;
+
+  return (
+    <section id="jelajahi" className="portal-tour" ref={sectionRef} aria-labelledby={headingId} data-pinned={pinned} data-active={scene.index} data-highlight={pinned && scene.highlight} data-form-step={pinned ? scene.formStep : 3}>
+      {compact && <div className="portal-tour__intro" ref={introRef}>{heading}</div>}
+      <div className="portal-tour__stage" ref={stageRef}>
+        {!compact && heading}
         <div className="portal-tour__layout">
           <div className="portal-tour__chapters" aria-label="Fitur portal">
             <div className="portal-tour__chapter-list">
