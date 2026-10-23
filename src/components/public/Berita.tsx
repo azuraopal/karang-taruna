@@ -7,6 +7,7 @@ import { PhotoViewer } from '../common/PhotoViewer';
 import { imageVariantUrl } from '../../utils/imageVariants';
 import { Modal } from '../common/Modal';
 import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
+import { FilterResults } from '../common/FilterResults';
 import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
 
@@ -34,7 +35,6 @@ export const BeritaSection: React.FC = () => {
   const categoryCounts = Object.fromEntries(kategoriList.map((category) => [category, category === 'Semua' ? beritaList.filter((item) => item.status === 'published').length : beritaList.filter((item) => item.status === 'published').filter((item) => item.kategori === category).length]));
 
   const filteredBerita = beritaList.filter((b) => {
-    // Only show published articles in public view
     if (b.status !== 'published') return false;
 
     const matchesCat =
@@ -81,6 +81,7 @@ export const BeritaSection: React.FC = () => {
           searchLabel="Cari berita atau pengumuman" query={searchQuery} onSearch={setSearchQuery} resultText={`${filteredBerita.length} berita ditemukan`} />
 
         {/* Grid Kartu Berita */}
+        <FilterResults filterKey={JSON.stringify([selectedKategori, searchQuery.trim().toLocaleLowerCase('id')])}>
         {filteredBerita.length > 0 ? (
           <motion.div
             layout
@@ -90,11 +91,10 @@ export const BeritaSection: React.FC = () => {
               {filteredBerita.map((item) => (
                 <motion.article
                   layout
-                  initial={{ opacity: 0, y: 24, scale: 0.97 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.2 }}
+                  initial={false}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.45, delay: Math.min(filteredBerita.indexOf(item) * 0.06, 0.3), ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
 
                   key={item.id}
                   className="photo-hover-card liquid-surface liquid-media-card flex flex-col justify-between group"
@@ -191,6 +191,8 @@ export const BeritaSection: React.FC = () => {
             </button>
           </div>
         )}
+
+        </FilterResults>
 
         {/* Modal Baca Artikel Lengkap */}
         <Modal

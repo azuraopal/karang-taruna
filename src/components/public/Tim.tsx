@@ -4,6 +4,7 @@ import { Users, Mail, Phone, ArrowUpRight, SearchX, ZoomIn, ZoomOut, RotateCcw }
 import { useData } from '../../context/DataContext';
 import type { AnggotaTim } from '../../types';
 import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
+import { FilterResults } from '../common/FilterResults';
 import { PhotoViewer } from '../common/PhotoViewer';
 import { imageVariantUrl } from '../../utils/imageVariants';
 import { Modal } from '../common/Modal';
@@ -76,22 +77,21 @@ export const Tim: React.FC = () => {
           searchLabel="Cari nama atau jabatan" query={query} onSearch={searchMembers} resultText={`Menampilkan ${displayedMembers.length} dari ${filteredMembers.length} pengurus`} />
 
         {/* Grid Pengurus */}
+        <FilterResults filterKey={JSON.stringify([selectedDivisi, query.trim().toLocaleLowerCase('id')])}>
         {filteredMembers.length > 0 ? (
           <motion.div
             layout
             className="team-grid mt-4 grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5"
           >
             <AnimatePresence>
-              {displayedMembers.map((member, index) => (
+              {displayedMembers.map((member) => (
                 <motion.article
                   layout
-                  initial={shouldReduceMotion ? false : { opacity: 0, y: 44, scale: 0.94 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.12 }}
+                  initial={false}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.96 }}
                   transition={shouldReduceMotion ? { duration: 0 } : {
                     type: 'spring', stiffness: 160, damping: 22,
-                    delay: (index % 2) * 0.09,
                     layout: { duration: 0.3 },
                   }}
                   key={member.id}
@@ -161,6 +161,8 @@ export const Tim: React.FC = () => {
             </button>
           </div>
         )}
+
+        </FilterResults>
 
         {/* Modal Profil Pengurus */}
         <Modal

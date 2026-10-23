@@ -1,4 +1,5 @@
 import { useId, useRef } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Search, X, SlidersHorizontal, ChevronDown, Check, LayoutGrid, Users, HeartHandshake, Trophy, BookOpen, Megaphone, Palette, Leaf, GraduationCap, BriefcaseBusiness, Sparkles } from 'lucide-react';
 
 interface Props {
@@ -29,12 +30,15 @@ function categoryIcon(category: string) {
 
 export function PublicCollectionFilters({ label, options, counts, selected, onSelect, searchLabel, query, onSearch, resultText }: Props) {
   const id = useId();
+  const reduceMotion = useReducedMotion();
   const mobileFilters = useRef<HTMLDetailsElement>(null);
   const hasFilter = Boolean(query || selected !== 'Semua');
   const renderOptions = (mobile = false) => options.map((option) => {
     const Icon = categoryIcon(option);
     const active = selected === option;
-    return <button key={option} type="button" aria-pressed={active}
+    return <motion.button key={option} type="button" aria-pressed={active}
+      whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+      transition={{ duration: reduceMotion ? 0 : 0.12 }}
       className="collection-choice" title={counts[option] === 0 ? `${option}: belum ada data` : undefined}
       onClick={() => {
         onSelect(option);
@@ -46,8 +50,8 @@ export function PublicCollectionFilters({ label, options, counts, selected, onSe
       <Icon size={17} className="collection-choice__icon" aria-hidden="true" />
       <span className="collection-choice__label">{option}</span>
       <span className="collection-choice__count" aria-label={`${counts[option] ?? 0} item`}>{counts[option] ?? 0}</span>
-      {active && <Check size={14} className="collection-choice__check" aria-hidden="true" />}
-    </button>;
+      <motion.span initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: reduceMotion ? 0 : 0.16 }} className="collection-choice__check" aria-hidden="true"><Check size={14} /></motion.span>
+    </motion.button>;
   });
 
   return (

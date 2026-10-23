@@ -7,6 +7,7 @@ import { PhotoViewer } from '../common/PhotoViewer';
 import { imageVariantUrl } from '../../utils/imageVariants';
 import { Modal } from '../common/Modal';
 import { PublicCollectionFilters } from '../common/PublicCollectionFilters';
+import { FilterResults } from '../common/FilterResults';
 import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
 const getGalleryImages = (item: ItemGaleri) => [...new Set([item.gambarUrl, ...(item.gambarUrls || [])].filter(Boolean))];
@@ -72,6 +73,7 @@ export const Galeri: React.FC = () => {
           searchLabel="Cari kegiatan atau lokasi" query={query} onSearch={setQuery} resultText={`${filteredGaleri.length} album kegiatan ditemukan`} />
 
         {/* Grid Foto */}
+        <FilterResults filterKey={JSON.stringify([selectedKategori, query.trim().toLocaleLowerCase('id')])}>
         {filteredGaleri.length > 0 ? (
           <div className="gallery-grid relative mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredGaleri.map((item) => (
@@ -117,6 +119,8 @@ export const Galeri: React.FC = () => {
             </button>
           </div>
         )}
+
+        </FilterResults>
 
         {/* Lightbox / Modal Detail Foto */}
         <Modal

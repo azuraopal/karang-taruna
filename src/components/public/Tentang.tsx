@@ -7,6 +7,7 @@ import { TiltCard } from '../common/TiltCard';
 import { ScribbleTitle } from '../common/ScribbleTitle';
 import { Section3DShowcase } from '../common/Section3DShowcase';
 import { triggerParticleBurst } from '../../utils/particleBurst';
+import { OrganizationFlow } from './OrganizationFlow';
 
 export const Tentang: React.FC = () => {
   const valueIcons: Record<string, React.ReactNode> = {
@@ -223,32 +224,7 @@ export const Tentang: React.FC = () => {
             ))}
           </div>
         </div>
-        {/* 4 Bidang Kerja */}
-        <div className="liquid-surface mt-14 bg-amber-50/60 rounded-2xl p-5 sm:p-10 border border-amber-200/80">
-          <h3 className="text-xl font-bold text-slate-900 mb-6 text-center">
-            7 Divisi Bidang Kerja Pemuda
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-5 lg:[&>*]:col-span-3 lg:[&>*:nth-child(5)]:col-start-2">
-            {bidangKerja.map((bidang, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ y: -6, scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-                className="liquid-surface bg-white rounded-2xl p-5 border border-amber-200/70 shadow-xs hover:border-amber-500 hover:shadow-md transition-all cursor-default"
-              >
-                <span className="text-[11px] font-black uppercase text-amber-700 tracking-wider block mb-1">
-                  Divisi 0{idx + 1}
-                </span>
-                <h4 className="text-sm font-bold text-slate-900 mb-2">
-                  {bidang.nama}
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {bidang.peran}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <OrganizationFlow divisions={bidangKerja} />
       </div>
     </section>
   );

@@ -9,6 +9,7 @@ import { getAdminRoute, getAllowedAdminTab, getDashboardPath, navigateTo } from 
 
 const AdminLoginModal = lazy(() => import('./components/admin/AdminLoginModal').then((module) => ({ default: module.AdminLoginModal })));
 const Hero = lazy(() => import('./components/public/Hero').then((module) => ({ default: module.Hero })));
+const PortalTour = lazy(() => import('./components/public/PortalTour').then((module) => ({ default: module.PortalTour })));
 const Tentang = lazy(() => import('./components/public/Tentang').then((module) => ({ default: module.Tentang })));
 const Tim = lazy(() => import('./components/public/Tim').then((module) => ({ default: module.Tim })));
 const Galeri = lazy(() => import('./components/public/Galeri').then((module) => ({ default: module.Galeri })));
@@ -89,6 +90,7 @@ const AppContent: React.FC = () => {
       <Suspense fallback={<PublicLoadingSkeleton />}>
         <main id="konten-utama" tabIndex={-1} className="flex-1">
           <Hero />
+          <PortalTour />
           <Tentang />
           <Tim />
           <Galeri />
