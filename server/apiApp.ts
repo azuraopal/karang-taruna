@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
 import crypto from 'node:crypto';
+import zlib from 'node:zlib';
 import type { Response, RequestHandler } from 'express';
 import { checkDbConnection, initDb } from './db.js';
 import * as storage from './storage.js';
@@ -63,6 +64,42 @@ apiApp.use(
     credentials: true,
   })
 );
+
+// Zero-dependency Brotli/Gzip response compression for text, JS, CSS, JSON, and SVG.
+const COMPRESSIBLE_TYPE = /^(text\/|application\/(json|javascript|xml|manifest\+json)|image\/svg\+xml)/i;
+apiApp.use((req, res, next) => {
+  if (req.method === 'HEAD' || req.path === '/api/events') return next();
+  const accept = req.headers['accept-encoding'] || '';
+  const encoding = accept.includes('br') ? 'br' : accept.includes('gzip') ? 'gzip' : '';
+  if (!encoding) return next();
+
+  const originalSend = res.send.bind(res);
+  res.send = ((body?: unknown) => {
+    const contentType = String(res.getHeader('Content-Type') || '');
+    if (res.getHeader('Content-Encoding') || !COMPRESSIBLE_TYPE.test(contentType)) {
+      return originalSend(body);
+    }
+    const raw = Buffer.isBuffer(body)
+      ? body
+      : typeof body === 'string'
+        ? Buffer.from(body)
+        : body !== undefined && body !== null
+          ? Buffer.from(JSON.stringify(body))
+          : null;
+    if (!raw || raw.length < 1024) return originalSend(body);
+
+    const compressed =
+      encoding === 'br'
+        ? zlib.brotliCompressSync(raw, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 } })
+        : zlib.gzipSync(raw, { level: 6 });
+
+    res.setHeader('Content-Encoding', encoding);
+    res.setHeader('Vary', 'Accept-Encoding');
+    res.removeHeader('Content-Length');
+    return originalSend(compressed);
+  }) as typeof res.send;
+  next();
+});
 
 apiApp.use(express.json({ limit: '20mb' }));
 
@@ -180,7 +217,7 @@ apiApp.use('/uploads', createImageVariants([uploadsRoot, publicUploadsRoot]));
 apiApp.use('/uploads', express.static(uploadsRoot, { maxAge: '7d', immutable: true }));
 apiApp.use('/uploads', express.static(publicUploadsRoot, { maxAge: '7d', immutable: true }));
 
-apiApp.use(async (_req, _res, next) => {
+apiApp.use('/api', async (_req, _res, next) => {
   await initDb();
   next();
 });

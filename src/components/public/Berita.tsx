@@ -108,6 +108,7 @@ export const BeritaSection: React.FC = () => {
                         alt={item.judul}
                         className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition-transform duration-700 ease-out"
                         loading="lazy"
+                        decoding="async"
                       />
                       <div className="absolute top-3 left-3">
                         <span className="liquid-dark px-2.5 py-1.5 rounded-full text-[11px] font-bold text-amber-200">

@@ -86,18 +86,20 @@ const AppContent: React.FC = () => {
       {/* Public Header */}
       <Navbar onOpenLoginModal={() => setIsLoginModalOpen(true)} />
 
-      {/* Main Public Content */}
-      <Suspense fallback={<PublicLoadingSkeleton />}>
-        <main id="konten-utama" tabIndex={-1} className="flex-1">
+      {/* Main Public Content — isolate Hero Suspense so above-the-fold paints immediately */}
+      <main id="konten-utama" tabIndex={-1} className="flex-1">
+        <Suspense fallback={<PublicLoadingSkeleton />}>
           <Hero />
+        </Suspense>
+        <Suspense fallback={null}>
           <PortalTour />
           <Tentang />
           <Tim />
           <Galeri />
           <BeritaSection />
           <AspirasiSection />
-        </main>
-      </Suspense>
+        </Suspense>
+      </main>
 
       {/* Public Footer */}
       <Footer onOpenLoginModal={() => setIsLoginModalOpen(true)} />

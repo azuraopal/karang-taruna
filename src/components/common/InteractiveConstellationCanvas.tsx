@@ -27,7 +27,7 @@ export const InteractiveConstellationCanvas: React.FC<{ className?: string }> = 
     let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
     let height = (canvas.height = canvas.parentElement?.clientHeight || window.innerHeight);
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
@@ -41,7 +41,7 @@ export const InteractiveConstellationCanvas: React.FC<{ className?: string }> = 
       radius: 140,
     };
 
-    const nodeCount = Math.floor(Math.min(width, 1400) / 18);
+    const nodeCount = Math.max(18, Math.min(Math.floor(width / 24), 52));
     const nodes: Node[] = [];
     const colors = [
       'rgba(251, 191, 36, ', // amber-400
@@ -122,14 +122,38 @@ export const InteractiveConstellationCanvas: React.FC<{ className?: string }> = 
     parent.addEventListener('touchmove', handleTouchMove as EventListener, { passive: true });
 
     let isVisible = true;
+    let running = false;
+    const maxDist = 110;
+    const maxDistSq = maxDist * maxDist;
+
+    const startLoop = () => {
+      if (running || !isVisible || document.hidden) return;
+      running = true;
+      animId = requestAnimationFrame(render);
+    };
+
+    const stopLoop = () => {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(animId);
+    };
+
     const observer = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting;
+      if (isVisible && !document.hidden) startLoop();
+      else stopLoop();
     });
     observer.observe(canvas);
 
+    const handleVisibility = () => {
+      if (document.hidden) stopLoop();
+      else startLoop();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     const render = () => {
-      if (!isVisible) {
-        animId = requestAnimationFrame(render);
+      if (!isVisible || document.hidden) {
+        running = false;
         return;
       }
 
@@ -223,15 +247,15 @@ export const InteractiveConstellationCanvas: React.FC<{ className?: string }> = 
         ctx.arc(node.x, node.y, node.radius * pulse, 0, Math.PI * 2);
         ctx.fill();
 
-        // Connect with nearby neighbors
+        // Connect with nearby neighbors (squared-distance early exit avoids unnecessary sqrt)
         for (let j = i + 1; j < nodes.length; j++) {
           const other = nodes[j];
           const dx = node.x - other.x;
           const dy = node.y - other.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const maxDist = 110;
+          const distSq = dx * dx + dy * dy;
 
-          if (dist < maxDist) {
+          if (distSq < maxDistSq) {
+            const dist = Math.sqrt(distSq);
             const lineAlpha = (1 - dist / maxDist) * 0.22;
             ctx.strokeStyle = `rgba(245, 158, 11, ${lineAlpha})`;
             ctx.lineWidth = 0.8;
@@ -246,11 +270,12 @@ export const InteractiveConstellationCanvas: React.FC<{ className?: string }> = 
       animId = requestAnimationFrame(render);
     };
 
-    animId = requestAnimationFrame(render);
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(animId);
+      stopLoop();
       observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
       parent.removeEventListener('mousemove', handleMouseMove as EventListener);
       parent.removeEventListener('mouseleave', handleMouseLeave as EventListener);

@@ -17,6 +17,20 @@ export const Hero: React.FC = () => {
   const featuredBerita = beritaList.find((item) => item.status === 'published') ?? null;
   const shouldReduceMotion = useReducedMotion();
   const [wordIndex, setWordIndex] = useState(0);
+  const [show3DCompanion, setShow3DCompanion] = useState(false);
+
+  useEffect(() => {
+    if (shouldReduceMotion) return;
+    let cancelled = false;
+    const enable = () => { if (!cancelled) setShow3DCompanion(true); };
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void });
+    if (typeof idle.requestIdleCallback === 'function') {
+      const id = idle.requestIdleCallback(enable, { timeout: 900 });
+      return () => { cancelled = true; idle.cancelIdleCallback?.(id); };
+    }
+    const timer = window.setTimeout(enable, 450);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [shouldReduceMotion]);
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let timer: number | undefined;
@@ -221,7 +235,9 @@ export const Hero: React.FC = () => {
                 <path d="m325 24 2 7 7 2-7 2-2 7-2-7-7-2 7-2Z" fill="currentColor" fillOpacity=".7" />
                 <path d="m90 119 1.5 5 5 1.5-5 1.5-1.5 5-1.5-5-5-1.5 5-1.5Z" fill="#8bc9e3" fillOpacity=".6" />
               </svg>
-              <Suspense fallback={<div className="space-companions" />}><SpaceCompanions /></Suspense>
+              <Suspense fallback={<div className="space-companions" />}>
+                {show3DCompanion ? <SpaceCompanions /> : <div className="space-companions" />}
+              </Suspense>
             </div>
           </div>
         </div>

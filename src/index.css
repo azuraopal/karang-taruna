@@ -30,6 +30,16 @@
     overflow-x: hidden;
   }
 
+  /* Skip off-screen layout/paint for below-the-fold public sections */
+  #tentang,
+  #tim,
+  #galeri,
+  #berita,
+  #aspirasi {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 760px;
+  }
+
   /* Custom subtle focus styles for accessibility WCAG AA (R-32) */
   :focus-visible {
     outline: 2px solid #0f2744;
