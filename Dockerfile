@@ -23,6 +23,10 @@ COPY src/types ./src/types
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 
+RUN mkdir -p /app/uploads/profiles /app/uploads/galeri /app/uploads/berita /app/public/uploads && chown -R node:node /app
+
+USER node
+
 EXPOSE 3000
 
 CMD ["npx", "tsx", "server/index.ts"]

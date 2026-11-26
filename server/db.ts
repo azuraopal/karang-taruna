@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import crypto from 'node:crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,16 +10,24 @@ if (process.env.KATAR_STORAGE !== 'json') dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Standard DATABASE_URL for Dokploy or fallback for local dev
+function hashSeedPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `scrypt:${salt}:${hash}`;
+}
+
+// Standard DATABASE_URL for Dokploy or fallback for local dev only
 const connectionString =
   process.env.DATABASE_URL ||
-  'postgres://postgres:postgrespassword@localhost:5432/karang_taruna_db';
+  (process.env.NODE_ENV === 'production'
+    ? undefined
+    : 'postgres://postgres:postgres@localhost:5432/karang_taruna_db');
 
 export const pool = new Pool({
   connectionString,
   ssl:
     process.env.NODE_ENV === 'production' && process.env.PGSSLMODE === 'require'
-      ? { rejectUnauthorized: false }
+      ? { rejectUnauthorized: process.env.PGSSL_REJECT_UNAUTHORIZED !== 'false' }
       : false,
   max: 20,
   idleTimeoutMillis: 30000,
@@ -62,6 +71,7 @@ export function initDb(): Promise<boolean> {
 
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await pool.query(sql);
+      await migratePlaintextPasswords();
       await ensureDefaultAdmin();
       console.log('PostgreSQL schema initialized successfully.');
       return true;
@@ -77,23 +87,61 @@ export function initDb(): Promise<boolean> {
   return schemaInitPromise;
 }
 
+async function migratePlaintextPasswords() {
+  try {
+    const res = await pool.query(
+      `SELECT id, password_hash FROM admin_users WHERE password_hash IS NOT NULL AND password_hash <> '' AND password_hash NOT LIKE 'scrypt:%'`
+    );
+    for (const row of res.rows) {
+      await pool.query('UPDATE admin_users SET password_hash = $1 WHERE id = $2', [
+        hashSeedPassword(row.password_hash),
+        row.id,
+      ]);
+    }
+    if (res.rows.length > 0) {
+      console.log(`Migrated ${res.rows.length} legacy plaintext admin password(s) to scrypt.`);
+    }
+  } catch (err) {
+    console.error('Error migrating plaintext passwords:', err);
+  }
+}
+
 export async function ensureDefaultAdmin() {
   try {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const superadminPassword = process.env.DEFAULT_SUPERADMIN_PASSWORD?.trim() || (isProduction ? '' : 'superadmin2026');
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD?.trim() || (isProduction ? '' : 'katar2026');
+    const pengurusPassword = process.env.DEFAULT_PENGURUS_PASSWORD?.trim() || (isProduction ? '' : 'pengurus2026');
+
     const countAdmin = await pool.query('SELECT COUNT(*) FROM admin_users');
     if (parseInt(countAdmin.rows[0].count, 10) === 0) {
+      if (adminPassword) {
+        await pool.query(
+          `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
+           VALUES ('user-1', 'admin', $1, 'Administrator Utama', 'admin')
+           ON CONFLICT (username) DO NOTHING`,
+          [hashSeedPassword(adminPassword)]
+        );
+      }
+      if (pengurusPassword) {
+        await pool.query(
+          `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
+           VALUES ('user-2', 'pengurus', $1, 'Staff Pengurus Harian', 'pengurus')
+           ON CONFLICT (username) DO NOTHING`,
+          [hashSeedPassword(pengurusPassword)]
+        );
+      }
+    }
+    if (superadminPassword) {
       await pool.query(
         `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
-         VALUES 
-           ('user-1', 'admin', 'katar2026', 'Administrator Utama', 'admin'),
-           ('user-2', 'pengurus', 'pengurus2026', 'Staff Pengurus Harian', 'pengurus')
-         ON CONFLICT (username) DO NOTHING`
+         VALUES ('user-0', 'superadmin', $1, 'Super Administrator', 'superadmin')
+         ON CONFLICT (username) DO NOTHING`,
+        [hashSeedPassword(superadminPassword)]
       );
+    } else if (isProduction && parseInt(countAdmin.rows[0].count, 10) === 0) {
+      console.warn('No admin users exist and DEFAULT_SUPERADMIN_PASSWORD is not set.');
     }
-    await pool.query(
-      `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role)
-       VALUES ('user-0', 'superadmin', 'superadmin2026', 'Super Administrator', 'superadmin')
-       ON CONFLICT (username) DO NOTHING`
-    );
   } catch (err) {
     console.error('Error creating default admin:', err);
   }

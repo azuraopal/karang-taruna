@@ -230,6 +230,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [currentUser]);
 
+  // Verify server-side session cookie on mount instead of trusting localStorage alone.
+  useEffect(() => {
+    let active = true;
+    void fetch('/api/auth/me')
+      .then(async res => {
+        if (!active) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.authenticated && data.user) {
+            setCurrentUser(data.user);
+            setIsAdminLoggedIn(true);
+            return;
+          }
+        }
+        if (res.status === 401 || res.status === 403) {
+          setIsAdminLoggedIn(false);
+          setCurrentUser(null);
+          setCurrentView('public');
+          localStorage.removeItem(STORAGE_KEYS.AUTH);
+          localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
+      })
+      .catch(() => {
+        // Keep current state when offline; protected endpoints will still fail closed on the server.
+      });
+    return () => { active = false; };
+  }, []);
+
   const readQueue = useRef(createReadQueue<DataCategory>());
   // Central reads are shared across initial load, manual refresh and realtime events.
   const fetchCategory = useCallback(async function fetchCategory(category: DataCategory | 'all', invalidate = false): Promise<void> {
@@ -237,7 +265,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await Promise.all(DATA_CATEGORIES.map(item => fetchCategory(item, invalidate)));
       return;
     }
-    if (category === 'users' && !isAdminLoggedIn) return;
+    if (category === 'users' && (!isAdminLoggedIn || currentUser?.role !== 'superadmin')) return;
+    if ((category === 'aspirasi' || category === 'logs') && !isAdminLoggedIn) return;
     return readQueue.current(category, async () => {
     try {
       if (category === 'berita') {

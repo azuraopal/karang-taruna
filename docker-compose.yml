@@ -10,7 +10,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgres://katar_user:katar_secure_pass_2026@db:5432/karang_taruna_margabakti
+      - DATABASE_URL=postgres://${POSTGRES_USER:-katar_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-karang_taruna_margabakti}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
+      - DEFAULT_SUPERADMIN_PASSWORD=${DEFAULT_SUPERADMIN_PASSWORD:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -24,14 +27,14 @@ services:
     container_name: katar_margabakti_db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=katar_user
-      - POSTGRES_PASSWORD=katar_secure_pass_2026
-      - POSTGRES_DB=karang_taruna_margabakti
+      - POSTGRES_USER=${POSTGRES_USER:-katar_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      - POSTGRES_DB=${POSTGRES_DB:-karang_taruna_margabakti}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./server/schema.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U katar_user -d karang_taruna_margabakti"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-katar_user} -d ${POSTGRES_DB:-karang_taruna_margabakti}"]
       interval: 5s
       timeout: 5s
       retries: 5

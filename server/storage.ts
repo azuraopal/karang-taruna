@@ -31,6 +31,29 @@ interface DevDbData {
   activityLogs: ActivityLog[];
 }
 
+export function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `scrypt:${salt}:${hash}`;
+}
+
+function sanitizeUser(user: UserAccount): UserAccount {
+  const { password: _password, ...safe } = user;
+  return safe;
+}
+
+function createInitialDevUsers(): UserAccount[] {
+  if (process.env.NODE_ENV === 'production') return [];
+  const superPass = process.env.DEFAULT_SUPERADMIN_PASSWORD?.trim() || 'superadmin2026';
+  const adminPass = process.env.DEFAULT_ADMIN_PASSWORD?.trim() || 'katar2026';
+  const pengurusPass = process.env.DEFAULT_PENGURUS_PASSWORD?.trim() || 'pengurus2026';
+  return [
+    { ...DEFAULT_USERS[0], password: hashPassword(superPass) },
+    { ...DEFAULT_USERS[1], password: hashPassword(adminPass) },
+    { ...DEFAULT_USERS[2], password: hashPassword(pengurusPass) },
+  ];
+}
+
 function loadDevDb(): DevDbData {
   try {
     if (fs.existsSync(DB_FILE)) {
@@ -46,7 +69,7 @@ function loadDevDb(): DevDbData {
     tim: [],
     galeri: [],
     aspirasi: [],
-    users: DEFAULT_USERS,
+    users: createInitialDevUsers(),
     activityLogs: [],
   };
   saveDevDb(initialData);
@@ -118,18 +141,19 @@ export const agendaStorage = createAgendaStorage({
 });
 export const meetingGroupStorage = createMeetingGroupStorage({ usesPg: authoritativeUsesPg, query: (sql, values) => pool.query(sql, values), json: agendaJson });
 
-function hashPassword(password: string): string {
-  const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
-  return `scrypt:${salt}:${hash}`;
-}
-
 function verifyPassword(password: string, storedPassword: string): boolean {
+  if (!storedPassword || typeof storedPassword !== 'string') return false;
   if (!storedPassword.startsWith('scrypt:')) {
-    return storedPassword === password;
+    // Plaintext password fallback is forbidden in production; kept only for legacy dev/test fixtures.
+    if (process.env.NODE_ENV === 'production') return false;
+    const expected = Buffer.from(storedPassword, 'utf8');
+    const actual = Buffer.from(password, 'utf8');
+    return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
   }
 
-  const [, salt, expectedHash] = storedPassword.split(':');
+  const parts = storedPassword.split(':');
+  if (parts.length !== 3 || !parts[1] || !parts[2]) return false;
+  const [, salt, expectedHash] = parts;
   const actualHash = crypto.scryptSync(password, salt, 64).toString('hex');
   const expectedBuffer = Buffer.from(expectedHash, 'hex');
   const actualBuffer = Buffer.from(actualHash, 'hex');
@@ -423,28 +447,48 @@ export async function getUsers(): Promise<UserAccount[]> {
     );
     return res.rows;
   }
-  return localDb.users;
+  return localDb.users.map(sanitizeUser);
 }
 
 export async function createUser(item: Omit<UserAccount, 'id'>): Promise<UserAccount> {
+  const isPg = await authoritativeUsesPg();
   const id = 'user-' + Date.now();
   const createdAt = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-  const record: UserAccount = { ...item, id, isActive: item.isActive !== false, createdAt };
+  const rawPassword = typeof item.password === 'string' ? item.password.trim() : '';
 
-  const isPg = await authoritativeUsesPg();
   if (isPg) {
+    if (!rawPassword) {
+      await pool.query('SELECT 1');
+      throw new Error('Password wajib diisi');
+    }
+    const hashedPassword = hashPassword(rawPassword);
     const res = await pool.query(
       `INSERT INTO admin_users (id, username, password_hash, nama_lengkap, role, is_active, dibuat_oleh)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, username, nama_lengkap as "namaLengkap", role, is_active as "isActive", created_at as "createdAt", dibuat_oleh as "dibuatOleh"`,
-      [id, record.username, hashPassword(record.password || '123456'), record.namaLengkap, record.role, record.isActive, record.dibuatOleh || null]
+      [id, item.username.trim(), hashedPassword, item.namaLengkap.trim(), item.role, item.isActive !== false, item.dibuatOleh || null]
     );
     return res.rows[0];
   }
 
+  if (!rawPassword) {
+    throw new Error('Password wajib diisi');
+  }
+  const hashedPassword = hashPassword(rawPassword);
+  const record: UserAccount = {
+    id,
+    username: item.username.trim(),
+    password: hashedPassword,
+    namaLengkap: item.namaLengkap.trim(),
+    role: item.role,
+    isActive: item.isActive !== false,
+    createdAt,
+    dibuatOleh: item.dibuatOleh,
+  };
+
   localDb.users = [...localDb.users, record];
   saveDevDb(localDb);
-  return record;
+  return sanitizeUser(record);
 }
 
 export async function updateUser(id: string, item: Partial<UserAccount>): Promise<UserAccount | null> {
@@ -466,9 +510,17 @@ export async function updateUser(id: string, item: Partial<UserAccount>): Promis
 
   const idx = localDb.users.findIndex((u) => u.id === id);
   if (idx === -1) return null;
-  localDb.users[idx] = { ...localDb.users[idx], ...item };
+  const current = localDb.users[idx];
+  const updated: UserAccount = {
+    ...current,
+    ...(item.namaLengkap?.trim() ? { namaLengkap: item.namaLengkap.trim() } : {}),
+    ...(item.role ? { role: item.role } : {}),
+    ...(typeof item.isActive === 'boolean' ? { isActive: item.isActive } : {}),
+    ...(item.password?.trim() ? { password: hashPassword(item.password.trim()) } : {}),
+  };
+  localDb.users[idx] = updated;
   saveDevDb(localDb);
-  return localDb.users[idx];
+  return sanitizeUser(updated);
 }
 
 export async function deleteUser(id: string): Promise<boolean> {
@@ -512,16 +564,10 @@ export async function authenticate(username: string, pass: string): Promise<User
     return null;
   }
 
-  // Check localDb
+  // Check localDb (no hardcoded plaintext password fallbacks)
   const found = localDb.users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
-  if (found && found.isActive !== false) {
-    if (found.password) {
-      if (verifyPassword(pass.trim(), found.password)) return found;
-    } else if (found.username === 'admin' && pass.trim() === 'katar2026') {
-      return found;
-    } else if (found.username === 'pengurus' && pass.trim() === 'pengurus2026') {
-      return found;
-    }
+  if (found && found.isActive !== false && found.password && verifyPassword(pass.trim(), found.password)) {
+    return sanitizeUser(found);
   }
 
   return null;
