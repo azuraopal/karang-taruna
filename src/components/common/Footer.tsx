@@ -42,7 +42,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLoginModal }) => {
 
             <div className="pt-2 flex items-start gap-2.5 text-xs text-slate-400">
               <Clock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <span>{TENTANG_DATA.kontak.jadwalKumpul}</span>
+              <span>Jadwal Kumpul: {TENTANG_DATA.kontak.jadwalKumpul}</span>
             </div>
           </div>
 

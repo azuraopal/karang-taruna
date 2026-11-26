@@ -10,7 +10,7 @@ interface HeroCivicSceneProps {
   date: string;
 }
 
-const STORY_TITLE_LIMIT = 84;
+const STORY_TITLE_LIMIT = 110;
 
 const getStoryTitle = (title: string) => {
   const normalizedTitle = title.replace(/\s+/g, ' ').trim();

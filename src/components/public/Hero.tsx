@@ -2,7 +2,6 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowDown, Sparkles, ArrowRight } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import { Logo } from '../common/Logo';
 import { InteractiveConstellationCanvas } from '../common/InteractiveConstellationCanvas';
 import { HeroCivicScene } from '../common/HeroCivicScene';
 import { CountingNumber } from '../common/CountingNumber';
@@ -70,7 +69,7 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="beranda"
-      className="hero-brand-surface relative min-h-[100svh] flex items-center justify-center pt-28 sm:pt-36 lg:pt-40 pb-14 sm:pb-20 text-white overflow-hidden"
+      className="hero-brand-surface relative min-h-[100svh] flex items-center justify-center pt-24 sm:pt-28 lg:pt-28 pb-12 sm:pb-16 text-white overflow-hidden"
     >
 
       {!shouldReduceMotion && <InteractiveConstellationCanvas className="opacity-75 z-0" />}
@@ -89,12 +88,12 @@ export const Hero: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div className="hero-layout grid grid-cols-1 lg:grid-cols-12 gap-9 sm:gap-12 lg:gap-8 items-center">
           {/* Main Hero Narrative (7 cols) */}
-          <div className="hero-narrative lg:col-span-7 space-y-5 sm:space-y-6 text-center lg:text-left">
+          <div className="hero-narrative lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55 }}
-              className="hero-identity flex flex-col items-center lg:items-start gap-3.5"
+              className="hero-identity flex flex-col items-center lg:items-start gap-2.5"
             >
               {/* Wrap naturally so the portal name and status remain readable. */}
               <div className="portal-identity">
@@ -104,15 +103,6 @@ export const Hero: React.FC = () => {
                 </span>
                 <span className="portal-identity__status">Aktif & Berdaya</span>
               </div>
-
-              {/* Responsive Logotype Brand Centerpiece with subtle 3D hover */}
-              <motion.div
-                whileHover={{ scale: 1.04 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                className="hidden sm:block py-1"
-              >
-                <Logo variant="white" size="xl" className="h-[3.25rem] sm:h-16 md:h-18 lg:h-20 w-auto drop-shadow-[0_10px_20px_rgba(245,158,11,0.2)]" />
-              </motion.div>
             </motion.div>
 
             {/* Original headline and word-switch animation, with a stable line height. */}
@@ -243,7 +233,7 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* Scroll Indicator with smooth floating bounce */}
-        <div className="hero-scroll-cue pt-12 flex justify-center">
+        <div className="hero-scroll-cue pt-7 sm:pt-9 flex justify-center">
           <motion.button
             type="button"
             whileHover={{ y: 2 }}
@@ -262,6 +252,11 @@ export const Hero: React.FC = () => {
           </motion.button>
         </div>
       </div>
+      {/* Soft gradient bridge into the light Portal Tour section */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-b from-transparent to-[#f8fafb]/18 z-2"
+        aria-hidden="true"
+      />
     </section>
   );
 };

@@ -230,8 +230,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [currentUser]);
 
-  // Verify server-side session cookie on mount instead of trusting localStorage alone.
+  // Verify server-side session cookie on mount when a local admin flag exists (keeps public console clean).
   useEffect(() => {
+    let hasStoredAuth = false;
+    try {
+      hasStoredAuth = localStorage.getItem(STORAGE_KEYS.AUTH) === 'true' || Boolean(localStorage.getItem(STORAGE_KEYS.CURRENT_USER));
+    } catch {
+      hasStoredAuth = false;
+    }
+    if (!hasStoredAuth) return;
+
     let active = true;
     void fetch('/api/auth/me')
       .then(async res => {

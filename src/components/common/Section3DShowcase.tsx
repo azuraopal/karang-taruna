@@ -48,7 +48,7 @@ const showcaseConfig: Record<ShowcaseKind, {
   },
   tim: {
     title: 'Struktur\nAktif',
-    subtitle: '7 Divisi Penggerak',
+    subtitle: '8 Bidang Penggerak',
     eyebrow: 'TIM',
     panels: [
       { label: 'PSDM', icon: <Sparkles />, x: '0px', y: '-138px', z: '30px', turn: '0deg' },

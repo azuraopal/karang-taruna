@@ -49,8 +49,16 @@
 
 @layer utilities {
   .font-subtitle {
-    font-family: 'Times New Roman', Times, Georgia, serif;
-    letter-spacing: 0.02em;
+    font-family: inherit;
+    letter-spacing: 0.005em;
+  }
+
+  /* Subtle dimming for zero-count category filter chips */
+  .collection-choice[data-empty='true'] {
+    opacity: 0.54;
+  }
+  .collection-choice[data-empty='true']:hover {
+    opacity: 0.85;
   }
 
   .no-scrollbar {
@@ -188,16 +196,16 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  height: 21rem;
-  max-width: 32rem;
+  height: 17.5rem;
+  max-width: 30rem;
   margin-inline: auto;
   perspective: 1050px;
 }
 
-.section-scene[data-kind="tim"] { --scene-accent: #10b981; --scene-soft: #d1fae5; --tim-scene-scale: 1; height: 21.5rem; max-width: 32rem; }
-.section-scene[data-kind="tentang"] { height: 21rem; max-width: 32rem; }
-.section-scene[data-kind="galeri"] { --scene-accent: #0284c7; --scene-soft: #e0f2fe; height: 22rem; }
-.section-scene[data-kind="berita"] { --scene-accent: #e11d48; --scene-soft: #ffe4e6; height: 22rem; }
+.section-scene[data-kind="tim"] { --scene-accent: #10b981; --scene-soft: #d1fae5; --tim-scene-scale: 0.86; height: 18rem; max-width: 30rem; }
+.section-scene[data-kind="tentang"] { height: 17.5rem; max-width: 30rem; }
+.section-scene[data-kind="galeri"] { --scene-accent: #0284c7; --scene-soft: #e0f2fe; height: 18.25rem; }
+.section-scene[data-kind="berita"] { --scene-accent: #e11d48; --scene-soft: #ffe4e6; height: 18.25rem; }
 .section-scene[data-kind="aspirasi"] { --scene-accent: #d97706; --scene-soft: #fef3c7; }
 
 .section-scene__glow {
@@ -213,12 +221,14 @@
 .section-scene__world {
   position: absolute;
   inset: 0;
+  scale: 0.86;
   transform-style: preserve-3d;
   animation: scene-world-float 8s ease-in-out infinite;
   will-change: transform;
 }
 
 .section-scene[data-kind="tim"] .section-scene__world {
+  scale: 1;
   animation-name: tim-scene-world-float;
 }
 
@@ -482,7 +492,7 @@
 .hero-scene__image-fallback { width: 100%; height: 100%; background: linear-gradient(135deg, #172554, #0f766e 55%, #f59e0b); }
 .hero-scene__image-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 38%, rgba(15, 23, 42, 0.3) 64%, #0f172a); }
 .hero-scene__story-meta { display: flex; min-height: 8.15rem; flex-direction: column; align-items: flex-start; gap: 0.55rem; padding: 0.9rem 1rem 1.05rem; color: white; }
-.hero-scene__story-meta strong { display: -webkit-box; width: 100%; min-height: 2.52em; overflow: hidden; overflow-wrap: anywhere; font-size: 0.9rem; font-weight: 800; line-height: 1.26; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.hero-scene__story-meta strong { display: -webkit-box; width: 100%; min-height: 2.52em; overflow: hidden; overflow-wrap: anywhere; font-size: 0.88rem; font-weight: 800; line-height: 1.28; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .hero-scene__story-date { display: inline-flex; max-width: 100%; align-items: center; gap: 0.32rem; overflow: hidden; color: #fcd34d; font-size: 0.66rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .hero-scene__story-meta > span:last-child svg, .hero-scene__tag svg { width: 0.8rem; height: 0.8rem; }
 .hero-scene__tag { display: inline-flex; align-items: center; gap: 0.32rem; padding: 0.3rem 0.48rem; border: 1px solid rgba(251, 191, 36, 0.45); border-radius: 0.45rem; color: #fcd34d; background: rgba(245, 158, 11, 0.13); font-size: 0.57rem; font-weight: 850; letter-spacing: 0.07em; text-transform: uppercase; }
@@ -687,10 +697,10 @@
   .hero-scene__story-image { height: 9.75rem; }
   .hero-scene__story-meta { min-height: 7.3rem; padding: 0.78rem 0.82rem 0.9rem; }
   .hero-scene__frame { width: 13.5rem; height: 15.35rem; }
-  .hero-scene__brand { top: 12%; left: 3%; transform: translateZ(104px) scale(0.86); transform-origin: left top; }
-  .hero-scene__token { transform: translateZ(64px) scale(0.82); }
-  .hero-scene__token--people { top: 31%; right: -3%; }
-  .hero-scene__token--spark { bottom: 7%; left: -4%; }
+  .hero-scene__brand { top: 12%; left: 4%; transform: translateZ(104px) scale(0.84); transform-origin: left top; }
+  .hero-scene__token { transform: translateZ(64px) scale(0.8); }
+  .hero-scene__token--people { top: 31%; right: 2%; }
+  .hero-scene__token--spark { bottom: 7%; left: 2%; }
   .hero-scene__token--link { display: none; }
 }
 

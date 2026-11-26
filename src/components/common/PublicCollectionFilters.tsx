@@ -36,7 +36,9 @@ export function PublicCollectionFilters({ label, options, counts, selected, onSe
   const renderOptions = (mobile = false) => options.map((option) => {
     const Icon = categoryIcon(option);
     const active = selected === option;
+    const isEmpty = option !== 'Semua' && (counts[option] ?? 0) === 0;
     return <motion.button key={option} type="button" aria-pressed={active}
+      data-empty={isEmpty && !active ? 'true' : undefined}
       whileTap={reduceMotion ? undefined : { scale: 0.97 }}
       transition={{ duration: reduceMotion ? 0 : 0.12 }}
       className="collection-choice" title={counts[option] === 0 ? `${option}: belum ada data` : undefined}
